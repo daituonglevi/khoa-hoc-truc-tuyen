@@ -1,0 +1,260 @@
+@model ELearningWebsite.Controllers.CertificateViewModel
+@{
+    ViewData["Title"] = "Chứng chệ hoàn thành khóa học";
+}
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Certificate Header -->
+            <div class="text-center mb-4">
+                <h1 class="display-4 text-primary mb-3">
+                    <i class="fas fa-certificate text-warning"></i>
+                    Chứng chệ hoàn thành
+                </h1>
+                <p class="lead text-muted">Chúc mừng bạn đã hoàn thành khóa học!</p>
+            </div>
+
+            <!-- Certificate Card -->
+            <div class="card shadow-lg border-0 certificate-card">
+                <div class="card-header bg-gradient-primary text-white text-center py-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-award"></i>
+                        CHỨNG CH�^ HOệN THệNH KHôA H�OC
+                    </h2>
+                </div>
+
+                <div class="card-body p-5">
+                    <!-- Certificate Content -->
+                    <div class="certificate-content text-center">
+                        <!-- Certificate Number -->
+                        <div class="mb-4">
+                            <span class="badge bg-warning text-dark fs-6 px-3 py-2">
+                                Sđ chứng chệ: @Model.Certificate.CertificateNumber
+                            </span>
+                        </div>
+
+                        <!-- Main Content -->
+                        <div class="mb-4">
+                            <h3 class="text-dark mb-3">Chứng nhận rằng</h3>
+                            <h2 class="text-primary mb-4 student-name">@Model.StudentName</h2>
+                            <h4 class="text-dark mb-3">đã hoàn thành xuất sắc khóa học</h4>
+                            <h3 class="text-success mb-4 course-name">"@Model.CourseName"</h3>
+                        </div>
+
+                        <!-- Course Details -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <i class="fas fa-calendar-alt text-primary"></i>
+                                    <strong>Ngày hoàn thành:</strong>
+                                    <span>@Model.CompletionDate.ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-box">
+                                    <i class="fas fa-clock text-success"></i>
+                                    <strong>Ngày cấp chứng chệ:</strong>
+                                    <span>@Model.Certificate.IssueDate.ToString("dd/MM/yyyy")</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Signature Section -->
+                        <div class="signature-section mt-5">
+                            <div class="row">
+                                <div class="col-md-6 text-center">
+                                    <div class="signature-box">
+                                        <div class="signature-line"></div>
+                                        <p class="mt-2 mb-0"><strong>Giám đđc học thuật</strong></p>
+                                        <small class="text-muted">ELearning CNTT</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 text-center">
+                                    <div class="signature-box">
+                                        <div class="signature-line"></div>
+                                        <p class="mt-2 mb-0"><strong>Giảng viên</strong></p>
+                                        <small class="text-muted">Khóa học @Model.CourseName</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Footer -->
+                        <div class="certificate-footer mt-4 pt-4 border-top">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">
+                                        <i class="fas fa-globe"></i>
+                                        Website: elearning-cntt.com
+                                    </small>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <small class="text-muted">
+                                        <i class="fas fa-shield-alt"></i>
+                                        Mã xác thực: @Model.Certificate.CertificateNumber
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="text-center mt-4">
+                <a href="javascript:window.print()" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-print"></i> In chứng chệ
+                </a>
+                <a asp-controller="User" asp-action="MyCourses" class="btn btn-outline-secondary btn-lg">
+                    <i class="fas fa-arrow-left"></i> Quay lại khóa học của tôi
+                </a>
+            </div>
+
+            <!-- Verification Info -->
+            <div class="alert alert-info mt-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h6 class="alert-heading mb-1">
+                            <i class="fas fa-info-circle"></i>
+                            Xác thực chứng chệ
+                        </h6>
+                        <p class="mb-0">
+                            Chứng chệ này có thă được xác thực bằng mã sđ: <strong>@Model.Certificate.CertificateNumber</strong>
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-outline-info" onclick="copyToClipboard('@Model.Certificate.CertificateNumber')">
+                            <i class="fas fa-copy"></i> Sao chép mã
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.certificate-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-radius: 15px;
+}
+
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.student-name {
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    text-decoration: underline;
+    text-decoration-color: #007bff;
+}
+
+.course-name {
+    font-family: 'Georgia', serif;
+    font-style: italic;
+}
+
+.info-box {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.info-box i {
+    margin-right: 8px;
+}
+
+.signature-box {
+    padding: 20px 0;
+}
+
+.signature-line {
+    width: 200px;
+    height: 2px;
+    background: #333;
+    margin: 0 auto 10px;
+}
+
+.certificate-footer {
+    background: #f8f9fa;
+    margin: -1.25rem -1.25rem 0;
+    padding: 1rem 1.25rem;
+    border-radius: 0 0 15px 15px;
+}
+
+/* Print Styles */
+@@media print {
+    .btn, .alert {
+        display: none !important;
+    }
+
+    .certificate-card {
+        box-shadow: none !important;
+        border: 2px solid #333 !important;
+    }
+
+    .card-header {
+        background: #333 !important;
+        color: white !important;
+    }
+
+    body {
+        background: white !important;
+    }
+
+    .container {
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* Responsive */
+@@media (max-width: 768px) {
+    .certificate-content h2 {
+        font-size: 1.5rem;
+    }
+
+    .certificate-content h3 {
+        font-size: 1.25rem;
+    }
+
+    .signature-line {
+        width: 150px;
+    }
+}
+</style>
+
+<script>
+function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(function() {
+        // Show success message
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Đã sao chép';
+        btn.classList.remove('btn-outline-info');
+        btn.classList.add('btn-success');
+
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-info');
+        }, 2000);
+    });
+}
+
+// Auto print option
+document.addEventListener('DOMContentLoaded', function() {
+    // Add print button functionality
+    const printBtn = document.querySelector('[href="javascript:window.print()"]');
+    if (printBtn) {
+        printBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.print();
+        });
+    }
+});
+</script>

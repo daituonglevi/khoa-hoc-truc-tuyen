@@ -1,0 +1,201 @@
+@model CourseReportViewModel
+@{
+    ViewData["Title"] = "Báo cáo Khóa học";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-graduation-cap me-2"></i>
+            Báo cáo Khóa học
+        </h2>
+        <div>
+            <button class="admin-btn admin-btn-primary" onclick="exportToExcel()">
+                <i class="fas fa-file-excel me-2"></i>
+                Xuất Excel
+            </button>
+        </div>
+    </div>
+
+    <!-- Course Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 mb-3">
+            <div class="admin-card stat-card-primary">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Tổng Khóa học</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.TotalCourses</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-graduation-cap fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 mb-3">
+            <div class="admin-card stat-card-success">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Đã xuất bản</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.PublishedCourses</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 mb-3">
+            <div class="admin-card stat-card-warning">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Bản nháp</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.DraftCourses</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-edit fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 mb-3">
+            <div class="admin-card stat-card-info">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Giá trung bình</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.AveragePrice.ToString("N0") VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-tags fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Creation Trend Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Xu hương Tạo khóa học (12 tháng gần đây)</h5>
+                </div>
+                <div class="admin-card-body">
+                    <canvas id="courseCreationTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Courses by Category -->
+    <div class="row">
+        <div class="col-12">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Khóa học theo Danh mục</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Danh mục</th>
+                                    <th>Tổng khóa học</th>
+                                    <th>Đã xuất bản</th>
+                                    <th>Tổng ghi danh</th>
+                                    <th>Tỷ lệ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var category in Model.CoursesByCategory)
+                                {
+                                    var publishedPercent = category.CourseCount > 0 
+                                        ? (category.PublishedCourses * 100.0 / category.CourseCount) 
+                                        : 0;
+                                    <tr>
+                                        <td>@category.CategoryName</td>
+                                        <td>@category.CourseCount</td>
+                                        <td>@category.PublishedCourses</td>
+                                        <td>@category.TotalEnrollments</td>
+                                        <td>
+                                            <div class="progress" style="height: 20px;">
+                                                <div class="progress-bar bg-success" role="progressbar" 
+                                                     style="width: @publishedPercent%"
+                                                     title="@publishedPercent.ToString("F1")% đã xuất bản">
+                                                    @publishedPercent.ToString("F1")%
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Course Creation Trend Chart
+        var ctx = document.getElementById('courseCreationTrendChart').getContext('2d');
+        var data = {
+            labels: [@Html.Raw(string.Join(",", Model.CreationTrend.Select(x => $"'{x.Month}'")))],
+            datasets: [{
+                label: 'Khóa học mơi',
+                data: [@string.Join(",", Model.CreationTrend.Select(x => x.NewCourses))],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        };
+        var options = {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        };
+        new Chart(ctx, {
+            type: 'line',
+            data: data,
+            options: options
+        });
+
+        // Export function
+        function exportToExcel() {
+            fetch('/Admin/Reports/ExportToExcel?reportType=course', {
+                method: 'POST'
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('Có lỗi xảy ra khi xuất Excel');
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'BaoCaoKhoaHoc.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+        }
+    </script>
+} 

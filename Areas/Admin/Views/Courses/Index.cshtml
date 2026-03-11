@@ -1,0 +1,278 @@
+@model CoursesIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Courses";
+}
+
+@Html.AntiForgeryToken()
+
+<!-- Admin Courses Management -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-graduation-cap me-2"></i>
+            Quản lý Courses
+        </h2>
+        <a href="/Admin/Courses/Create" class="admin-btn admin-btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Course mơi
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="admin-card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <div class="input-group">
+                        <input type="text" name="search" class="form-control" placeholder="Tìm theo tên hoặc mô tả..." value="@Model.Search">
+                        <span class="input-group-text">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Danh mục</label>
+                    <select class="form-select" name="categoryId">
+                        <option value="">Tất cả danh mục</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            @if (Model.SelectedCategoryId == category.Id)
+                            {
+                                <option value="@category.Id" selected>@category.Name</option>
+                            }
+                            else
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select class="form-select" name="status">
+                        <option value="">Tất cả trạng thái</option>
+                        @if (Model.SelectedStatus == "Draft")
+                        {
+                            <option value="Draft" selected>Nháp</option>
+                        }
+                        else
+                        {
+                            <option value="Draft">Nháp</option>
+                        }
+                        @if (Model.SelectedStatus == "Published")
+                        {
+                            <option value="Published" selected>Đã xuất bản</option>
+                        }
+                        else
+                        {
+                            <option value="Published">Đã xuất bản</option>
+                        }
+                        @if (Model.SelectedStatus == "Archived")
+                        {
+                            <option value="Archived" selected>Lưu trữ</option>
+                        }
+                        else
+                        {
+                            <option value="Archived">Lưu trữ</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="submit" class="admin-btn admin-btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>
+                        Lọc
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Courses Table -->
+    <div class="admin-card">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-list me-2"></i>
+                Danh sách Courses
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Courses.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="border-0">Course</th>
+                                <th class="border-0">Danh mục</th>
+                                <th class="border-0">Giá</th>
+                                <th class="border-0">Trạng thái</th>
+                                <th class="border-0">Ngày tạo</th>
+                                <th class="border-0">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var course in Model.Courses)
+                            {
+                                <tr>
+                                    <td class="border-0">
+                                        <div class="d-flex align-items-center">
+                                            <img src="@course.Thumbnail" alt="@course.Title"
+                                                 class="rounded me-3" style="width: 60px; height: 40px; object-fit: cover;">
+                                            <div>
+                                                <strong>@course.Title</strong>
+                                                <br>
+                                                <small class="text-muted">@course.Duration phút</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="border-0">
+                                        <span class="badge bg-light text-dark">@course.Category.Name</span>
+                                    </td>
+                                    <td class="border-0">
+                                        <span class="fw-bold text-success">@course.Price.ToString("N0") VNĐ</span>
+                                    </td>
+                                    <td class="border-0">
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-@(course.Status == "Published" ? "success" : course.Status == "Draft" ? "warning" : "secondary") dropdown-toggle"
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="fas fa-@(course.Status == "Published" ? "check-circle" : course.Status == "Draft" ? "edit" : "archive") me-1"></i>
+                                                @(course.Status == "Published" ? "Đã xuất bản" : course.Status == "Draft" ? "Nháp" : "Lưu trữ")
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Published')">
+                                                    <i class="fas fa-check-circle text-success me-2"></i>Xuất bản</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Draft')">
+                                                    <i class="fas fa-edit text-warning me-2"></i>Chuyăn về nháp</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Archived')">
+                                                    <i class="fas fa-archive text-secondary me-2"></i>Lưu trữ</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                    <td class="border-0">
+                                        <span class="text-muted">@course.CreatedAt.ToString("dd/MM/yyyy")</span>
+                                    </td>
+                                    <td class="border-0">
+                                        <div class="btn-group" role="group">
+                                            <a href="/Admin/Courses/Edit/@course.Id"
+                                               class="btn btn-sm btn-outline-primary" title="Chệnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteCourse(@course.Id)" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="d-flex justify-content-between align-items-center p-3">
+                        <div>
+                            <small class="text-muted">
+                                Hiăn thị @((Model.CurrentPage - 1) * Model.PageSize + 1) - @(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalCourses))
+                                trong tổng sđ @Model.TotalCourses courses
+                            </small>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                @if (Model.CurrentPage > 1)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=@(Model.CurrentPage - 1)&search=@Model.Search&categoryId=@Model.SelectedCategoryId&status=@Model.SelectedStatus">Trươc</a>
+                                    </li>
+                                }
+                                @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                                {
+                                    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="?page=@i&search=@Model.Search&categoryId=@Model.SelectedCategoryId&status=@Model.SelectedStatus">@i</a>
+                                    </li>
+                                }
+                                @if (Model.CurrentPage < Model.TotalPages)
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=@(Model.CurrentPage + 1)&search=@Model.Search&categoryId=@Model.SelectedCategoryId&status=@Model.SelectedStatus">Sau</a>
+                                    </li>
+                                }
+                            </ul>
+                        </nav>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-graduation-cap fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không tìm thấy course nào</h5>
+                    <p class="text-muted">
+                        <a href="/Admin/Courses/Create" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Tạo course đầu tiên
+                        </a>
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateCourseStatus(courseId, status) {
+        if (confirm(`Bạn có chắc chắn muđn thay đổi trạng thái course?`)) {
+            const formData = new FormData();
+            formData.append('id', courseId);
+            formData.append('status', status);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+            fetch('/Admin/Courses/UpdateStatus', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra');
+            });
+        }
+    }
+
+    function deleteCourse(courseId) {
+        if (confirm('Bạn có chắc chắn muđn xóa course này? Hành động này không thă hoàn tác!')) {
+            const formData = new FormData();
+            formData.append('id', courseId);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+            fetch('/Admin/Courses/Delete', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra');
+            });
+        }
+    }
+</script>

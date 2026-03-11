@@ -1,0 +1,67 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Đăng ký";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Đăng ký tài khoản
+                    </h4>
+                </div>
+                <div class="card-body p-4">
+                    <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="Nhập email của bạn" />
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Nhập mật khẩu" />
+                            </div>
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Input.ConfirmPassword" class="form-label">Xác nhận mật khẩu</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="Nhập lại mật khẩu" />
+                            </div>
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button id="registerSubmit" type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Đăng ký
+                            </button>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <p class="mb-0">
+                                Đã có tài khoản? <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl">Đăng nhập ngay</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

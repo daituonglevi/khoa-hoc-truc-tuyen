@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ELearning Admin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    <!-- Admin-specific CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Admin-specific styling - completely separate from shop */
+        body.admin-body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .admin-brand {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0,0,0,0.1);
+        }
+
+        .admin-brand h3 {
+            color: #ecf0f1;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .admin-nav {
+            padding: 20px 0;
+        }
+
+        .admin-nav-item {
+            margin: 5px 15px;
+        }
+
+        .admin-nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .admin-nav-link:hover,
+        .admin-nav-link.active {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            transform: translateX(5px);
+        }
+
+        .admin-nav-link i {
+            width: 20px;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .admin-main {
+            margin-left: 280px;
+            flex: 1;
+            background: #f4f6f9;
+        }
+
+        .admin-header {
+            background: white;
+            padding: 15px 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .admin-content {
+            padding: 30px;
+        }
+
+        .admin-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .admin-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .stat-card-primary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+        }
+
+        .stat-card-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            color: white;
+        }
+
+        .stat-card-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+        }
+
+        .stat-card-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .admin-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        .admin-breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .admin-table {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .admin-btn {
+            border-radius: 6px;
+            font-weight: 500;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn-primary {
+            background: #3498db;
+            border-color: #3498db;
+        }
+
+        .admin-btn-primary:hover {
+            background: #2980b9;
+            border-color: #2980b9;
+        }
+
+        /* Avatar styles */
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @@media (max-width: 768px) {
+            .admin-sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            .admin-sidebar.show {
+                transform: translateX(0);
+            }
+
+            .admin-main {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body class="admin-body">
+    <div class="admin-wrapper">
+        <!-- Admin Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <h3>
+                    <i class="fas fa-shield-alt me-2"></i>
+                    ELearning Admin
+                </h3>
+                <small class="text-muted">Management System</small>
+            </div>
+
+            <nav class="admin-nav">
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link active" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index">
+                        <i class="fas fa-users"></i>
+                        Quản lý Users
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Courses" asp-action="Index">
+                        <i class="fas fa-graduation-cap"></i>
+                        Quản lý Courses
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Chapters" asp-action="Index">
+                        <i class="fas fa-list-ol"></i>
+                        Chương
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="LessonProgresses" asp-action="Index">
+                        <i class="fas fa-chart-line"></i>
+                        Tiến độ Học tập
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Categories" asp-action="Index">
+                        <i class="fas fa-tags"></i>
+                        Categories
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Enrollments" asp-action="Index">
+                        <i class="fas fa-user-graduate"></i>
+                        Enrollments
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Finances" asp-action="Index">
+                        <i class="fas fa-chart-line"></i>
+                        Finances
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Promotions" asp-action="Index">
+                        <i class="fas fa-tags"></i>
+                        Khuyến mãi
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Comments" asp-action="Index">
+                        <i class="fas fa-comments"></i>
+                        Bình luận
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Certificates" asp-action="Index">
+                        <i class="fas fa-certificate"></i>
+                        Chứng chệ
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Reports" asp-action="Index">
+                        <i class="fas fa-chart-bar"></i>
+                        Reports
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Settings" asp-action="Index">
+                        <i class="fas fa-cogs"></i>
+                        Settings
+                    </a>
+                </div>
+
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 15px;">
+
+                <div class="admin-nav-item">
+                    <a class="admin-nav-link" asp-controller="Home" asp-action="Index" asp-area="" target="_blank">
+                        <i class="fas fa-external-link-alt"></i>
+                        Xem trang Shop
+                    </a>
+                </div>
+
+                <div class="admin-nav-item">
+                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" style="margin: 0;">
+                        <button type="submit" class="admin-nav-link" style="background: none; border: none; width: 100%; text-align: left;">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Đăng xuất
+                        </button>
+                    </form>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="admin-main">
+            <!-- Admin Header -->
+            <header class="admin-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="admin-title h4 mb-0">@ViewData["Title"]</h1>
+                        <nav class="admin-breadcrumb">
+                            <ol class="breadcrumb">
+                                <li class="breadcrumb-item">
+                                    <a asp-area="Admin" asp-controller="Home" asp-action="Index">
+                                        <i class="fas fa-home"></i> Admin
+                                    </a>
+                                </li>
+                                <li class="breadcrumb-item active">@ViewData["Title"]</li>
+                            </ol>
+                        </nav>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-2"></i>
+                                @User.Identity?.Name
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-user me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="#">
+                                        <i class="fas fa-cog me-2"></i>Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post" style="margin: 0;">
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Admin Content -->
+            <div class="admin-content">
+                @RenderBody()
+            </div>
+        </main>
+    </div>
+
+    <!-- Admin-specific JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        // Configure toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": false,
+            "onclick": null,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        // Admin-specific JavaScript functions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show TempData messages
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <text>toastr.success('@Html.Raw(TempData["SuccessMessage"])');</text>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <text>toastr.error('@Html.Raw(TempData["ErrorMessage"])');</text>
+            }
+            @if (TempData["InfoMessage"] != null)
+            {
+                <text>toastr.info('@Html.Raw(TempData["InfoMessage"])');</text>
+            }
+            @if (TempData["WarningMessage"] != null)
+            {
+                <text>toastr.warning('@Html.Raw(TempData["WarningMessage"])');</text>
+            }
+
+            // Initialize tooltips
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Active navigation highlighting
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.admin-nav-link');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Mobile sidebar toggle
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.querySelector('.admin-sidebar');
+
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                });
+            }
+        });
+
+        // Admin notification system
+        function showAdminNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Confirm delete actions
+        function confirmDelete(message = 'Bạn có chắc chắn muđn xóa?') {
+            return confirm(message);
+        }
+
+        // Auto-refresh data every 5 minutes for dashboard
+        if (window.location.pathname.includes('/Admin')) {
+            setInterval(function() {
+                // Only refresh if user is still active
+                if (document.hasFocus()) {
+                    console.log('Auto-refreshing admin data...');
+                    // Add your refresh logic here
+                }
+            }, 300000); // 5 minutes
+        }
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

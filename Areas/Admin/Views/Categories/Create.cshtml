@@ -1,0 +1,141 @@
+@model Category
+@{
+    ViewData["Title"] = "Thêm Category mơi";
+}
+
+<!-- Admin Create Category -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Category mơi
+        </h2>
+        <a asp-action="Index" class="admin-btn admin-btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin danh mục</h5>
+                </div>
+                <div class="admin-card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-label">
+                                        Tên danh mục <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" 
+                                              placeholder="Nhập mô tả cho danh mục (tùy chọn)"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                                    <select asp-for="Status" class="form-control">
+                                        <option value="1" selected>Hoạt động</option>
+                                        <option value="0">Vô hiệu hóa</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Lưu danh mục
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Hương dẫn</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Lưu ý khi tạo danh mục:</h6>
+                        <ul class="mb-0">
+                            <li>Tên danh mục là bắt buộc và phải duy nhất</li>
+                            <li>Mô tả giúp người dùng hiău rõ hơn về danh mục</li>
+                            <li>Trạng thái "Hoạt động" sẽ hiăn thị danh mục cho người dùng</li>
+                            <li>Trạng thái "Vô hiệu hóa" sẽ ẩn danh mục khỏi người dùng</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Quan trọng:</h6>
+                        <p class="mb-0">
+                            Sau khi tạo danh mục, bạn có thă thêm các khóa học vào danh mục này.
+                            Danh mục không thă xóa nếu đã có khóa học sử dụng.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Auto-focus on name field
+            $('#Name').focus();
+            
+            // Character counter for description
+            $('#Description').on('input', function() {
+                const maxLength = 1000;
+                const currentLength = $(this).val().length;
+                const remaining = maxLength - currentLength;
+                
+                if (!$('#char-counter').length) {
+                    $(this).after('<small id="char-counter" class="form-text text-muted"></small>');
+                }
+                
+                $('#char-counter').text(`${currentLength}/${maxLength} ký tự`);
+                
+                if (remaining < 100) {
+                    $('#char-counter').removeClass('text-muted').addClass('text-warning');
+                }
+                if (remaining < 50) {
+                    $('#char-counter').removeClass('text-warning').addClass('text-danger');
+                }
+                if (remaining >= 100) {
+                    $('#char-counter').removeClass('text-warning text-danger').addClass('text-muted');
+                }
+            });
+        });
+    </script>
+}

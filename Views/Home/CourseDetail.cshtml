@@ -1,0 +1,848 @@
+@model CourseDetailViewModel
+@{
+    ViewData["Title"] = Model.Course.Title;
+}
+
+<div class="container py-5">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Course Header -->
+            <div class="mb-4" data-aos="fade-up">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home")">Khóa học</a></li>
+                        <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home", new { categoryId = Model.Course.CategoryId })">@Model.Course.Category.Name</a></li>
+                        <li class="breadcrumb-item active">@Model.Course.Title</li>
+                    </ol>
+                </nav>
+
+                <h1 class="display-5 fw-bold mb-3">@Model.Course.Title</h1>
+
+                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                    <span class="badge bg-primary fs-6">@Model.Course.Category.Name</span>
+                    <div class="rating">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            @if (i <= Model.Rating)
+                            {
+                                <i class="fas fa-star text-warning"></i>
+                            }
+                            else
+                            {
+                                <i class="far fa-star text-warning"></i>
+                            }
+                        }
+                        <span class="ms-2">@Model.Rating.ToString("F1") (@Model.ReviewCount đánh giá)</span>
+                    </div>
+                    <span class="text-muted">
+                        <i class="fas fa-users me-1"></i>@Model.Course.Enrollments.Count() học viên
+                    </span>
+                    <span class="text-muted">
+                        <i class="fas fa-clock me-1"></i>Cập nhật @Model.Course.UpdatedAt?.ToString("dd/MM/yyyy") ?? @Model.Course.CreatedAt.ToString("dd/MM/yyyy")
+                    </span>
+                </div>
+            </div>
+
+            <!-- Course Video -->
+            <div class="mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="ratio ratio-16x9">
+                    @if (Model.Course.PreviewVideo.Contains("youtube.com") || Model.Course.PreviewVideo.Contains("youtu.be"))
+                    {
+                        string videoId;
+                        if (Model.Course.PreviewVideo.Contains("youtu.be"))
+                        {
+                            videoId = Model.Course.PreviewVideo.Split('/').Last();
+                        }
+                        else
+                        {
+                            var parts = Model.Course.PreviewVideo.Split("v=");
+                            if (parts.Length > 1)
+                            {
+                                videoId = parts[1].Split("&")[0];
+                            }
+                            else
+                            {
+                                videoId = "dQw4w9WgXcQ"; // Default video ID
+                            }
+                        }
+                        <iframe src="https://www.youtube.com/embed/@videoId"
+                                title="@Model.Course.Title"
+                                allowfullscreen
+                                class="rounded"></iframe>
+                    }
+                    else
+                    {
+                        <video controls class="w-100 rounded">
+                            <source src="@Model.Course.PreviewVideo" type="video/mp4">
+                            Trình duyệt của bạn không hỗ trợ video.
+                        </video>
+                    }
+                </div>
+            </div>
+
+            <!-- Course Description -->
+            <div class="card mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card-body">
+                    <h3 class="card-title">Mô tả khóa học</h3>
+                    <div class="course-description">
+                        @Html.Raw(Model.Course.Description)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Content -->
+            <div class="card mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="card-header">
+                    <h3 class="mb-0">Nội dung khóa học</h3>
+                </div>
+                <div class="card-body">
+                    @if (Model.Course.Chapters.Any())
+                    {
+                        <div class="accordion" id="courseContent">
+                            @foreach (var chapter in Model.Course.Chapters.OrderBy(c => c.Id))
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading@chapter.Id">
+                                        <button class="accordion-button @(Model.Course.Chapters.First() != chapter ? "collapsed" : "")"
+                                                type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#collapse@chapter.Id">
+                                            <div class="d-flex justify-content-between w-100 me-3">
+                                                <span><strong>@chapter.Name</strong></span>
+                                                <span class="text-muted">Đang cập nhật nội dung</span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse@chapter.Id"
+                                         class="accordion-collapse collapse @(Model.Course.Chapters.First() == chapter ? "show" : "")"
+                                         data-bs-parent="#courseContent">
+                                        <div class="accordion-body">
+                                            @if (chapter.Description != null)
+                                            {
+                                                <p class="text-muted mb-3">@chapter.Description</p>
+                                            }
+
+                                            @if (chapter.Lessons != null && chapter.Lessons.Any())
+                                            {
+                                                <ul class="list-group mb-3">
+                                                    @foreach (var lesson in chapter.Lessons.OrderBy(l => l.OrderIndex))
+                                                    {
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <span>
+                                                                <i class="fas fa-@(lesson.Type == "Video" ? "play" : lesson.Type == "Quiz" ? "question-circle" : "file-alt") text-info me-2"></i>
+                                                                @lesson.Title
+                                                                <span class="badge bg-@(lesson.Status == "Active" ? "success" : "secondary") ms-2">@lesson.Status</span>
+                                                            </span>
+                                                            <a href="/Learning/Lesson/@lesson.Id" class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye"></i>
+                                                            </a>
+                                                        </li>
+                                                    }
+                                                </ul>
+                                            }
+                                            else
+                                            {
+                                                <div class="text-center py-3">
+                                                    <i class="fas fa-book-open fa-2x text-muted mb-2"></i>
+                                                    <p class="text-muted">Nội dung bài học đang được cập nhật</p>
+                                                </div>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nội dung đang được cập nhật</h5>
+                            <p class="text-muted">Khóa học này đang trong quá trình xây dựng nội dung.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Comments Section -->
+            <div class="card" data-aos="fade-up" data-aos-delay="400">
+                <div class="card-header">
+                    <h3 class="mb-0">
+                        <i class="fas fa-comments me-2"></i>
+                        Bình luận và thảo luận
+                    </h3>
+                </div>
+                <div class="card-body">
+                    @if (User.Identity!.IsAuthenticated)
+                    {
+                        <!-- Comment Form -->
+                        <div class="comment-form mb-4">
+                            <div class="d-flex">
+                                <div class="flex-grow-1">
+                                    <form id="commentForm">
+                                        <div class="mb-3">
+                                            <textarea id="commentContent" class="form-control"
+                                                    placeholder="Viết bình luận của bạn..."
+                                                    rows="3" maxlength="2000"></textarea>
+                                            <div class="form-text">
+                                                <span id="charCount">0</span>/2000 ký tự
+                                            </div>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Hãy thảo luận một cách lịch sự và xây dựng
+                                            </small>
+                                            <button type="submit" class="btn btn-primary" id="submitComment">
+                                                <i class="fas fa-paper-plane me-1"></i>Đăng bình luận
+                                            </button>
+                                        </div>
+                                        @Html.AntiForgeryToken()
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Login prompt -->
+                        <div class="text-center py-4">
+                            <i class="fas fa-sign-in-alt fa-2x text-muted mb-3"></i>
+                            <h5 class="text-muted">Đăng nhập đă tham gia thảo luận</h5>
+                            <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
+                               class="btn btn-primary">
+                                <i class="fas fa-sign-in-alt me-1"></i>Đăng nhập
+                            </a>
+                        </div>
+                    }
+
+                    <!-- Comments List -->
+                    <div id="commentsList">
+                        <div class="text-center py-4" id="commentsLoading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Đang tải...</span>
+                            </div>
+                            <p class="text-muted mt-2">Đang tải bình luận...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="sticky-top" style="top: 100px;">
+                <!-- Purchase Card -->
+                <div class="card mb-4" data-aos="fade-left">
+                    <div class="card-body text-center">
+                        <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title"
+                             class="img-fluid rounded mb-3">
+
+                        <div class="mb-3">
+                            @if (Model.Course.Price == 0)
+                            {
+                                <h2 class="text-success fw-bold">Miổn phí</h2>
+                            }
+                            else
+                            {
+                                <h2 class="text-primary fw-bold">@Model.Course.Price.ToString("N0") VNĐ</h2>
+                            }
+                        </div>
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            @if (Model.IsEnrolled)
+                            {
+                                <a href="@Url.Action("MyCourses", "User")"
+                                   class="btn btn-success btn-lg w-100 mb-3">
+                                    <i class="fas fa-play me-2"></i>Tiếp tục học
+                                </a>
+                                <a href="@Url.Action("Dashboard", "User")"
+                                   class="btn btn-outline-primary w-100">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Xem tiến độ
+                                </a>
+                            }
+                            else
+                            {
+                                <div class="d-grid gap-2">
+                                    @if (Model.Course.Price == 0)
+                                    {
+                                        <button type="button" class="btn btn-success btn-lg w-100"
+                                                onclick="enrollCourse(@Model.Course.Id)">
+                                            <i class="fas fa-download me-2"></i>Đăng ký miổn phí
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <a href="@Url.Action("Checkout", "Enrollment", new { id = Model.Course.Id })"
+                                           class="btn btn-primary btn-lg w-100 mb-2">
+                                            <i class="fas fa-shopping-cart me-2"></i>Đăng ký khóa học
+                                        </a>
+                                        <small class="text-muted text-center d-block">
+                                            <i class="fas fa-shield-alt me-1"></i>Thanh toán an toàn & bảo mật
+                                        </small>
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="d-grid gap-2">
+                                <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
+                                   class="btn btn-primary btn-lg">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập đă mua
+                                </a>
+                                <a href="/Identity/Account/Register" class="btn btn-outline-primary">
+                                    <i class="fas fa-user-plus me-2"></i>Đăng ký tài khoản
+                                </a>
+                            </div>
+                        }
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>Đảm bảo hoàn tiền 30 ngày
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Info -->
+                <div class="card mb-4" data-aos="fade-left" data-aos-delay="100">
+                    <div class="card-header">
+                        <h5 class="mb-0">Thông tin khóa học</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6 mb-3">
+                                <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                                <div><strong>@Model.Course.Chapters.Count()</strong></div>
+                                <small class="text-muted">Chương</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fas fa-play-circle fa-2x text-success mb-2"></i>
+                                <div><strong>Đang cập nhật</strong></div>
+                                <small class="text-muted">Bài học</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                                <div><strong>@(Model.Course.Duration?.ToString(@"hh\:mm") ?? "N/A")</strong></div>
+                                <small class="text-muted">Thời lượng</small>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <i class="fas fa-certificate fa-2x text-info mb-2"></i>
+                                <div><strong>Có</strong></div>
+                                <small class="text-muted">Chứng chệ</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Related Courses -->
+                @if (Model.RelatedCourses.Any())
+                {
+                    <div class="card" data-aos="fade-left" data-aos-delay="200">
+                        <div class="card-header">
+                            <h5 class="mb-0">Khóa học liên quan</h5>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var relatedCourse in Model.RelatedCourses.Where(c => c.Id != Model.Course.Id).Take(3))
+                            {
+                                <div class="d-flex mb-3">
+                                    <img src="@relatedCourse.Thumbnail" alt="@relatedCourse.Title"
+                                         class="rounded me-3" style="width: 60px; height: 40px; object-fit: cover;">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">
+                                            <a href="@Url.Action("CourseDetail", "Home", new { id = relatedCourse.Id })"
+                                               class="text-decoration-none">@relatedCourse.Title</a>
+                                        </h6>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">@relatedCourse.Enrollments.Count() học viên</small>
+                                            @if (relatedCourse.Price == 0)
+                                            {
+                                                <span class="badge bg-success">Miổn phí</span>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-primary fw-bold">@relatedCourse.Price.ToString("N0") VNĐ</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .course-description {
+        line-height: 1.8;
+    }
+
+    .course-description p {
+        margin-bottom: 1rem;
+    }
+
+    .review-item:last-child {
+        border-bottom: none !important;
+    }
+
+    .sticky-top {
+        z-index: 1020;
+    }
+
+    /* Comment Styles */
+    .comment-item {
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0;
+    }
+
+    .comment-item:last-child {
+        border-bottom: none;
+    }
+
+    .comment-content {
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .comment-reply {
+        margin-left: 3rem;
+        border-left: 3px solid #dee2e6;
+        padding-left: 1rem;
+    }
+
+    .comment-actions {
+        font-size: 0.875rem;
+    }
+
+    .comment-actions button {
+        background: none;
+        border: none;
+        color: #6c757d;
+        padding: 0.25rem 0.5rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .comment-actions button:hover {
+        color: #495057;
+    }
+
+    .reply-form {
+        margin-top: 0.5rem;
+        padding: 0.75rem;
+        background-color: #f8f9fa;
+        border-radius: 0.5rem;
+        display: none;
+    }
+
+    .comment-form textarea:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    .comment-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .no-comments {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
+    }
+</style>
+
+<script>
+    function enrollCourse(courseId) {
+        if (!courseId) {
+            showToast('Lỗi: Không tìm thấy thông tin khóa học!', 'error');
+            return;
+        }
+
+        // Hiăn thị loading
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+        button.disabled = true;
+
+        // Gọi API đăng ký khóa học
+        fetch('@Url.Action("ProcessEnrollment", "Enrollment")', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: `courseId=${courseId}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                if (data.redirectUrl) {
+                    setTimeout(() => {
+                        window.location.href = data.redirectUrl;
+                    }, 1500);
+                } else {
+                    // Reload page đă cập nhật trạng thái
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                }
+            } else {
+                showToast(data.message, 'error');
+                button.innerHTML = originalText;
+                button.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Có lỗi xảy ra, vui lòng thử lại!', 'error');
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+
+    function showToast(message, type) {
+        const toast = document.createElement('div');
+        toast.className = `alert alert-${type === 'success' ? 'success' : type === 'info' ? 'info' : 'danger'} position-fixed`;
+        toast.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+        toast.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'info' ? 'info-circle' : 'exclamation-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close float-end" onclick="this.parentElement.remove()"></button>
+        `;
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            if (toast.parentElement) {
+                toast.remove();
+            }
+        }, 5000);
+    }
+
+    // Comment functionality
+    const courseId = @Model.Course.Id;
+    let currentUser = @(User.Identity!.IsAuthenticated ? "true" : "false");
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add CSRF token
+        if (!document.querySelector('input[name="__RequestVerificationToken"]')) {
+            const form = document.createElement('form');
+            form.style.display = 'none';
+            form.innerHTML = '@Html.AntiForgeryToken()';
+            document.body.appendChild(form);
+        }
+
+        // Load comments
+        if (currentUser) {
+            loadComments();
+            setupCommentForm();
+        }
+    });
+
+    function loadComments() {
+        fetch(`/Comment/GetComments?courseId=${courseId}`)
+            .then(response => response.json())
+            .then(data => {
+                const loadingDiv = document.getElementById('commentsLoading');
+                const commentsList = document.getElementById('commentsList');
+
+                if (loadingDiv) {
+                    loadingDiv.style.display = 'none';
+                }
+
+                if (data.success) {
+                    displayComments(data.comments);
+                } else {
+                    commentsList.innerHTML = '<div class="alert alert-warning">Không thă tải bình luận</div>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading comments:', error);
+                document.getElementById('commentsList').innerHTML =
+                    '<div class="alert alert-danger">Có lỗi xảy ra khi tải bình luận</div>';
+            });
+    }
+
+    function displayComments(comments) {
+        const commentsList = document.getElementById('commentsList');
+
+        if (comments.length === 0) {
+            commentsList.innerHTML = `
+                <div class="no-comments">
+                    <i class="fas fa-comments fa-3x mb-3"></i>
+                    <h5>Chưa có bình luận nào</h5>
+                    <p>Hãy là người đầu tiên bình luận về khóa học này!</p>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        comments.forEach(comment => {
+            html += renderComment(comment);
+        });
+
+        commentsList.innerHTML = html;
+    }
+
+    function renderComment(comment, isReply = false) {
+        const timeAgo = getTimeAgo(new Date(comment.createdAt));
+        const replyClass = isReply ? 'comment-reply' : '';
+
+        let html = `
+            <div class="comment-item ${replyClass}" data-comment-id="${comment.id}">
+                <div class="d-flex">
+                    <div class="flex-grow-1">
+                        <div class="comment-content">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0">${comment.userName}</h6>
+                                <span class="comment-time">${timeAgo}</span>
+                            </div>
+                            <p class="mb-0">${comment.content}</p>
+                        </div>
+                        <div class="comment-actions">
+                            ${!isReply ? `<button onclick="showReplyForm(${comment.id})">
+                                <i class="fas fa-reply me-1"></i>Trả lời
+                            </button>` : ''}
+                            ${comment.userId && comment.userId === getCurrentUserId() ? `
+                                <button onclick="deleteComment(${comment.id})" class="text-danger">
+                                    <i class="fas fa-trash me-1"></i>Xóa
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div id="replyForm${comment.id}" class="reply-form"></div>
+                    </div>
+                </div>
+        `;
+
+        // Add replies
+        if (comment.replies && comment.replies.length > 0) {
+            comment.replies.forEach(reply => {
+                html += renderComment(reply, true);
+            });
+        }
+
+        html += '</div>';
+        return html;
+    }
+
+    function setupCommentForm() {
+        const form = document.getElementById('commentForm');
+        const textarea = document.getElementById('commentContent');
+        const charCount = document.getElementById('charCount');
+        const submitBtn = document.getElementById('submitComment');
+
+        // Character counter
+        textarea.addEventListener('input', function() {
+            const count = this.value.length;
+            charCount.textContent = count;
+
+            if (count > 2000) {
+                charCount.style.color = '#dc3545';
+            } else {
+                charCount.style.color = '#6c757d';
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const content = textarea.value.trim();
+            if (!content) {
+                showToast('Vui lòng nhập nội dung bình luận', 'error');
+                return;
+            }
+
+            if (content.length > 2000) {
+                showToast('Nội dung bình luận không được vượt quá 2000 ký tự', 'error');
+                return;
+            }
+
+            postComment(content);
+        });
+    }
+
+    function postComment(content, parentCommentId = null) {
+        const submitBtn = document.getElementById('submitComment');
+        const originalText = submitBtn.innerHTML;
+
+        // Show loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang đăng...';
+        submitBtn.disabled = true;
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch('/Comment/PostComment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': token
+            },
+            body: JSON.stringify({
+                content: content,
+                courseId: courseId,
+                parentCommentId: parentCommentId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+
+                // Clear form
+                document.getElementById('commentContent').value = '';
+                document.getElementById('charCount').textContent = '0';
+
+                // Reload comments
+                loadComments();
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error posting comment:', error);
+            showToast('Có lỗi xảy ra khi đăng bình luận', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+    }
+
+    function showReplyForm(commentId) {
+        // Hide all other reply forms
+        document.querySelectorAll('.reply-form').forEach(form => {
+            form.style.display = 'none';
+            form.innerHTML = '';
+        });
+
+        const replyFormDiv = document.getElementById(`replyForm${commentId}`);
+        replyFormDiv.style.display = 'block';
+        replyFormDiv.innerHTML = `
+            <div class="d-flex">
+                <div class="flex-grow-1">
+                    <textarea id="replyContent${commentId}" class="form-control mb-2"
+                            placeholder="Viết phản hôi..." rows="2" maxlength="2000"></textarea>
+                    <div class="d-flex justify-content-between">
+                        <small class="text-muted">
+                            <span id="replyCharCount${commentId}">0</span>/2000 ký tự
+                        </small>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-secondary me-2"
+                                    onclick="hideReplyForm(${commentId})">Hủy</button>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                    onclick="submitReply(${commentId})">
+                                <i class="fas fa-paper-plane me-1"></i>Trả lời
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Setup character counter for reply
+        const replyTextarea = document.getElementById(`replyContent${commentId}`);
+        const replyCharCount = document.getElementById(`replyCharCount${commentId}`);
+
+        replyTextarea.addEventListener('input', function() {
+            const count = this.value.length;
+            replyCharCount.textContent = count;
+
+            if (count > 2000) {
+                replyCharCount.style.color = '#dc3545';
+            } else {
+                replyCharCount.style.color = '#6c757d';
+            }
+        });
+
+        replyTextarea.focus();
+    }
+
+    function hideReplyForm(commentId) {
+        const replyFormDiv = document.getElementById(`replyForm${commentId}`);
+        replyFormDiv.style.display = 'none';
+        replyFormDiv.innerHTML = '';
+    }
+
+    function submitReply(commentId) {
+        const replyTextarea = document.getElementById(`replyContent${commentId}`);
+        const content = replyTextarea.value.trim();
+
+        if (!content) {
+            showToast('Vui lòng nhập nội dung phản hôi', 'error');
+            return;
+        }
+
+        if (content.length > 2000) {
+            showToast('Nội dung phản hôi không được vượt quá 2000 ký tự', 'error');
+            return;
+        }
+
+        postComment(content, commentId);
+        hideReplyForm(commentId);
+    }
+
+    function deleteComment(commentId) {
+        if (!confirm('Bạn có chắc chắn muđn xóa bình luận này?')) {
+            return;
+        }
+
+        const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+        fetch(`/Comment/DeleteComment/${commentId}`, {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': token
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                loadComments();
+            } else {
+                showToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting comment:', error);
+            showToast('Có lỗi xảy ra khi xóa bình luận', 'error');
+        });
+    }
+
+    function getTimeAgo(date) {
+        const now = new Date();
+        const diffInSeconds = Math.floor((now - date) / 1000);
+
+        if (diffInSeconds < 60) {
+            return 'Vừa xong';
+        } else if (diffInSeconds < 3600) {
+            const minutes = Math.floor(diffInSeconds / 60);
+            return `${minutes} phút trươc`;
+        } else if (diffInSeconds < 86400) {
+            const hours = Math.floor(diffInSeconds / 3600);
+            return `${hours} giờ trươc`;
+        } else {
+            const days = Math.floor(diffInSeconds / 86400);
+            return `${days} ngày trươc`;
+        }
+    }
+
+    function getCurrentUserId() {
+        // This is a simplified approach. In a real application, you might want to
+        // pass the current user ID from the server or store it in a more secure way
+        return null; // Will be implemented when we have proper user context
+    }
+</script>
+

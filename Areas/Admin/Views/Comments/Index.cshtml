@@ -1,0 +1,312 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CommentIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý bình luận";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="fas fa-comments text-primary me-2"></i>
+                Quản lý bình luận
+            </h2>
+            <p class="text-muted mb-0">Quản lý và kiăm duyệt bình luận của học viên</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Statistics")" class="btn btn-info">
+                <i class="fas fa-chart-bar me-1"></i>
+                Thđng kê
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="searchTerm" value="@Model.SearchTerm"
+                           class="form-control" placeholder="Tìm theo nội dung...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Bài học</label>
+                    <select name="lessonId" class="form-select">
+                        <option value="">Tất cả bài học</option>
+                        @foreach (var lesson in Model.AvailableLessons)
+                        {
+                            <option value="@lesson.Id" selected="@(Model.LessonId == lesson.Id)">
+                                @lesson.Title
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Người dùng</label>
+                    <select name="userId" class="form-select">
+                        <option value="">Tất cả người dùng</option>
+                        @foreach (var user in Model.AvailableUsers)
+                        {
+                            <option value="@user.Id" selected="@(Model.UserId == user.Id)">
+                                @user.UserName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="active" selected="@(Model.Status == "active")">Đang hiăn thị</option>
+                        <option value="deleted" selected="@(Model.Status == "deleted")">Đã xóa</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>
+                            Tìm kiếm
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>
+                            Xóa bộ lọc
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Tìm thấy <strong>@Model.TotalItems</strong> bình luận
+                @if (!string.IsNullOrEmpty(Model.SearchTerm))
+                {
+                    <span>vơi từ khóa "<strong>@Model.SearchTerm</strong>"</span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Comments Table -->
+    <div class="card">
+        <div class="card-body">
+            @if (Model.Comments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nội dung</th>
+                                <th>Bài học</th>
+                                <th>Người dùng</th>
+                                <th>Loại</th>
+                                <th>Phản hôi</th>
+                                <th>Ngày tạo</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var comment in Model.Comments)
+                            {
+                                <tr class="@(comment.IsDelete ? "table-secondary" : "")">
+                                    <td>
+                                        <span class="badge bg-secondary">#@comment.Id</span>
+                                    </td>
+                                    <td>
+                                        <div class="comment-content">
+                                            @if (comment.IsReply)
+                                            {
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-reply me-1"></i>
+                                                    Phản hôi: @comment.ParentCommentContent.Substring(0, Math.Min(50, comment.ParentCommentContent.Length))...
+                                                </small>
+                                            }
+                                            <div class="@(comment.IsDelete ? "text-decoration-line-through text-muted" : "")">
+                                                @(comment.Content.Length > 100 ? comment.Content.Substring(0, 100) + "..." : comment.Content)
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@comment.LessonTitle</span>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>@comment.UserName</strong>
+                                            <br>
+                                            <small class="text-muted">@comment.UserEmail</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (comment.IsReply)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-reply me-1"></i>
+                                                Phản hôi
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-comment me-1"></i>
+                                                Bình luận
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (comment.RepliesCount > 0)
+                                        {
+                                            <span class="badge bg-success">@comment.RepliesCount phản hôi</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không có</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div>
+                                            @comment.CreatedAt.ToString("dd/MM/yyyy")
+                                            <br>
+                                            <small class="text-muted">@comment.CreatedAt.ToString("HH:mm")</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (comment.IsDelete)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-trash me-1"></i>
+                                                Đã xóa
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check me-1"></i>
+                                                Hiăn thị
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("Details", new { id = comment.Id })"
+                                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (!comment.IsDelete)
+                                            {
+                                                <a href="@Url.Action("Edit", new { id = comment.Id })"
+                                                   class="btn btn-sm btn-outline-warning" title="Chệnh sửa">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="@Url.Action("Delete", new { id = comment.Id })"
+                                                   class="btn btn-sm btn-outline-danger" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-success restore-btn"
+                                                        data-id="@comment.Id" title="Khôi phục">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Comments pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new {
+                                        page = Model.CurrentPage - 1,
+                                        searchTerm = Model.SearchTerm,
+                                        lessonId = Model.LessonId,
+                                        userId = Model.UserId,
+                                        status = Model.Status
+                                    })">Trươc</a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new {
+                                        page = i,
+                                        searchTerm = Model.SearchTerm,
+                                        lessonId = Model.LessonId,
+                                        userId = Model.UserId,
+                                        status = Model.Status
+                                    })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new {
+                                        page = Model.CurrentPage + 1,
+                                        searchTerm = Model.SearchTerm,
+                                        lessonId = Model.LessonId,
+                                        userId = Model.UserId,
+                                        status = Model.Status
+                                    })">Sau</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không tìm thấy bình luận nào</h5>
+                    <p class="text-muted">Thử thay đổi bộ lọc đă xem kết quả khác</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle restore button click
+            $('.restore-btn').click(function() {
+                var commentId = $(this).data('id');
+                var button = $(this);
+
+                if (confirm('Bạn có chắc chắn muđn khôi phục bình luận này?')) {
+                    $.post('@Url.Action("Restore")', { id: commentId })
+                        .done(function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Có lỗi xảy ra khi khôi phục bình luận');
+                        });
+                }
+            });
+        });
+    </script>
+}

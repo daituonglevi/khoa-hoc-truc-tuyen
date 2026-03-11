@@ -1,0 +1,396 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.ChapterDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết Chương";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-list-ol text-primary"></i>
+                Chi tiết Chương
+            </h1>
+            <p class="admin-page-subtitle">Thông tin chi tiết chương "@Model.Name"</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Chệnh sửa
+            </a>
+            <button type="button" class="btn btn-@(Model.IsActive ? "warning" : "success")" 
+                    onclick="toggleStatus(@Model.Id, '@Model.Status')">
+                <i class="fas fa-@(Model.IsActive ? "pause" : "play")"></i> 
+                @(Model.IsActive ? "Vô hiệu hóa" : "Kích hoạt")
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Chapter Information -->
+    <div class="col-lg-8">
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Thông tin Chương
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Chương:</label>
+                            <span class="detail-value">#@Model.Id</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Trạng thái:</label>
+                            <span class="badge bg-@(Model.IsActive ? "success" : "secondary") fs-6">
+                                @Model.Status
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Tên chương:</label>
+                            <span class="detail-value">@Model.Name</span>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <label>Mô tả:</label>
+                                <div class="detail-value">
+                                    @Html.Raw(Model.Description)
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-book text-success"></i>
+                    Thông tin Khóa học
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Khóa học:</label>
+                            <span class="detail-value">#@Model.CourseId</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Giá khóa học:</label>
+                            <span class="detail-value text-success">@Model.CoursePrice.ToString("N0") VNĐ</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Tên khóa học:</label>
+                            <span class="detail-value">@Model.CourseName</span>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.CourseDescription))
+                    {
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <label>Mô tả khóa học:</label>
+                                <div class="detail-value">
+                                    @Html.Raw(Model.CourseDescription)
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Lessons -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-play-circle text-info"></i>
+                    Bài học trong chương (@Model.TotalLessons)
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Lessons.Any())
+                {
+                    <div class="lessons-list">
+                        @foreach (var lesson in Model.Lessons)
+                        {
+                            <div class="lesson-item">
+                                <div class="lesson-icon">
+                                    <i class="fas fa-@(lesson.Type == "Video" ? "play" : lesson.Type == "Quiz" ? "question-circle" : "file-alt")"></i>
+                                </div>
+                                <div class="lesson-content">
+                                    <div class="lesson-title">@lesson.Title</div>
+                                    <div class="lesson-meta">
+                                        <span class="badge bg-@(lesson.IsActive ? "success" : "secondary")">@lesson.Status</span>
+                                        <span class="text-muted">@lesson.Type</span>
+                                        @if (lesson.Duration > 0)
+                                        {
+                                            <span class="text-muted">@lesson.Duration phút</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="lesson-actions">
+                                    <a href="/Admin/Lessons/Details/@lesson.Id" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-play-circle fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Chưa có bài học nào</h6>
+                        <p class="text-muted">Chương này chưa có bài học nào được tạo</p>
+                        <a href="/Admin/Lessons/Create?chapterId=@Model.Id" class="btn btn-outline-primary">
+                            <i class="fas fa-plus"></i> Thêm bài học
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Statistics -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie text-primary"></i>
+                    Thđng kê
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="stat-item">
+                    <div class="stat-number text-info">@Model.TotalLessons</div>
+                    <div class="stat-label">Tổng bài học</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-success">@Model.ActiveLessons</div>
+                    <div class="stat-label">Bài học hoạt động</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-warning">@(Model.TotalLessons - Model.ActiveLessons)</div>
+                    <div class="stat-label">Bài học không hoạt động</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-info"></i>
+                    Lịch sử
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>Tạo chương</h6>
+                            <p class="text-muted mb-1">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                            <small class="text-info">@Model.CreatedByName</small>
+                        </div>
+                    </div>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Cập nhật gần nhất</h6>
+                                <p class="text-muted mb-1">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                                <small class="text-success">@Model.UpdatedByName</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-tools text-secondary"></i>
+                    Thao tác nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Chệnh sửa chương
+                    </a>
+                    <button type="button" class="btn btn-outline-@(Model.IsActive ? "warning" : "success")" 
+                            onclick="toggleStatus(@Model.Id, '@Model.Status')">
+                        <i class="fas fa-@(Model.IsActive ? "pause" : "play")"></i> 
+                        @(Model.IsActive ? "Vô hiệu hóa" : "Kích hoạt")
+                    </button>
+                    <a href="/Admin/Lessons/Create?chapterId=@Model.Id" class="btn btn-outline-info">
+                        <i class="fas fa-plus"></i> Thêm bài học
+                    </a>
+                    <a asp-controller="Courses" asp-action="Details" asp-route-id="@Model.CourseId" class="btn btn-outline-success">
+                        <i class="fas fa-book"></i> Xem khóa học
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Xóa chương
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-item {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.timeline-content p {
+    font-size: 0.8rem;
+}
+
+.lessons-list {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.lesson-item {
+    display: flex;
+    align-items-center;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+}
+
+.lesson-icon {
+    margin-right: 1rem;
+    color: #6c757d;
+}
+
+.lesson-content {
+    flex: 1;
+}
+
+.lesson-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.lesson-meta {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.lesson-meta .badge {
+    font-size: 0.7rem;
+}
+
+.lesson-actions {
+    margin-left: 1rem;
+}
+</style>
+
+<script>
+function toggleStatus(chapterId, currentStatus) {
+    const action = currentStatus === 'Active' ? 'vô hiệu hóa' : 'kích hoạt';
+    
+    if (confirm(`Bạn có chắc chắn muđn ${action} chương này?`)) {
+        fetch(`/Admin/Chapters/ToggleStatus/${chapterId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success(data.message);
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                toastr.error(data.message);
+            }
+        })
+        .catch(error => {
+            toastr.error('Có lỗi xảy ra khi thay đổi trạng thái');
+        });
+    }
+}
+</script>

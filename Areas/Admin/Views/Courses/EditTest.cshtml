@@ -1,0 +1,151 @@
+@model Course
+@{
+    ViewData["Title"] = "Test Chệnh sửa Course";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Test Chệnh sửa Course: @Model.Title</h3>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+
+                    <form asp-action="EditWithImage" method="post" enctype="multipart/form-data">
+                        <input asp-for="Id" type="hidden" />
+                        <input asp-for="CreatedAt" type="hidden" />
+                        <input asp-for="CreateBy" type="hidden" />
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Title" class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+                            <input asp-for="Title" class="form-control" placeholder="Nhập tên khóa học" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="CategoryId" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                            <select asp-for="CategoryId" class="form-control" required>
+                                <option value="">-- Chọn danh mục --</option>
+                                @if (ViewBag.Categories != null)
+                                {
+                                    @foreach (var category in (List<Category>)ViewBag.Categories)
+                                    {
+                                        <option value="@category.Id" selected="@(Model.CategoryId == category.Id)">@category.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Price" class="form-label">Giá (VNĐ) <span class="text-danger">*</span></label>
+                            <input asp-for="Price" type="number" class="form-control" placeholder="0" min="0" required />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Nhập mô tả khóa học"></textarea>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label class="form-label">Hình ảnh đại diện</label>
+                            
+                            <!-- Hiăn thị hình ảnh hiện tại -->
+                            <div class="mb-2">
+                                <img src="@Model.Thumbnail" alt="Current thumbnail" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                                <div class="form-text">Hình ảnh hiện tại</div>
+                            </div>
+                            
+                            <!-- Upload file mơi -->
+                            <input name="ThumbnailFile" id="ThumbnailFile" type="file" class="form-control mb-2" accept="image/*" />
+                            <div class="form-text">Chọn file hình ảnh mơi (JPG, PNG, GIF). Tđi đa 5MB.</div>
+                            
+                            <!-- Preview hình ảnh mơi -->
+                            <div id="imagePreview" class="mt-2" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                                <div class="form-text">Hình ảnh mơi sẽ thay thế</div>
+                            </div>
+                            
+                            <!-- Hoặc nhập URL -->
+                            <label asp-for="Thumbnail" class="form-label mt-2">Hoặc nhập URL hình ảnh</label>
+                            <input asp-for="Thumbnail" class="form-control" placeholder="https://example.com/image.jpg">
+                            <div class="form-text">Nếu không upload file, có thă thay đổi URL hình ảnh</div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="PreviewVideo" class="form-label">URL Video Preview</label>
+                            <input asp-for="PreviewVideo" class="form-control" placeholder="https://youtube.com/watch?v=..." />
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Status" class="form-label">Trạng thái</label>
+                            <select asp-for="Status" class="form-control">
+                                <option value="Draft" selected="@(Model.Status == "Draft")">Nháp</option>
+                                <option value="Published" selected="@(Model.Status == "Published")">Đã xuất bản</option>
+                                <option value="Archived" selected="@(Model.Status == "Archived")">Lưu trữ</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Cập nhật khóa học
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview hình ảnh khi chọn file
+        document.getElementById('ThumbnailFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Kiăm tra file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Vui lòng chọn file hình ảnh!');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                // Kiăm tra file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File hình ảnh không được vượt quá 5MB!');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                // Hiăn thị preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+    });
+</script>

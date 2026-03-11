@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "Test Email Configuration";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-envelope-open-text me-2"></i>
+                        Test Email Configuration
+                    </h4>
+                </div>
+                <div class="card-body">
+                    
+                    @if (!string.IsNullOrEmpty(ViewBag.Success))
+                    {
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            @ViewBag.Success
+                        </div>
+                    }
+                    
+                    @if (!string.IsNullOrEmpty(ViewBag.Error))
+                    {
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            @ViewBag.Error
+                        </div>
+                    }
+
+                    <!-- Email Settings Display -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">Cấu hình Email hiện tại</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>SMTP Server:</strong> @ViewBag.EmailSettings.SmtpServer</p>
+                                    <p><strong>Port:</strong> @ViewBag.EmailSettings.SmtpPort</p>
+                                    <p><strong>Sender Email:</strong> @ViewBag.EmailSettings.SenderEmail</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Sender Name:</strong> @ViewBag.EmailSettings.SenderName</p>
+                                    <p><strong>Username:</strong> @ViewBag.EmailSettings.Username</p>
+                                    <p><strong>Password:</strong> @(string.IsNullOrEmpty(ViewBag.EmailSettings.Password) ? "�O Chưa cấu hình" : "�o. Đã cấu hình")</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Test Form -->
+                    <form method="post" action="/TestEmail/Send">
+                        <div class="mb-3">
+                            <label for="testEmail" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>
+                                Email đă test
+                            </label>
+                            <input type="email" class="form-control" id="testEmail" name="testEmail" 
+                                   placeholder="Nhập email đă nhận email test" required>
+                            <div class="form-text">
+                                Nhập email của bạn đă test xem có nhận được email không
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-1"></i>
+                                Gửi Email Test
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Troubleshooting -->
+                    <div class="mt-4">
+                        <h5>ở"� Troubleshooting</h5>
+                        <div class="alert alert-warning">
+                            <h6>Nếu không nhận được email, hãy kiăm tra:</h6>
+                            <ul class="mb-0">
+                                <li>�o. Gmail đã bật 2FA (xác thực 2 bươc)</li>
+                                <li>�o. Đã tạo App Password (không phải mật khẩu Gmail thường)</li>
+                                <li>�o. App Password đã được copy chính xác vào appsettings.json</li>
+                                <li>�o. Email và Username trong appsettings.json giđng nhau</li>
+                                <li>�o. Kiăm tra thư mục Spam/Junk</li>
+                                <li>�o. Kiăm tra logs trong console đă xem lỗi cụ thă</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="/" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-1"></i>
+                            Về trang chủ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

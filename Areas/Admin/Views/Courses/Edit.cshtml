@@ -1,0 +1,358 @@
+@model Course
+@{
+    ViewData["Title"] = "Chệnh sửa Course";
+}
+
+<div class="admin-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-title">
+                <i class="fas fa-edit me-2"></i>
+                Chệnh sửa Course
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home", new { area = "Admin" })">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Courses", new { area = "Admin" })">Quản lý Courses</a></li>
+                    <li class="breadcrumb-item active">Chệnh sửa</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-info me-2">
+                <i class="fas fa-eye me-2"></i>Xem chi tiết
+            </a>
+            <a href="@Url.Action("Index", "Courses", new { area = "Admin" })" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data" class="admin-card">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông tin khóa học
+                </h5>
+            </div>
+            <div class="card-body">
+                <input asp-for="Id" type="hidden" />
+                <input asp-for="CreatedAt" type="hidden" />
+                <input asp-for="CreateBy" type="hidden" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row">
+                    <div class="col-md-8 mb-3">
+                        <label asp-for="Title" class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+                        <input asp-for="Title" class="form-control" placeholder="Nhập tên khóa học...">
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="CategoryId" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                        <select asp-for="CategoryId" class="form-select">
+                            <option value="">Chọn danh mục</option>
+                            @foreach (var category in (List<Category>)ViewBag.Categories)
+                            {
+                                @if (Model.CategoryId == category.Id)
+                                {
+                                    <option value="@category.Id" selected>@category.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            }
+                        </select>
+                        <span asp-validation-for="CategoryId" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Description" class="form-control" rows="4" placeholder="Mô tả về khóa học..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Price" class="form-label">Giá (VNĐ) <span class="text-danger">*</span></label>
+                        <input asp-for="Price" type="number" class="form-control" min="0" step="1000" placeholder="0">
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="Duration" class="form-label">Thời lượng (phút)</label>
+                        <input asp-for="Duration" type="number" class="form-control" min="0" placeholder="0">
+                        <span asp-validation-for="Duration" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label asp-for="LimitDay" class="form-label">Thời hạn truy cập (ngày)</label>
+                        <input asp-for="LimitDay" type="number" class="form-control" min="0" placeholder="Không giơi hạn">
+                        <span asp-validation-for="LimitDay" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Hình ảnh đại diện</label>
+
+                    <!-- Hiăn thị hình ảnh hiện tại -->
+                    <div class="mb-2">
+                        <img src="@Model.Thumbnail" alt="Current thumbnail" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                        <div class="form-text">Hình ảnh hiện tại</div>
+                    </div>
+
+                    <!-- Upload file mơi -->
+                    <input name="ThumbnailFile" id="ThumbnailFile" type="file" class="form-control mb-2" accept="image/*" />
+                    <div class="form-text">Chọn file hình ảnh mơi (JPG, PNG, GIF). Tđi đa 5MB.</div>
+
+                    <!-- Preview hình ảnh mơi -->
+                    <div id="imagePreview" class="mt-2" style="display: none;">
+                        <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 150px;">
+                        <div class="form-text">Hình ảnh mơi sẽ thay thế</div>
+                    </div>
+
+                    <!-- Hoặc nhập URL -->
+                    <label asp-for="Thumbnail" class="form-label mt-2">Hoặc nhập URL hình ảnh</label>
+                    <input asp-for="Thumbnail" class="form-control" placeholder="https://example.com/image.jpg">
+                    <span asp-validation-for="Thumbnail" class="text-danger"></span>
+                    <div class="form-text">Nếu không upload file, có thă thay đổi URL hình ảnh</div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="PreviewVideo" class="form-label">Video giơi thiệu</label>
+                    <input asp-for="PreviewVideo" class="form-control" placeholder="URL video YouTube hoặc Vimeo...">
+                    <span asp-validation-for="PreviewVideo" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Draft">Nháp</option>
+                        <option value="Published">Đã xuất bản</option>
+                        <option value="Archived">Lưu trữ</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent border-0 py-3">
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Cập nhật khóa học
+                    </button>
+                    <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-info">
+                        <i class="fas fa-eye me-2"></i>Xem chi tiết
+                    </a>
+                    <a href="@Url.Action("Index")" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>Hủy
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Current Course Info -->
+        <div class="admin-card">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info me-2"></i>
+                    Thông tin hiện tại
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="course-info">
+                    <div class="course-thumbnail mb-3">
+                        <img src="@Model.Thumbnail" alt="@Model.Title"
+                             class="img-fluid rounded"
+                             style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <h5 class="mb-2">@Model.Title</h5>
+                    <p class="text-muted mb-3">@Model.Description</p>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <span class="fw-bold text-success fs-5">@Model.Price.ToString("N0") VNĐ</span>
+                        <span class="text-muted">@Model.Duration phút</span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Trạng thái:</small>
+                        <span class="badge bg-@(Model.Status == "Published" ? "success" : Model.Status == "Draft" ? "warning" : "secondary") ms-2">
+                            @(Model.Status == "Published" ? "Đã xuất bản" : Model.Status == "Draft" ? "Nháp" : "Lưu trữ")
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <small class="text-muted">Ngày tạo:</small>
+                        <span class="ms-2">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                    </div>
+                    @if (Model.UpdatedAt.HasValue)
+                    {
+                        <div>
+                            <small class="text-muted">Cập nhật lần cuđi:</small>
+                            <span class="ms-2">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-card mt-4">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao tác nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    @if (Model.Status == "Draft")
+                    {
+                        <button class="btn btn-success" onclick="updateCourseStatus(@Model.Id, 'Published')">
+                            <i class="fas fa-check-circle me-2"></i>Xuất bản
+                        </button>
+                    }
+                    else if (Model.Status == "Published")
+                    {
+                        <button class="btn btn-warning" onclick="updateCourseStatus(@Model.Id, 'Draft')">
+                            <i class="fas fa-edit me-2"></i>Chuyăn về nháp
+                        </button>
+                    }
+
+                    <button class="btn btn-secondary" onclick="updateCourseStatus(@Model.Id, 'Archived')">
+                        <i class="fas fa-archive me-2"></i>Lưu trữ
+                    </button>
+
+                    <hr>
+
+                    <a href="@Url.Action("Details", new { id = Model.Id })" class="btn btn-info">
+                        <i class="fas fa-eye me-2"></i>Xem chi tiết
+                    </a>
+
+                    <button class="btn btn-outline-danger" onclick="deleteCourse(@Model.Id)">
+                        <i class="fas fa-trash me-2"></i>Xóa khóa học
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Preview hình ảnh khi chọn file
+        document.getElementById('ThumbnailFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Kiăm tra file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Vui lòng chọn file hình ảnh!');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                // Kiăm tra file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('File hình ảnh không được vượt quá 5MB!');
+                    this.value = '';
+                    document.getElementById('imagePreview').style.display = 'none';
+                    return;
+                }
+
+                // Hiăn thị preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                document.getElementById('imagePreview').style.display = 'none';
+            }
+        });
+
+        function updateCourseStatus(courseId, status) {
+            if (confirm(`Bạn có chắc chắn muđn thay đổi trạng thái course?`)) {
+                const formData = new FormData();
+                formData.append('id', courseId);
+                formData.append('status', status);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                fetch('@Url.Action("UpdateStatus")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+
+        function deleteCourse(courseId) {
+            if (confirm('Bạn có chắc chắn muđn xóa course này? Hành động này không thă hoàn tác!')) {
+                const formData = new FormData();
+                formData.append('id', courseId);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                fetch('@Url.Action("Delete")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => window.location.href = '@Url.Action("Index")', 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+
+        // Form validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const title = document.getElementById('Title').value.trim();
+            const categoryId = document.getElementById('CategoryId').value;
+            const price = document.getElementById('Price').value;
+
+            if (!title) {
+                e.preventDefault();
+                alert('Vui lòng nhập tên khóa học');
+                document.getElementById('Title').focus();
+                return;
+            }
+
+            if (!categoryId) {
+                e.preventDefault();
+                alert('Vui lòng chọn danh mục');
+                document.getElementById('CategoryId').focus();
+                return;
+            }
+
+            if (!price || price < 0) {
+                e.preventDefault();
+                alert('Vui lòng nhập giá hợp lệ');
+                document.getElementById('Price').focus();
+                return;
+            }
+        });
+    });
+</script>
+}

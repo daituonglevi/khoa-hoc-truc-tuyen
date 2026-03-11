@@ -1,0 +1,334 @@
+@model PromotionDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết khuyến mãi";
+}
+
+<!-- Admin Promotion Details -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-tag me-2"></i>
+            Chi tiết khuyến mãi: <span class="text-primary">@Model.Code</span>
+        </h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="admin-btn admin-btn-primary me-2">
+                <i class="fas fa-edit me-2"></i>
+                Chệnh sửa
+            </a>
+            <a asp-action="Index" class="admin-btn admin-btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Information -->
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin chi tiết</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold text-muted">Mã khuyến mãi:</td>
+                                    <td>
+                                        <span class="badge bg-primary fs-6">@Model.Code</span>
+                                        <button class="btn btn-sm btn-outline-secondary ms-2" onclick="copyToClipboard('@Model.Code')" title="Sao chép mã">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Phần trăm giảm giá:</td>
+                                    <td><span class="h5 text-success">@Model.DiscountPer%</span></td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Khóa học áp dụng:</td>
+                                    <td>
+                                        <div class="fw-bold">@Model.CourseName</div>
+                                        <div class="text-muted small">Giá gđc: @Model.CoursePrice.ToString("N0") VNĐ</div>
+                                        <div class="text-success small">Giá sau giảm: @((Model.CoursePrice - Model.MaxDiscountAmount).ToString("N0")) VNĐ</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Sđ tiền giảm tđi đa:</td>
+                                    <td><span class="text-danger fw-bold">@Model.MaxDiscountAmount.ToString("N0") VNĐ</span></td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="fw-bold text-muted">Trạng thái:</td>
+                                    <td>
+                                        @{
+                                            var statusClass = Model.Status switch
+                                            {
+                                                "Active" => "bg-success",
+                                                "Inactive" => "bg-secondary",
+                                                "Expired" => "bg-danger",
+                                                "Scheduled" => "bg-warning",
+                                                "Used Up" => "bg-dark",
+                                                _ => "bg-secondary"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@Model.Status</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Ngày bắt đầu:</td>
+                                    <td>
+                                        @if (Model.StartDate.HasValue)
+                                        {
+                                            @Model.StartDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Ngay lập tức</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Ngày kết thúc:</td>
+                                    <td>
+                                        @if (Model.EndDate.HasValue)
+                                        {
+                                            @Model.EndDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                            @if (Model.EndDate < DateTime.Now)
+                                            {
+                                                <span class="badge bg-danger ms-2">Đã hết hạn</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Không giơi hạn</span>
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="fw-bold text-muted">Kích hoạt:</td>
+                                    <td>
+                                        @if (Model.IsActive)
+                                        {
+                                            <span class="badge bg-success">Có</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Không</span>
+                                        }
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Statistics -->
+            <div class="admin-card mt-4">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Thđng kê sử dụng
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h3 text-primary mb-1">@Model.CurrentUses</div>
+                                <div class="text-muted small">Đã sử dụng</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h3 text-success mb-1">@Model.RemainingUses</div>
+                                <div class="text-muted small">Còn lại</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 border rounded">
+                                <div class="h3 text-info mb-1">@Model.UsagePercentage%</div>
+                                <div class="text-muted small">Tỷ lệ sử dụng</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold">Tiến độ sử dụng</span>
+                            <span class="text-muted">@Model.CurrentUses / @Model.MaxUses</span>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar progress-bar-striped" 
+                                 role="progressbar" 
+                                 style="width: @Model.UsagePercentage%"
+                                 aria-valuenow="@Model.UsagePercentage" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                @Model.UsagePercentage%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Creation Info -->
+            <div class="admin-card mt-4">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Thông tin tạo/cập nhật
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3">
+                                <div class="fw-bold text-success mb-2">
+                                    <i class="fas fa-plus-circle me-2"></i>
+                                    Thông tin tạo
+                                </div>
+                                <div class="text-muted small">Ngày tạo:</div>
+                                <div class="fw-bold">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                                <div class="text-muted small mt-2">Người tạo:</div>
+                                <div class="fw-bold">Admin ID: @Model.CreateBy</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3">
+                                <div class="fw-bold text-info mb-2">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Thông tin cập nhật
+                                </div>
+                                @if (Model.UpdatedAt.HasValue)
+                                {
+                                    <div class="text-muted small">Ngày cập nhật:</div>
+                                    <div class="fw-bold">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm:ss")</div>
+                                    <div class="text-muted small mt-2">Người cập nhật:</div>
+                                    <div class="fw-bold">Admin ID: @(Model.UpdateBy ?? 0)</div>
+                                }
+                                else
+                                {
+                                    <div class="text-muted">Chưa có cập nhật nào</div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">
+                        <i class="fas fa-bolt me-2"></i>
+                        Thao tác nhanh
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>
+                            Chệnh sửa khuyến mãi
+                        </a>
+                        
+                        <button type="button" class="btn btn-@(Model.IsActive ? "warning" : "success")" 
+                                onclick="toggleStatus(@Model.Id)">
+                            <i class="fas fa-@(Model.IsActive ? "pause" : "play") me-2"></i>
+                            @(Model.IsActive ? "Vô hiệu hóa" : "Kích hoạt")
+                        </button>
+
+                        @if (Model.CurrentUses == 0)
+                        {
+                            <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                                <i class="fas fa-trash me-2"></i>
+                                Xóa khuyến mãi
+                            </a>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-danger" disabled title="Không thă xóa vì đã có người sử dụng">
+                                <i class="fas fa-trash me-2"></i>
+                                Không thă xóa
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promotion Preview -->
+            <div class="admin-card mt-4">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">
+                        <i class="fas fa-eye me-2"></i>
+                        Xem trươc khuyến mãi
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="promotion-preview text-center">
+                        <div class="border rounded p-4 bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div class="text-white">
+                                <div class="h4 mb-2">ởZ? KHUYẾN MăI ĐặC BIệT</div>
+                                <div class="badge bg-warning text-dark fs-6 mb-3">@Model.Code</div>
+                                <div class="h2 mb-2">GIẢM @Model.DiscountPer%</div>
+                                <div class="small opacity-75">Cho khóa học: @Model.CourseName</div>
+                                <div class="mt-3">
+                                    <div class="small">Tiết kiệm đến</div>
+                                    <div class="h5 text-warning">@Model.MaxDiscountAmount.ToString("N0") VNĐ</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 text-muted small">
+                            @if (Model.EndDate.HasValue)
+                            {
+                                <i class="fas fa-clock me-1"></i>
+                                <text>Có hiệu lực đến </text>@Model.EndDate.Value.ToString("dd/MM/yyyy")
+                            }
+                            else
+                            {
+                                <i class="fas fa-infinity me-1"></i>
+                                <text>Không giơi hạn thời gian</text>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                toastr.success('Đã sao chép mã khuyến mãi: ' + text);
+            }, function() {
+                toastr.error('Không thă sao chép mã khuyến mãi');
+            });
+        }
+
+        function toggleStatus(id) {
+            if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái khuyến mãi này?')) {
+                $.post('@Url.Action("ToggleStatus", "Promotions")/' + id, function(response) {
+                    if (response.success) {
+                        toastr.success(response.message);
+                        location.reload();
+                    } else {
+                        toastr.error(response.message);
+                    }
+                }).fail(function() {
+                    toastr.error('Có lỗi xảy ra khi thay đổi trạng thái');
+                });
+            }
+        }
+    </script>
+}

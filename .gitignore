@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+node_modules/
+
+*.user
+*.suo
+*.cache
+*.log
+
+appsettings.Development.json
+appsettings.Local.json
+
+wwwroot/lib/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

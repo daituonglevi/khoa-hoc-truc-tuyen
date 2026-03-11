@@ -1,0 +1,290 @@
+@model PaymentViewModel
+@{
+    ViewData["Title"] = "Thanh toán - " + Model.Course.Title;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Payment Header -->
+            <div class="text-center mb-5">
+                <h2 class="mb-3"><i class="fas fa-credit-card me-2"></i>Thanh toán khóa học</h2>
+                <p class="text-muted">Hoàn tất thanh toán đă bắt đầu học ngay</p>
+            </div>
+
+            <div class="row">
+                <!-- Payment Form -->
+                <div class="col-md-8">
+                    <form asp-action="ProcessPayment" method="post" id="paymentForm">
+                        <input type="hidden" asp-for="CourseId" />
+                        <input type="hidden" asp-for="OriginalPrice" />
+                        <input type="hidden" asp-for="FinalPrice" />
+                        <input type="hidden" asp-for="DiscountAmount" />
+                        <input type="hidden" asp-for="DiscountCode" />
+
+                        <!-- Course Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-book me-2"></i>Thông tin khóa học</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title" 
+                                         class="rounded me-3" style="width: 100px; height: 70px; object-fit: cover;">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-2">@Model.Course.Title</h6>
+                                        <p class="text-muted mb-1">
+                                            <i class="fas fa-tag me-1"></i>@Model.Course.Category.Name
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-clock me-1"></i>
+                                            @(Model.Course.Duration?.ToString(@"hh\:mm") ?? "Đang cập nhật")
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin khách hàng</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" asp-for="UserName" readonly>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" asp-for="UserEmail" readonly>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Phương thức thanh toán</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="payment-option p-3 border rounded">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" asp-for="PaymentMethod" 
+                                                       value="bank_transfer" id="bankTransfer" checked>
+                                                <label class="form-check-label" for="bankTransfer">
+                                                    <i class="fas fa-university me-2 text-primary"></i>
+                                                    <strong>Chuyăn khoản ngân hàng</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted d-block mt-2">
+                                                Thanh toán qua chuyăn khoản ngân hàng
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <div class="payment-option p-3 border rounded">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" asp-for="PaymentMethod" 
+                                                       value="momo" id="momo">
+                                                <label class="form-check-label" for="momo">
+                                                    <i class="fas fa-mobile-alt me-2 text-danger"></i>
+                                                    <strong>Ví MoMo</strong>
+                                                </label>
+                                            </div>
+                                            <small class="text-muted d-block mt-2">
+                                                Thanh toán qua ví điện tử MoMo
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Bank Transfer Instructions -->
+                                <div id="bankInstructions" class="mt-3">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle me-2"></i>Hương dẫn chuyăn khoản:</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Ngân hàng:</strong> Vietcombank</p>
+                                                <p class="mb-1"><strong>Sđ tài khoản:</strong> 1234567890</p>
+                                                <p class="mb-1"><strong>Chủ tài khoản:</strong> WEBSITE BAN KHOA HOC CNTT</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Sđ tiền:</strong> @Model.FinalPrice.ToString("N0") VNĐ</p>
+                                                <p class="mb-1"><strong>Nội dung:</strong> THANHTOAN @Model.Course.Id @User.Identity!.Name</p>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <p class="mb-0 text-warning">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            Sau khi chuyăn khoản, vui lòng nhấn "Xác nhận thanh toán" đă hoàn tất đăng ký.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms and Conditions -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                                    <label class="form-check-label" for="agreeTerms">
+                                        Tôi đông ý vơi <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Điều khoản sử dụng</a> 
+                                        và <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Chính sách bảo mật</a>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg px-5" id="submitBtn">
+                                <i class="fas fa-lock me-2"></i>Xác nhận thanh toán
+                            </button>
+                            <p class="text-muted mt-2">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                Thông tin của bạn được bảo mật 100%
+                            </p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="col-md-4">
+                    <div class="card sticky-top" style="top: 100px;">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Chi tiết thanh toán</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giá khóa học:</span>
+                                <span>@Model.OriginalPrice.ToString("N0") VNĐ</span>
+                            </div>
+                            
+                            @if (Model.DiscountAmount > 0)
+                            {
+                                <div class="d-flex justify-content-between mb-2 text-success">
+                                    <span>Giảm giá (@Model.AppliedDiscount?.DiscountPer%):</span>
+                                    <span>-@Model.DiscountAmount.ToString("N0") VNĐ</span>
+                                </div>
+                            }
+                            
+                            <hr>
+                            <div class="d-flex justify-content-between mb-3">
+                                <strong>Tổng thanh toán:</strong>
+                                <strong class="text-primary fs-5">@Model.FinalPrice.ToString("N0") VNĐ</strong>
+                            </div>
+
+                            <div class="text-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    Truy cập khóa học ngay sau khi thanh toán
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Điều khoản sử dụng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Bằng việc sử dụng dịch vụ của chúng tôi, bạn đông ý vơi các điều khoản sau:</p>
+                <ul>
+                    <li>Không chia sẻ tài khoản vơi người khác</li>
+                    <li>Không sao chép, phân phđi nội dung khóa học</li>
+                    <li>Tuân thủ các quy định về bản quyền</li>
+                    <li>Sử dụng dịch vụ một cách hợp pháp và đúng mục đích</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Privacy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Chính sách bảo mật</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Chúng tôi cam kết bảo vệ thông tin cá nhân của bạn:</p>
+                <ul>
+                    <li>Thông tin được mã hóa và bảo mật</li>
+                    <li>Không chia sẻ thông tin vơi bên thứ ba</li>
+                    <li>Chệ sử dụng thông tin cho mục đích cung cấp dịch vụ</li>
+                    <li>Bạn có quyền yêu cầu xóa thông tin cá nhân</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-option {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .payment-option:hover {
+        border-color: #0d6efd !important;
+        background-color: #f8f9fa;
+    }
+    
+    .payment-option input[type="radio"]:checked + label {
+        color: #0d6efd;
+        font-weight: 600;
+    }
+</style>
+
+<script>
+    // Handle payment method selection
+    document.querySelectorAll('input[name="PaymentMethod"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const bankInstructions = document.getElementById('bankInstructions');
+            if (this.value === 'bank_transfer') {
+                bankInstructions.style.display = 'block';
+            } else {
+                bankInstructions.style.display = 'none';
+            }
+        });
+    });
+
+    // Click on payment option div to select radio
+    document.querySelectorAll('.payment-option').forEach(div => {
+        div.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            radio.checked = true;
+            radio.dispatchEvent(new Event('change'));
+        });
+    });
+
+    // Form submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+        submitBtn.disabled = true;
+    });
+</script>

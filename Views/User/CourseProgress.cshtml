@@ -1,0 +1,310 @@
+@model ELearningWebsite.Controllers.CourseProgressViewModel
+@{
+    ViewData["Title"] = "Tiến độ khóa học - " + Model.Enrollment.Course.Title;
+}
+
+<div class="container py-4">
+    <!-- Course Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center">
+                                <img src="@Model.Enrollment.Course.Thumbnail" alt="@Model.Enrollment.Course.Title"
+                                     class="rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                <div>
+                                    <h3 class="mb-1">@Model.Enrollment.Course.Title</h3>
+                                    <p class="text-muted mb-1">@Model.Enrollment.Course.Category.Name</p>
+                                    <span class="badge bg-@(Model.Enrollment.Status == 1 ? "primary" : Model.Enrollment.Status == 3 ? "success" : "warning")">
+                                        @Model.Enrollment.GetStatusText()
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="mb-2">
+                                <small class="text-muted">Tiến độ tổng thă</small>
+                                <h4 class="mb-0 text-primary">@Model.Enrollment.Progress.ToString("F1")%</h4>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar" role="progressbar"
+                                     style="width: @Model.Enrollment.Progress%"
+                                     aria-valuenow="@Model.Enrollment.Progress"
+                                     aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            @if (Model.NextLessonId.HasValue)
+                            {
+                                <a href="@Url.Action("Lesson", "Learning", new { id = Model.NextLessonId.Value })" class="btn btn-success mt-3 w-100">
+                                    <i class="fas fa-play me-2"></i>Tiếp tục học
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Info -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-alt me-2"></i>
+                        Nội dung khóa học
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Enrollment.Course.Chapters.Any())
+                    {
+                        <div class="accordion" id="chaptersAccordion">
+                            @foreach (var chapter in Model.Enrollment.Course.Chapters.OrderBy(c => c.Id))
+                            {
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="heading@(chapter.Id)">
+                                        <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapse@(chapter.Id)"
+                                                aria-expanded="false" aria-controls="collapse@(chapter.Id)">
+                                            <div class="d-flex align-items-center w-100">
+                                                <i class="fas fa-folder me-2"></i>
+                                                <span class="flex-grow-1">@chapter.Name</span>
+                                                <span class="badge bg-secondary ms-2">
+                                                    @chapter.Status
+                                                </span>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse@(chapter.Id)" class="accordion-collapse collapse"
+                                         aria-labelledby="heading@(chapter.Id)" data-bs-parent="#chaptersAccordion">
+                                        <div class="accordion-body">
+                                            @if (!string.IsNullOrEmpty(chapter.Description))
+                                            {
+                                                <p class="text-muted mb-3">@chapter.Description</p>
+                                            }
+                                            @if (chapter.Lessons != null && chapter.Lessons.Any())
+                                            {
+                                                <div class="list-group">
+                                                    @foreach (var lesson in chapter.Lessons.OrderBy(l => l.OrderIndex))
+                                                    {
+                                                        var lessonProgress = Model.LessonProgresses.FirstOrDefault(lp => lp.LessonId == lesson.Id);
+                                                        var isCompleted = lessonProgress != null && lessonProgress.ProgressPercentage >= 100;
+                                                        <a href="@Url.Action("Lesson", "Learning", new { id = lesson.Id })"
+                                                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                                            <span>
+                                                                <i class="fas fa-@(lesson.Type == "Video" ? "play" : lesson.Type == "Quiz" ? "question-circle" : "file-alt") me-2 text-primary"></i>
+                                                                @lesson.Title
+                                                            </span>
+                                                            <span class="badge bg-@(isCompleted ? "success" : "secondary")">
+                                                                @(isCompleted ? "Đã học" : "Chưa học")
+                                                            </span>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <p class="text-info">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    Chương này chưa có bài học.
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Chưa có nội dung</h5>
+                            <p class="text-muted">Nội dung khóa học đang được cập nhật.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <!-- Course Stats -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Thđng kê học tập
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-1">@Model.Enrollment.Course.Chapters.Count()</h4>
+                                <small class="text-muted">Chương</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <h4 class="text-success mb-1">@Model.LessonProgresses.Count()</h4>
+                            <small class="text-muted">Bài học</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-warning mb-1">@Model.Enrollment.EnrollmentDate.ToString("dd/MM")</h4>
+                                <small class="text-muted">Ngày đăng ký</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info mb-1">
+                                @(Model.Enrollment.ExpiredDate?.ToString("dd/MM") ?? "�^z")
+                            </h4>
+                            <small class="text-muted">Hạn học</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Learning Progress -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-tasks me-2"></i>
+                        Tiến độ chi tiết
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.LessonProgresses.Any())
+                    {
+                        @foreach (var progress in Model.LessonProgresses.Take(5))
+                        {
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <small class="text-muted">Bài học #@progress.LessonId</small>
+                                <div class="d-flex align-items-center">
+                                    <small class="me-2">@progress.ProgressPercentage.ToString("F0")%</small>
+                                    <div class="progress" style="width: 60px; height: 6px;">
+                                        <div class="progress-bar" style="width: @progress.ProgressPercentage%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.LessonProgresses.Count() > 5)
+                        {
+                            <small class="text-muted">và @(Model.LessonProgresses.Count() - 5) bài học khác...</small>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted mb-0">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Chưa có tiến độ học tập
+                        </p>
+                    }
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.Enrollment.Status == 3) // Completed
+                        {
+                            <a href="@Url.Action("Certificate", "User", new { enrollmentId = Model.Enrollment.Id })"
+                               class="btn btn-success">
+                                <i class="fas fa-certificate me-2"></i>Xem chứng chệ
+                            </a>
+                        }
+
+                        <a href="@Url.Action("MyCourses", "User")" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Quay lại khóa học của tôi
+                        </a>
+
+                        <a href="@Url.Action("CourseDetail", "Home", new { id = Model.Enrollment.Course.Id })"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle me-2"></i>Thông tin khóa học
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Description -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-align-left me-2"></i>
+                        Mô tả khóa học
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="course-description">
+                        @Html.Raw(Model.Enrollment.Course.Description)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .course-description {
+        line-height: 1.6;
+    }
+
+    .course-description p {
+        margin-bottom: 1rem;
+    }
+
+    .progress {
+        background-color: #e9ecef;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa;
+        color: #0d6efd;
+    }
+
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: #dee2e6;
+    }
+
+    .card {
+        border: 1px solid rgba(0, 0, 0, 0.125);
+        transition: box-shadow 0.15s ease-in-out;
+    }
+
+    .card:hover {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Initialize tooltips if Bootstrap is available
+        if (typeof bootstrap !== 'undefined') {
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        }
+    });
+</script>

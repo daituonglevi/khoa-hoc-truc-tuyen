@@ -1,0 +1,259 @@
+@model CategoriesIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Categories";
+}
+
+@Html.AntiForgeryToken()
+
+<!-- Admin Categories Management -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-tags me-2"></i>
+            Quản lý Categories
+        </h2>
+        <a asp-action="Create" class="admin-btn admin-btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Thêm Category mơi
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input type="text" name="search" value="@ViewBag.Search" class="form-control"
+                           placeholder="Tìm theo tên hoặc mô tả...">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-control">
+                        <option value="">Tất cả</option>
+                        <option value="1" selected="@(ViewBag.Status == "1")">Hoạt động</option>
+                        <option value="0" selected="@(ViewBag.Status == "0")">Vô hiệu hóa</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Tìm kiếm
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Categories Table -->
+    <div class="admin-card">
+        <div class="admin-card-body">
+            @if (Model.Categories.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên danh mục</th>
+                                <th>Mô tả</th>
+                                <th>Sđ khóa học</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var category in Model.Categories)
+                            {
+                                <tr>
+                                    <td>@category.Id</td>
+                                    <td>
+                                        <strong>@category.Name</strong>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(category.Description))
+                                        {
+                                            <span>@(category.Description.Length > 100 ? category.Description.Substring(0, 100) + "..." : category.Description)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Chưa có mô tả</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@category.Courses.Count khóa học</span>
+                                    </td>
+                                    <td>
+                                        @switch (category.Status)
+                                        {
+                                            case 1:
+                                                <span class="badge bg-success">Hoạt động</span>
+                                                break;
+                                            case 0:
+                                                <span class="badge bg-secondary">Vô hiệu hóa</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-warning">@category.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@category.Id"
+                                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@category.Id"
+                                               class="btn btn-sm btn-outline-primary" title="Chệnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            @if (category.Status == 1)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                                        onclick="updateStatus(@category.Id, 0)" title="Vô hiệu hóa">
+                                                    <i class="fas fa-pause"></i>
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-success"
+                                                        onclick="updateStatus(@category.Id, 1)" title="Kích hoạt">
+                                                    <i class="fas fa-play"></i>
+                                                </button>
+                                            }
+                                            @if (category.Courses.Count == 0)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                                        onclick="deleteCategory(@category.Id)" title="Xóa">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Categories pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, search = ViewBag.Search, status = ViewBag.Status })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i, search = ViewBag.Search, status = ViewBag.Status })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, search = ViewBag.Search, status = ViewBag.Status })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+
+                <!-- Summary -->
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Hiăn thị @(((int?)ViewBag.CurrentPage ?? 1 - 1) * ((int?)ViewBag.PageSize ?? 10) + 1) - @(Math.Min(((int?)ViewBag.CurrentPage ?? 1) * ((int?)ViewBag.PageSize ?? 10), ((int?)ViewBag.TotalItems ?? 0)))
+                        trong tổng sđ @(ViewBag.TotalItems ?? 0) danh mục
+                    </small>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không có danh mục nào</h5>
+                    <p class="text-muted">Hãy thêm danh mục đầu tiên của bạn</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm Category mơi
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+function updateStatus(id, status) {
+    const statusText = status === 1 ? 'kích hoạt' : 'vô hiệu hóa';
+
+    if (confirm(`Bạn có chắc chắn muđn ${statusText} danh mục này?`)) {
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            url: '@Url.Action("UpdateStatus")',
+            type: 'POST',
+            data: {
+                id: id,
+                status: status,
+                __RequestVerificationToken: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            }
+        });
+    }
+}
+
+function deleteCategory(id) {
+    if (confirm('Bạn có chắc chắn muđn xóa danh mục này? Hành động này không thă hoàn tác!')) {
+        const token = $('input[name="__RequestVerificationToken"]').val();
+
+        $.ajax({
+            url: '@Url.Action("Delete")',
+            type: 'POST',
+            data: {
+                id: id,
+                __RequestVerificationToken: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi xóa danh mục');
+            }
+        });
+    }
+}
+</script>

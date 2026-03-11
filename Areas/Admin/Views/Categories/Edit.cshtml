@@ -1,0 +1,191 @@
+@model Category
+@{
+    ViewData["Title"] = "Chệnh sửa Category";
+}
+
+<!-- Admin Edit Category -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-edit me-2"></i>
+            Chệnh sửa Category: @Model.Name
+        </h2>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="admin-btn admin-btn-info me-2">
+                <i class="fas fa-eye me-2"></i>
+                Xem chi tiết
+            </a>
+            <a asp-action="Index" class="admin-btn admin-btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin danh mục</h5>
+                </div>
+                <div class="admin-card-body">
+                    <form asp-action="Edit" method="post">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Name" class="form-label">
+                                        Tên danh mục <span class="text-danger">*</span>
+                                    </label>
+                                    <input asp-for="Name" class="form-control" placeholder="Nhập tên danh mục" required />
+                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" 
+                                              placeholder="Nhập mô tả cho danh mục (tùy chọn)"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                                    <select asp-for="Status" class="form-control">
+                                        <option value="1">Hoạt động</option>
+                                        <option value="0">Vô hiệu hóa</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Cập nhật danh mục
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info ms-2">
+                                <i class="fas fa-eye me-2"></i>
+                                Xem chi tiết
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin danh mục</h5>
+                </div>
+                <div class="admin-card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>ID:</strong></td>
+                            <td>@Model.Id</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Sđ khóa học:</strong></td>
+                            <td>
+                                <span class="badge bg-info">@Model.Courses.Count khóa học</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Trạng thái hiện tại:</strong></td>
+                            <td>
+                                @switch (Model.Status)
+                                {
+                                    case 1:
+                                        <span class="badge bg-success">Hoạt động</span>
+                                        break;
+                                    case 0:
+                                        <span class="badge bg-secondary">Vô hiệu hóa</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-warning">@Model.Status</span>
+                                        break;
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Hương dẫn</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Lưu ý khi chệnh sửa:</h6>
+                        <ul class="mb-0">
+                            <li>Tên danh mục phải duy nhất trong hệ thđng</li>
+                            <li>Thay đổi trạng thái sẽ ảnh hưởng đến hiăn thị</li>
+                            <li>Danh mục có khóa học không thă xóa</li>
+                        </ul>
+                    </div>
+
+                    @if (Model.Courses.Any())
+                    {
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle me-2"></i>Cảnh báo:</h6>
+                            <p class="mb-0">
+                                Danh mục này đang được sử dụng bởi @Model.Courses.Count khóa học.
+                                Việc vô hiệu hóa sẽ ảnh hưởng đến hiăn thị các khóa học này.
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Character counter for description
+            $('#Description').on('input', function() {
+                const maxLength = 1000;
+                const currentLength = $(this).val().length;
+                const remaining = maxLength - currentLength;
+                
+                if (!$('#char-counter').length) {
+                    $(this).after('<small id="char-counter" class="form-text text-muted"></small>');
+                }
+                
+                $('#char-counter').text(`${currentLength}/${maxLength} ký tự`);
+                
+                if (remaining < 100) {
+                    $('#char-counter').removeClass('text-muted').addClass('text-warning');
+                }
+                if (remaining < 50) {
+                    $('#char-counter').removeClass('text-warning').addClass('text-danger');
+                }
+                if (remaining >= 100) {
+                    $('#char-counter').removeClass('text-warning text-danger').addClass('text-muted');
+                }
+            });
+            
+            // Trigger character counter on page load
+            $('#Description').trigger('input');
+        });
+    </script>
+}

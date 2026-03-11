@@ -1,0 +1,216 @@
+@{
+    ViewData["Title"] = "Thđng kê Đăng ký";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Thđng kê Đăng ký khóa học</h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Cards -->
+                    <div class="row">
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-info">
+                                <div class="inner">
+                                    <h3>@ViewBag.TotalEnrollments</h3>
+                                    <p>Tổng đăng ký</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3>@ViewBag.ActiveEnrollments</h3>
+                                    <p>Đang học</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-play"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-primary">
+                                <div class="inner">
+                                    <h3>@ViewBag.CompletedEnrollments</h3>
+                                    <p>Hoàn thành</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="small-box bg-warning">
+                                <div class="inner">
+                                    <h3>@ViewBag.ExpiredEnrollments</h3>
+                                    <p>Hết hạn</p>
+                                </div>
+                                <div class="icon">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Phân bđ trạng thái đăng ký</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="statusChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Đăng ký theo tháng (12 tháng gần nhất)</h5>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="monthlyChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Detailed Statistics -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thđng kê chi tiết</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-bordered">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Trạng thái</th>
+                                                        <th>Sđ lượng</th>
+                                                        <th>Tỷ lệ</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <tr>
+                                                        <td><span class="badge bg-success">Đang học</span></td>
+                                                        <td>@ViewBag.ActiveEnrollments</td>
+                                                        <td>@(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ActiveEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><span class="badge bg-primary">Hoàn thành</span></td>
+                                                        <td>@ViewBag.CompletedEnrollments</td>
+                                                        <td>@(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.CompletedEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td><span class="badge bg-warning">Hết hạn</span></td>
+                                                        <td>@ViewBag.ExpiredEnrollments</td>
+                                                        <td>@(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ExpiredEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Tóm tắt:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><strong>Tổng sđ đăng ký:</strong> @ViewBag.TotalEnrollments</li>
+                                                <li><strong>Tỷ lệ hoàn thành:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.CompletedEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>
+                                                <li><strong>Tỷ lệ đang học:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ActiveEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>
+                                                <li><strong>Tỷ lệ hết hạn:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ExpiredEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    const statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Đang học', 'Hoàn thành', 'Hết hạn'],
+            datasets: [{
+                data: [@ViewBag.ActiveEnrollments, @ViewBag.CompletedEnrollments, @ViewBag.ExpiredEnrollments],
+                backgroundColor: [
+                    '#28a745',
+                    '#007bff',
+                    '#ffc107'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Monthly Enrollments Chart
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    const monthlyData = @Html.Raw(Json.Serialize(ViewBag.MonthlyEnrollments ?? new List<object>()));
+    
+    const monthlyLabels = monthlyData.map(item => `${item.month}/${item.year}`);
+    const monthlyCounts = monthlyData.map(item => item.count);
+
+    const monthlyChart = new Chart(monthlyCtx, {
+        type: 'line',
+        data: {
+            labels: monthlyLabels,
+            datasets: [{
+                label: 'Sđ đăng ký',
+                data: monthlyCounts,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+</script>

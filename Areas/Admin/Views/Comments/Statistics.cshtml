@@ -1,0 +1,379 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CommentStatisticsViewModel
+@{
+    ViewData["Title"] = "Thđng kê bình luận";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="fas fa-chart-bar text-primary me-2"></i>
+                Thđng kê bình luận
+            </h2>
+            <p class="text-muted mb-0">Phân tích và báo cáo hoạt động bình luận</p>
+        </div>
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>
+                Quay lại danh sách
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-primary mb-0">@Model.TotalComments</h3>
+                            <p class="text-muted mb-0">Tổng bình luận</p>
+                        </div>
+                        <div class="text-primary">
+                            <i class="fas fa-comments fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-success mb-0">@Model.ActiveComments</h3>
+                            <p class="text-muted mb-0">Đang hiăn thị</p>
+                        </div>
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-warning mb-0">@Model.TotalReplies</h3>
+                            <p class="text-muted mb-0">Phản hôi</p>
+                        </div>
+                        <div class="text-warning">
+                            <i class="fas fa-reply fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="card border-danger">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="text-danger mb-0">@Model.DeletedComments</h3>
+                            <p class="text-muted mb-0">Đã xóa</p>
+                        </div>
+                        <div class="text-danger">
+                            <i class="fas fa-trash fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time-based Statistics -->
+    <div class="row mb-4">
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-calendar-day me-2"></i>
+                        Hôm nay
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-info mb-0">@Model.CommentsToday</h2>
+                    <p class="text-muted mb-0">bình luận mơi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-calendar-week me-2"></i>
+                        Tuần này
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-info mb-0">@Model.CommentsThisWeek</h2>
+                    <p class="text-muted mb-0">bình luận mơi</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>
+                        Tháng này
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-info mb-0">@Model.CommentsThisMonth</h2>
+                    <p class="text-muted mb-0">bình luận mơi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Trend Chart -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Xu hương bình luận (7 ngày qua)
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="trendChart" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Distribution -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Phân bđ trạng thái
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="statusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Top Commenters -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        Người dùng tích cực nhất
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopCommenters.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Hạng</th>
+                                        <th>Người dùng</th>
+                                        <th>Sđ bình luận</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.TopCommenters.Count; i++)
+                                    {
+                                        var commenter = Model.TopCommenters[i];
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                {
+                                                    <span class="badge bg-warning">ởệ</span>
+                                                }
+                                                else if (i == 1)
+                                                {
+                                                    <span class="badge bg-secondary">ở�^</span>
+                                                }
+                                                else if (i == 2)
+                                                {
+                                                    <span class="badge bg-warning">ởệ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark">@(i + 1)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@commenter.UserName</strong>
+                                                    <br>
+                                                    <small class="text-muted">@commenter.UserEmail</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">@commenter.CommentCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted">
+                            <i class="fas fa-users fa-2x mb-2"></i>
+                            <p>Chưa có dữ liệu</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Lessons -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-play-circle me-2"></i>
+                        Bài học được bình luận nhiều nhất
+                    </h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.TopLessons.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Hạng</th>
+                                        <th>Bài học</th>
+                                        <th>Sđ bình luận</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (int i = 0; i < Model.TopLessons.Count; i++)
+                                    {
+                                        var lesson = Model.TopLessons[i];
+                                        <tr>
+                                            <td>
+                                                @if (i == 0)
+                                                {
+                                                    <span class="badge bg-warning">ởệ</span>
+                                                }
+                                                else if (i == 1)
+                                                {
+                                                    <span class="badge bg-secondary">ở�^</span>
+                                                }
+                                                else if (i == 2)
+                                                {
+                                                    <span class="badge bg-warning">ởệ</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-dark">@(i + 1)</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>@lesson.LessonTitle</strong>
+                                                    <br>
+                                                    <small class="text-muted">@lesson.CourseTitle</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@lesson.CommentCount</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted">
+                            <i class="fas fa-play-circle fa-2x mb-2"></i>
+                            <p>Chưa có dữ liệu</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Trend Chart
+            var trendCtx = document.getElementById('trendChart').getContext('2d');
+            var trendData = @Html.Raw(Json.Serialize(Model.TrendData.Select(t => new { 
+                date = t.Date.ToString("dd/MM"), 
+                count = t.Count 
+            })));
+            
+            new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(d => d.date),
+                    datasets: [{
+                        label: 'Sđ bình luận',
+                        data: trendData.map(d => d.count),
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // Status Chart
+            var statusCtx = document.getElementById('statusChart').getContext('2d');
+            new Chart(statusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đang hiăn thị', 'Đã xóa'],
+                    datasets: [{
+                        data: [@Model.ActiveComments, @Model.DeletedComments],
+                        backgroundColor: ['#28a745', '#dc3545'],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+}

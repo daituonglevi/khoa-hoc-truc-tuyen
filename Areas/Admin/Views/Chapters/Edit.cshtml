@@ -1,0 +1,278 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.ChapterEditViewModel
+@{
+    ViewData["Title"] = "Chệnh sửa Chương";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-edit text-primary"></i>
+                Chệnh sửa Chương
+            </h1>
+            <p class="admin-page-subtitle">Cập nhật thông tin chương "@Model.Name"</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="admin-form-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-list-ol text-primary"></i>
+                    Thông tin Chương
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" class="admin-form">
+                    <input asp-for="Id" type="hidden">
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="CourseId" class="form-label required">Khóa học</label>
+                                <select asp-for="CourseId" class="form-select" id="courseSelect" onchange="updateCourseInfo()">
+                                    <option value="">-- Chọn khóa học --</option>
+                                    @foreach (var course in Model.AvailableCourses)
+                                    {
+                                        <option value="@course.Id" 
+                                                data-title="@course.Title"
+                                                data-price="@course.Price"
+                                                data-status="@course.Status"
+                                                data-chapters="@course.ChapterCount"
+                                                selected="@(Model.CourseId == course.Id)">
+                                            @course.Title (@course.Price.ToString("N0") VNĐ - @course.ChapterCount chương)
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="CourseId" class="text-danger"></span>
+                                <small class="form-text text-muted">Thay đổi khóa học sẽ di chuyăn chương này</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Name" class="form-label required">Tên chương</label>
+                                <input asp-for="Name" class="form-control" placeholder="Nhập tên chương">
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                                <small class="form-text text-muted">Tên chương nên ngắn gọn và mô tả rõ nội dung</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="Description" class="form-label">Mô tả</label>
+                                <textarea asp-for="Description" class="form-control" rows="4" 
+                                          placeholder="Mô tả chi tiết về nội dung chương học..."></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                                <small class="form-text text-muted">Mô tả chi tiết giúp học viên hiău rõ nội dung chương</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="Status" class="form-label required">Trạng thái</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Active">Hoạt động</option>
+                                    <option value="Inactive">Không hoạt động</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                                <small class="form-text text-muted">Chương hoạt động sẽ hiăn thị cho học viên</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Current Course Info -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Thông tin hiện tại
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="detail-item">
+                    <label>ID Chương:</label>
+                    <span class="detail-value">#@Model.Id</span>
+                </div>
+                <div class="detail-item">
+                    <label>Khóa học hiện tại:</label>
+                    <span class="detail-value">@Model.CourseName</span>
+                </div>
+                <div class="detail-item">
+                    <label>Giá khóa học:</label>
+                    <span class="detail-value text-success">@Model.CoursePrice.ToString("N0") VNĐ</span>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày tạo:</label>
+                    <span class="detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div class="detail-item">
+                    <label>Người tạo:</label>
+                    <span class="detail-value">@Model.CreatedByName</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Preview -->
+        <div class="admin-detail-card" id="coursePreview" style="display: none;">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-eye text-warning"></i>
+                    Khóa học mơi (nếu thay đổi)
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="detail-item">
+                    <label>Tên khóa học:</label>
+                    <span class="detail-value" id="previewTitle">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Giá:</label>
+                    <span class="detail-value text-success" id="previewPrice">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Trạng thái:</label>
+                    <span class="badge" id="previewStatus">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Sđ chương hiện tại:</label>
+                    <span class="detail-value" id="previewChapters">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-question-circle text-primary"></i>
+                    Hương dẫn
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="help-content">
+                    <h6><i class="fas fa-edit text-primary"></i> Chệnh sửa:</h6>
+                    <ul class="help-list">
+                        <li>Có thă thay đổi tên và mô tả chương</li>
+                        <li>Thay đổi trạng thái hoạt động</li>
+                        <li>Di chuyăn chương sang khóa học khác</li>
+                    </ul>
+
+                    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Lưu ý:</h6>
+                    <ul class="help-list">
+                        <li>Thay đổi khóa học sẽ di chuyăn toàn bộ chương</li>
+                        <li>Tên chương không được trùng trong cùng khóa học</li>
+                        <li>Vô hiệu hóa chương sẽ ẩn khỏi học viên</li>
+                    </ul>
+
+                    <h6><i class="fas fa-tools text-secondary"></i> Thao tác:</h6>
+                    <ul class="help-list">
+                        <li>Kiăm tra thông tin trươc khi lưu</li>
+                        <li>Xem chi tiết sau khi cập nhật</li>
+                        <li>Quản lý bài học trong chương</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateCourseInfo() {
+    const select = document.getElementById('courseSelect');
+    const preview = document.getElementById('coursePreview');
+    
+    if (select.value && select.value != '@Model.CourseId') {
+        const option = select.options[select.selectedIndex];
+        
+        document.getElementById('previewTitle').textContent = option.dataset.title;
+        document.getElementById('previewPrice').textContent = parseFloat(option.dataset.price).toLocaleString() + ' VNĐ';
+        
+        const statusBadge = document.getElementById('previewStatus');
+        statusBadge.textContent = option.dataset.status;
+        statusBadge.className = 'badge bg-' + (option.dataset.status === 'Published' ? 'success' : 'warning');
+        
+        document.getElementById('previewChapters').textContent = option.dataset.chapters + ' chương';
+        
+        preview.style.display = 'block';
+    } else {
+        preview.style.display = 'none';
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCourseInfo();
+});
+</script>
+
+<style>
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #495057;
+}
+
+.help-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.help-content h6:first-child {
+    margin-top: 0;
+}
+
+.help-list {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
+}
+
+.help-list li {
+    margin-bottom: 0.25rem;
+}
+</style>

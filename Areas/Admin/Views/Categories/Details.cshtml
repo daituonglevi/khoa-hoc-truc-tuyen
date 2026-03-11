@@ -1,0 +1,317 @@
+@model Category
+@{
+    ViewData["Title"] = "Chi tiết Category";
+}
+
+<!-- Admin Category Details -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-tags me-2"></i>
+            Chi tiết Category: @Model.Name
+        </h2>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="admin-btn admin-btn-primary me-2">
+                <i class="fas fa-edit me-2"></i>
+                Chệnh sửa
+            </a>
+            <a asp-action="Index" class="admin-btn admin-btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Quay lại
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Category Information -->
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin danh mục</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td><strong>ID:</strong></td>
+                                    <td>@Model.Id</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tên danh mục:</strong></td>
+                                    <td>@Model.Name</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Trạng thái:</strong></td>
+                                    <td>
+                                        @switch (Model.Status)
+                                        {
+                                            case 1:
+                                                <span class="badge bg-success">Hoạt động</span>
+                                                break;
+                                            case 0:
+                                                <span class="badge bg-secondary">Vô hiệu hóa</span>
+                                                break;
+                                            default:
+                                                <span class="badge bg-warning">@Model.Status</span>
+                                                break;
+                                        }
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Sđ khóa học:</strong></td>
+                                    <td>
+                                        <span class="badge bg-info">@Model.Courses.Count khóa học</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label"><strong>Mô tả:</strong></label>
+                                <div class="border rounded p-3 bg-light">
+                                    @if (!string.IsNullOrEmpty(Model.Description))
+                                    {
+                                        <p class="mb-0">@Model.Description</p>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted mb-0">Chưa có mô tả</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses in this Category -->
+            <div class="admin-card">
+                <div class="admin-card-header d-flex justify-content-between align-items-center">
+                    <h5 class="admin-card-title">Khóa học trong danh mục (@Model.Courses.Count)</h5>
+                    <a asp-area="Admin" asp-controller="Courses" asp-action="Create" asp-route-categoryId="@Model.Id" 
+                       class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus me-1"></i>
+                        Thêm khóa học
+                    </a>
+                </div>
+                <div class="admin-card-body">
+                    @if (Model.Courses.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Tên khóa học</th>
+                                        <th>Giá</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var course in Model.Courses.OrderByDescending(c => c.CreatedAt))
+                                    {
+                                        <tr>
+                                            <td>@course.Id</td>
+                                            <td>
+                                                <div>
+                                                    <strong>@course.Title</strong>
+                                                    @if (!string.IsNullOrEmpty(course.Description) && course.Description.Length > 50)
+                                                    {
+                                                        <br><small class="text-muted">@(course.Description.Substring(0, 50))...</small>
+                                                    }
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="fw-bold text-success">@course.Price.ToString("N0") VNĐ</span>
+                                            </td>
+                                            <td>
+                                                @switch (course.Status)
+                                                {
+                                                    case "Published":
+                                                        <span class="badge bg-success">Đã xuất bản</span>
+                                                        break;
+                                                    case "Draft":
+                                                        <span class="badge bg-warning">Nháp</span>
+                                                        break;
+                                                    case "Archived":
+                                                        <span class="badge bg-secondary">Lưu trữ</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@course.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                <small>@course.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-area="Admin" asp-controller="Courses" asp-action="Details" asp-route-id="@course.Id" 
+                                                       class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-area="Admin" asp-controller="Courses" asp-action="Edit" asp-route-id="@course.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Chệnh sửa">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-book fa-3x text-muted mb-3"></i>
+                            <h6 class="text-muted">Chưa có khóa học nào trong danh mục này</h6>
+                            <p class="text-muted">Hãy thêm khóa học đầu tiên cho danh mục này</p>
+                            <a asp-area="Admin" asp-controller="Courses" asp-action="Create" asp-route-categoryId="@Model.Id" 
+                               class="btn btn-primary">
+                                <i class="fas fa-plus me-2"></i>
+                                Thêm khóa học
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions & Statistics -->
+        <div class="col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thao tác</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                            <i class="fas fa-edit me-2"></i>
+                            Chệnh sửa danh mục
+                        </a>
+                        
+                        @if (Model.Status == 1)
+                        {
+                            <button type="button" class="btn btn-warning" onclick="updateStatus(@Model.Id, 0)">
+                                <i class="fas fa-pause me-2"></i>
+                                Vô hiệu hóa
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="button" class="btn btn-success" onclick="updateStatus(@Model.Id, 1)">
+                                <i class="fas fa-play me-2"></i>
+                                Kích hoạt
+                            </button>
+                        }
+
+                        @if (Model.Courses.Count == 0)
+                        {
+                            <button type="button" class="btn btn-danger" onclick="deleteCategory(@Model.Id)">
+                                <i class="fas fa-trash me-2"></i>
+                                Xóa danh mục
+                            </button>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thđng kê</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <h4 class="text-primary mb-1">@Model.Courses.Count</h4>
+                                <small class="text-muted">Khóa học</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <h4 class="text-success mb-1">@Model.Courses.Count(c => c.Status == "Published")</h4>
+                                <small class="text-muted">Đã xuất bản</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    @if (Model.Courses.Any())
+                    {
+                        <hr>
+                        <div class="row text-center">
+                            <div class="col-12">
+                                <div class="border rounded p-3">
+                                    <h5 class="text-info mb-1">@Model.Courses.Sum(c => c.Price).ToString("N0") VNĐ</h5>
+                                    <small class="text-muted">Tổng giá trị khóa học</small>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<script>
+function updateStatus(id, status) {
+    const statusText = status === 1 ? 'kích hoạt' : 'vô hiệu hóa';
+    
+    if (confirm(`Bạn có chắc chắn muđn ${statusText} danh mục này?`)) {
+        const token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.ajax({
+            url: '@Url.Action("UpdateStatus")',
+            type: 'POST',
+            data: {
+                id: id,
+                status: status,
+                __RequestVerificationToken: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            }
+        });
+    }
+}
+
+function deleteCategory(id) {
+    if (confirm('Bạn có chắc chắn muđn xóa danh mục này? Hành động này không thă hoàn tác!')) {
+        const token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.ajax({
+            url: '@Url.Action("Delete")',
+            type: 'POST',
+            data: {
+                id: id,
+                __RequestVerificationToken: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    window.location.href = '@Url.Action("Index")';
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi xóa danh mục');
+            }
+        });
+    }
+}
+</script>

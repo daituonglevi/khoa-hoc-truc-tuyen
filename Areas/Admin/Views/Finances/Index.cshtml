@@ -1,0 +1,303 @@
+@model FinancesIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Tài chính";
+}
+
+@Html.AntiForgeryToken()
+
+<!-- Admin Finances Management -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-chart-line me-2"></i>
+            Quản lý Tài chính
+        </h2>
+        <div>
+            <a asp-action="Statistics" class="admin-btn admin-btn-info me-2">
+                <i class="fas fa-chart-bar me-2"></i>
+                Thđng kê
+            </a>
+            <a asp-action="Create" class="admin-btn admin-btn-primary">
+                <i class="fas fa-plus me-2"></i>
+                Thêm bản ghi
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="admin-card stat-card-success">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Tổng doanh thu</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.TotalRevenue.ToString("N0") VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="admin-card stat-card-warning">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Tổng phí</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.TotalFee.ToString("N0") VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-minus-circle fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="admin-card stat-card-primary">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Doanh thu ròng</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.NetRevenue.ToString("N0") VNĐ</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="admin-card stat-card-info">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-grow-1">
+                            <div class="text-xs font-weight-bold text-uppercase mb-1 opacity-75">Tổng bản ghi</div>
+                            <div class="h4 mb-0 font-weight-bold">@Model.TotalRecords</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fas fa-file-invoice fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="admin-card mb-4">
+        <div class="admin-card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-2">
+                    <label class="form-label">Năm</label>
+                    <select name="year" class="form-control">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i" selected="@(ViewBag.Year == i)">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Tháng</label>
+                    <select name="month" class="form-control">
+                        <option value="">Tất cả</option>
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" selected="@(ViewBag.Month == i)">Tháng @i</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Loại</label>
+                    <input type="text" name="type" value="@ViewBag.Type" class="form-control" 
+                           placeholder="Tìm theo loại...">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Lọc
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">&nbsp;</label>
+                    <div>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fas fa-undo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Finances Table -->
+    <div class="admin-card">
+        <div class="admin-card-body">
+            @if (Model.Finances.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ID</th>
+                                <th>Tháng/Năm</th>
+                                <th>Doanh thu</th>
+                                <th>Phí</th>
+                                <th>Doanh thu ròng</th>
+                                <th>Loại</th>
+                                <th>Mô tả</th>
+                                <th>Ngày tạo</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var finance in Model.Finances)
+                            {
+                                <tr>
+                                    <td>@finance.Id</td>
+                                    <td>
+                                        <span class="badge bg-info">@finance.Month/@finance.Year</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-success">@finance.Revenue.ToString("N0") VNĐ</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-warning">@finance.Fee.ToString("N0") VNĐ</span>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold text-primary">@((finance.Revenue - finance.Fee).ToString("N0")) VNĐ</span>
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(finance.Type))
+                                        {
+                                            <span class="badge bg-secondary">@finance.Type</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(finance.Description))
+                                        {
+                                            <span>@(finance.Description.Length > 50 ? finance.Description.Substring(0, 50) + "..." : finance.Description)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <small>@finance.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a asp-action="Details" asp-route-id="@finance.Id" 
+                                               class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@finance.Id" 
+                                               class="btn btn-sm btn-outline-primary" title="Chệnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="deleteFinance(@finance.Id)" title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Finances pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            @if (Model.CurrentPage > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, year = ViewBag.Year, month = ViewBag.Month, type = ViewBag.Type })">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                            }
+
+                            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = i, year = ViewBag.Year, month = ViewBag.Month, type = ViewBag.Type })">@i</a>
+                                </li>
+                            }
+
+                            @if (Model.CurrentPage < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, year = ViewBag.Year, month = ViewBag.Month, type = ViewBag.Type })">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+
+                <!-- Summary -->
+                <div class="mt-3">
+                    <small class="text-muted">
+                        Hiăn thị @(((int?)ViewBag.CurrentPage ?? 1 - 1) * ((int?)ViewBag.PageSize ?? 10) + 1) - @(Math.Min(((int?)ViewBag.CurrentPage ?? 1) * ((int?)ViewBag.PageSize ?? 10), ((int?)ViewBag.TotalItems ?? 0)))
+                        trong tổng sđ @(ViewBag.TotalItems ?? 0) bản ghi
+                    </small>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Không có bản ghi tài chính nào</h5>
+                    <p class="text-muted">Hãy thêm bản ghi tài chính đầu tiên</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Thêm bản ghi
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+function deleteFinance(id) {
+    if (confirm('Bạn có chắc chắn muđn xóa bản ghi tài chính này? Hành động này không thă hoàn tác!')) {
+        const token = $('input[name="__RequestVerificationToken"]').val();
+        
+        $.ajax({
+            url: '@Url.Action("Delete")',
+            type: 'POST',
+            data: {
+                id: id,
+                __RequestVerificationToken: token
+            },
+            success: function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert('Lỗi: ' + response.message);
+                }
+            },
+            error: function() {
+                alert('Có lỗi xảy ra khi xóa bản ghi');
+            }
+        });
+    }
+}
+</script>

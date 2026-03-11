@@ -1,0 +1,54 @@
+@model ELearningWebsite.Models.ErrorViewModel
+@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="error-page">
+                <div class="error-icon mb-4">
+                    <i class="fas fa-exclamation-triangle fa-5x text-warning"></i>
+                </div>
+
+                <h1 class="display-4 text-danger mb-3">Oops! Có lỗi xảy ra</h1>
+
+                <p class="lead text-muted mb-4">
+                    Xin lỗi, đã có lỗi xảy ra khi xử lý yêu cầu của bạn.
+                </p>
+
+                @if (Model?.ShowRequestId == true)
+                {
+                    <div class="alert alert-info">
+                        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+                    </div>
+                }
+
+                <div class="mt-4">
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary me-3">
+                        <i class="fas fa-home me-2"></i>Về trang chủ
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Quay lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .error-page {
+        padding: 3rem 0;
+    }
+
+    .error-icon {
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>

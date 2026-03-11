@@ -1,0 +1,194 @@
+@model PromotionDeleteViewModel
+@{
+    ViewData["Title"] = "Xóa khuyến mãi";
+}
+
+<!-- Admin Delete Promotion -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-trash me-2 text-danger"></i>
+            Xóa khuyến mãi: <span class="text-danger">@Model.Code</span>
+        </h2>
+        <a asp-action="Index" class="admin-btn admin-btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header bg-danger text-white">
+                    <h5 class="admin-card-title mb-0">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Xác nhận xóa khuyến mãi
+                    </h5>
+                </div>
+                <div class="admin-card-body">
+                    @if (Model.CanDelete)
+                    {
+                        <div class="alert alert-warning" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Cảnh báo!</strong> Hành động này không thă hoàn tác. Khuyến mãi sẽ bị xóa vĩnh viổn khỏi hệ thđng.
+                        </div>
+
+                        <div class="promotion-info bg-light rounded p-4 mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Mã khuyến mãi:</label>
+                                        <div class="h5 text-primary">@Model.Code</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Phần trăm giảm giá:</label>
+                                        <div class="h5 text-success">@Model.DiscountPer%</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Khóa học áp dụng:</label>
+                                        <div class="fw-bold">@Model.CourseName</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Sđ lần đã sử dụng:</label>
+                                        <div class="fw-bold">
+                                            <span class="badge bg-info">@Model.CurrentUses lần</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4">
+                            <i class="fas fa-question-circle fa-3x text-warning mb-3"></i>
+                            <h4 class="text-dark">@Model.DeleteWarning</h4>
+                            <p class="text-muted">Khuyến mãi này chưa được sử dụng bởi ai, bạn có thă xóa an toàn.</p>
+                        </div>
+
+                        <form asp-action="Delete" method="post" class="text-center">
+                            <input asp-for="Id" type="hidden">
+                            
+                            <div class="d-flex justify-content-center gap-3">
+                                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-times me-2"></i>
+                                    Hủy bỏ
+                                </a>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-lg">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Xem chi tiết
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-lg" onclick="return confirmDelete()">
+                                    <i class="fas fa-trash me-2"></i>
+                                    Xóa khuyến mãi
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-ban me-2"></i>
+                            <strong>Không thă xóa!</strong> @Model.DeleteWarning
+                        </div>
+
+                        <div class="promotion-info bg-light rounded p-4 mb-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Mã khuyến mãi:</label>
+                                        <div class="h5 text-primary">@Model.Code</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Phần trăm giảm giá:</label>
+                                        <div class="h5 text-success">@Model.DiscountPer%</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Khóa học áp dụng:</label>
+                                        <div class="fw-bold">@Model.CourseName</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted">Sđ lần đã sử dụng:</label>
+                                        <div class="fw-bold">
+                                            <span class="badge bg-danger">@Model.CurrentUses lần</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-4">
+                            <i class="fas fa-shield-alt fa-3x text-danger mb-3"></i>
+                            <h4 class="text-danger">Khuyến mãi đã được sử dụng</h4>
+                            <p class="text-muted">
+                                Đă bảo vệ tính toàn vẹn dữ liệu và lịch sử giao dịch, 
+                                hệ thđng không cho phép xóa khuyến mãi đã được sử dụng.
+                            </p>
+                        </div>
+
+                        <div class="bg-info bg-opacity-10 border border-info rounded p-3 mb-4">
+                            <h6 class="text-info mb-2">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                Các hành động thay thế:
+                            </h6>
+                            <ul class="list-unstyled mb-0">
+                                <li class="mb-1">
+                                    <i class="fas fa-pause text-warning me-2"></i>
+                                    Vô hiệu hóa khuyến mãi đă ngừng sử dụng
+                                </li>
+                                <li class="mb-1">
+                                    <i class="fas fa-edit text-primary me-2"></i>
+                                    Chệnh sửa thông tin khuyến mãi
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-calendar text-success me-2"></i>
+                                    Đặt ngày kết thúc đă tự động hết hạn
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="text-center">
+                            <div class="d-flex justify-content-center gap-3">
+                                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>
+                                    Quay lại danh sách
+                                </a>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-lg">
+                                    <i class="fas fa-eye me-2"></i>
+                                    Xem chi tiết
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-edit me-2"></i>
+                                    Chệnh sửa thay thế
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmDelete() {
+            return confirm('Bạn có CHẮC CHẮN muđn xóa khuyến mãi "@Model.Code"?\n\nHành động này KHôNG TH�, HOệN TÁC!');
+        }
+
+        // Auto focus on cancel button for safety
+        $(document).ready(function() {
+            $('.btn-secondary').first().focus();
+        });
+
+        // Prevent accidental form submission
+        $('form').on('submit', function(e) {
+            if (!confirm('Lần xác nhận cuđi cùng: Bạn có chắc chắn muđn XôA khuyến mãi này?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    </script>
+}

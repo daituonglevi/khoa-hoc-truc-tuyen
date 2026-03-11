@@ -1,0 +1,364 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CertificateDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết Chứng chệ";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-certificate text-warning"></i>
+                Chi tiết Chứng chệ
+            </h1>
+            <p class="admin-page-subtitle">Thông tin chi tiết chứng chệ #@Model.CertificateNumber</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Chệnh sửa
+            </a>
+            @if (Model.HasCertificateFile)
+            {
+                <a href="@Model.CertificateUrl" target="_blank" class="btn btn-success">
+                    <i class="fas fa-file-pdf"></i> Xem chứng chệ
+                </a>
+            }
+            <button type="button" class="btn btn-warning" onclick="regenerateCertificate(@Model.Id)">
+                <i class="fas fa-sync"></i> Tạo lại
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Certificate Information -->
+    <div class="col-lg-8">
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-certificate text-warning"></i>
+                    Thông tin Chứng chệ
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Chứng chệ:</label>
+                            <span class="detail-value">#@Model.Id</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Sđ chứng chệ:</label>
+                            <span class="detail-value text-primary">@Model.CertificateNumber</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Ngày cấp:</label>
+                            <span class="detail-value">@Model.IssueDate.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Trạng thái file:</label>
+                            @if (Model.HasCertificateFile)
+                            {
+                                <span class="badge bg-success">Đã có file</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning">Chưa có file</span>
+                            }
+                        </div>
+                    </div>
+                    @if (Model.HasCertificateFile)
+                    {
+                        <div class="col-12">
+                            <div class="detail-item">
+                                <label>File chứng chệ:</label>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="detail-value">@Model.CertificateFileName</span>
+                                    <a href="@Model.CertificateUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-external-link-alt"></i> Mở
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-user text-info"></i>
+                    Thông tin Học viên
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Học viên:</label>
+                            <span class="detail-value">#@Model.UserId</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Tên học viên:</label>
+                            <span class="detail-value">@Model.UserName</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Email:</label>
+                            <span class="detail-value">@Model.UserEmail</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Sđ điện thoại:</label>
+                            <span class="detail-value">@Model.UserPhone</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Course Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-book text-success"></i>
+                    Thông tin Khóa học
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Khóa học:</label>
+                            <span class="detail-value">#@Model.CourseId</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Giá khóa học:</label>
+                            <span class="detail-value text-success">@Model.CoursePrice.ToString("N0") VNĐ</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Tên khóa học:</label>
+                            <span class="detail-value">@Model.CourseTitle</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Mô tả:</label>
+                            <div class="detail-value">
+                                @Html.Raw(Model.CourseDescription)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Enrollment Progress -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line text-primary"></i>
+                    Tiến độ Học tập
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="progress-circle mb-3">
+                    <div class="progress-circle-inner">
+                        <span class="progress-percentage">@Model.Progress.ToString("F1")%</span>
+                    </div>
+                    <svg class="progress-circle-svg" width="120" height="120">
+                        <circle cx="60" cy="60" r="50" stroke="#e9ecef" stroke-width="8" fill="none"></circle>
+                        <circle cx="60" cy="60" r="50" stroke="#28a745" stroke-width="8" fill="none"
+                                stroke-dasharray="@(2 * Math.PI * 50)" 
+                                stroke-dashoffset="@(2 * Math.PI * 50 * (1 - Model.Progress / 100))"
+                                transform="rotate(-90 60 60)"></circle>
+                    </svg>
+                </div>
+                <div class="progress-details">
+                    <div class="detail-item">
+                        <label>Trạng thái:</label>
+                        <span class="badge bg-@(Model.IsCompleted ? "success" : "warning")">
+                            @Model.EnrollmentStatusText
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-info"></i>
+                    Lịch sử
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6>Đăng ký khóa học</h6>
+                            <p class="text-muted mb-0">@Model.EnrollmentDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                    @if (Model.CompletionDate.HasValue)
+                    {
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-success"></div>
+                            <div class="timeline-content">
+                                <h6>Hoàn thành khóa học</h6>
+                                <p class="text-muted mb-0">@Model.CompletionDate.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                    }
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-warning"></div>
+                        <div class="timeline-content">
+                            <h6>Cấp chứng chệ</h6>
+                            <p class="text-muted mb-0">@Model.IssueDate.ToString("dd/MM/yyyy HH:mm")</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-tools text-secondary"></i>
+                    Thao tác nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
+                        <i class="fas fa-edit"></i> Chệnh sửa thông tin
+                    </a>
+                    @if (Model.HasCertificateFile)
+                    {
+                        <a href="@Model.CertificateUrl" target="_blank" class="btn btn-outline-success">
+                            <i class="fas fa-download"></i> Tải xuđng chứng chệ
+                        </a>
+                    }
+                    <button type="button" class="btn btn-outline-warning" onclick="regenerateCertificate(@Model.Id)">
+                        <i class="fas fa-sync"></i> Tạo lại chứng chệ
+                    </button>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
+                        <i class="fas fa-trash"></i> Xóa chứng chệ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.progress-circle {
+    position: relative;
+    display: inline-block;
+}
+
+.progress-circle-inner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.progress-percentage {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #dee2e6;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #dee2e6;
+}
+
+.timeline-content h6 {
+    margin-bottom: 5px;
+    font-size: 0.9rem;
+}
+
+.timeline-content p {
+    font-size: 0.8rem;
+}
+</style>
+
+<script>
+function regenerateCertificate(certificateId) {
+    if (confirm('Bạn có chắc chắn muđn tạo lại chứng chệ này? Sđ chứng chệ mơi sẽ được tạo.')) {
+        fetch(`/Admin/Certificates/RegenerateCertificate/${certificateId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                toastr.success(data.message);
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                toastr.error(data.message);
+            }
+        })
+        .catch(error => {
+            toastr.error('Có lỗi xảy ra khi tạo lại chứng chệ');
+        });
+    }
+}
+</script>

@@ -1,0 +1,589 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.LessonProgressStatisticsViewModel
+@{
+    ViewData["Title"] = "Thđng kê Tiến độ Học tập";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-chart-bar text-info"></i>
+                Thđng kê Tiến độ Học tập
+            </h1>
+            <p class="admin-page-subtitle">Báo cáo và phân tích dữ liệu tiến độ học tập</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-list"></i> Danh sách
+            </a>
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-plus"></i> Tạo mơi
+            </a>
+            <button onclick="window.print()" class="btn btn-outline-primary">
+                <i class="fas fa-print"></i> In báo cáo
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Overview Cards -->
+<div class="admin-summary-cards">
+    <div class="row">
+        <div class="col-lg-3 col-md-6">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-primary">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.TotalProgresses</h3>
+                    <p>Tổng tiến độ</p>
+                    <small class="text-muted">Tất cả tiến độ đã tạo</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-success">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.CompletedProgresses</h3>
+                    <p>Đã hoàn thành</p>
+                    <small class="text-muted">Tiến độ 100%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.InProgressProgresses</h3>
+                    <p>Đang học</p>
+                    <small class="text-muted">Tiến độ 1-99%</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-info">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.TotalLearners</h3>
+                    <p>Tổng học viên</p>
+                    <small class="text-muted">Học viên có tiến độ</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Progress Trend Chart -->
+    <div class="col-lg-8">
+        <div class="admin-chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line text-primary"></i>
+                    Xu hương tiến độ (30 ngày qua)
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="progressTrendChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Distribution -->
+    <div class="col-lg-4">
+        <div class="admin-chart-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-pie-chart text-success"></i>
+                    Phân bđ tiến độ
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="distributionChart" height="200"></canvas>
+                <div class="chart-legend mt-3">
+                    @foreach (var dist in Model.ProgressDistribution)
+                    {
+                        <div class="legend-item">
+                            <span class="legend-color bg-@(GetDistributionColor(dist.Range))"></span>
+                            <span>@dist.Range (@dist.Count)</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Top Learners -->
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-trophy text-warning"></i>
+                    Top học viên xuất sắc
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopLearners.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Học viên</th>
+                                    <th>Hoàn thành</th>
+                                    <th>Tỷ lệ</th>
+                                    <th>Thời gian</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var learner in Model.TopLearners)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="learner-info">
+                                                <strong>@learner.UserName</strong>
+                                                <br>
+                                                <small class="text-muted">@learner.UserEmail</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@learner.CompletedLessons</span>
+                                            <small class="text-muted">/@learner.TotalLessons</small>
+                                        </td>
+                                        <td>
+                                            <div class="progress mb-1" style="height: 6px;">
+                                                <div class="progress-bar bg-@(learner.CompletionRate >= 80 ? "success" : learner.CompletionRate >= 50 ? "warning" : "info")" 
+                                                     style="width: @learner.CompletionRate%"></div>
+                                            </div>
+                                            <small class="text-muted">@learner.CompletionRate.ToString("F1")%</small>
+                                        </td>
+                                        <td>
+                                            <span class="text-info">@learner.TotalTimeSpent.ToString("F1")h</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-chart-bar fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Chưa có dữ liệu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Lessons -->
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-star text-info"></i>
+                    Bài học phổ biến nhất
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopLessons.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Bài học</th>
+                                    <th>Học viên</th>
+                                    <th>Hoàn thành</th>
+                                    <th>Tỷ lệ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var lesson in Model.TopLessons)
+                                {
+                                    <tr>
+                                        <td>
+                                            <div class="lesson-info">
+                                                <strong>@lesson.LessonTitle</strong>
+                                                <br>
+                                                <small class="text-muted">@lesson.CourseTitle</small>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">@lesson.TotalLearners</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-success">@lesson.CompletedLearners</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress mb-1" style="height: 6px;">
+                                                <div class="progress-bar bg-@(lesson.CompletionRate >= 80 ? "success" : lesson.CompletionRate >= 50 ? "warning" : "info")" 
+                                                     style="width: @lesson.CompletionRate%"></div>
+                                            </div>
+                                            <small class="text-muted">@lesson.CompletionRate.ToString("F1")%</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-play-circle fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Chưa có dữ liệu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Progress -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-clock text-info"></i>
+                    Tiến độ gần đây
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentProgresses.Any())
+                {
+                    <div class="recent-progresses">
+                        @foreach (var progressItem in Model.RecentProgresses)
+                        {
+                            <div class="recent-item">
+                                <div class="recent-icon">
+                                    <i class="fas fa-@(progressItem.IsCompleted ? "check-circle text-success" : "clock text-warning")"></i>
+                                </div>
+                                <div class="recent-content">
+                                    <div class="recent-title">
+                                        <a asp-action="Details" asp-route-id="@progressItem.Id" class="text-decoration-none">
+                                            @progressItem.LessonTitle
+                                        </a>
+                                    </div>
+                                    <div class="recent-details">
+                                        <small class="text-muted">@progressItem.UserName</small>
+                                        <div class="progress mt-1" style="height: 4px;">
+                                            <div class="progress-bar bg-@(progressItem.IsCompleted ? "success" : progressItem.ProgressPercentage > 50 ? "warning" : "info")" 
+                                                 style="width: @progressItem.ProgressPercentage%"></div>
+                                        </div>
+                                        <small class="text-@(progressItem.IsCompleted ? "success" : "info")">
+                                            @progressItem.ProgressPercentage.ToString("F1")%
+                                        </small>
+                                    </div>
+                                    <div class="recent-time">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock"></i>
+                                            @progressItem.UpdatedAt.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-chart-line fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Chưa có tiến độ nào</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Progress Summary -->
+    <div class="col-lg-6">
+        <div class="admin-table-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-graduation-cap text-primary"></i>
+                    Tóm tắt theo khóa học
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.CourseProgressSummaries.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Khóa học</th>
+                                    <th>Bài học</th>
+                                    <th>Học viên</th>
+                                    <th>Tiến độ TB</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var course in Model.CourseProgressSummaries)
+                                {
+                                    <tr>
+                                        <td>
+                                            <strong>@course.CourseTitle</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">@course.TotalLessons</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">@course.TotalLearners</span>
+                                        </td>
+                                        <td>
+                                            <div class="progress mb-1" style="height: 6px;">
+                                                <div class="progress-bar bg-@(course.AverageProgress >= 80 ? "success" : course.AverageProgress >= 50 ? "warning" : "info")" 
+                                                     style="width: @course.AverageProgress%"></div>
+                                            </div>
+                                            <small class="text-muted">@course.AverageProgress.ToString("F1")%</small>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-3">
+                        <i class="fas fa-graduation-cap fa-2x text-muted mb-2"></i>
+                        <p class="text-muted">Chưa có dữ liệu</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Stats -->
+<div class="row">
+    <div class="col-lg-12">
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Thông tin chi tiết
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="detail-stat">
+                            <div class="stat-number text-primary">@Model.AverageProgress.ToString("F1")%</div>
+                            <div class="stat-label">Tiến độ trung bình</div>
+                            <small class="text-muted">Trung bình tất cả tiến độ</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-stat">
+                            <div class="stat-number text-success">@Model.AverageTimeSpent.ToString("F1")h</div>
+                            <div class="stat-label">Thời gian TB</div>
+                            <small class="text-muted">Thời gian học trung bình</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-stat">
+                            <div class="stat-number text-info">@Model.ActiveLearners</div>
+                            <div class="stat-label">Học viên hoạt động</div>
+                            <small class="text-muted">Học viên có hoạt động tháng này</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="detail-stat">
+                            <div class="stat-number text-warning">@(Model.TotalProgresses > 0 ? (Model.CompletedProgresses * 100.0 / Model.TotalProgresses).ToString("F1") : "0")%</div>
+                            <div class="stat-label">Tỷ lệ hoàn thành</div>
+                            <small class="text-muted">Phần trăm tiến độ hoàn thành</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@functions {
+    string GetDistributionColor(string range)
+    {
+        return range switch
+        {
+            "0%" => "secondary",
+            "1-25%" => "danger",
+            "26-50%" => "warning",
+            "51-75%" => "info",
+            "76-99%" => "primary",
+            "100%" => "success",
+            _ => "secondary"
+        };
+    }
+}
+
+<script>
+// Progress Trend Chart
+const trendCtx = document.getElementById('progressTrendChart').getContext('2d');
+const trendData = @Html.Raw(Json.Serialize(Model.TrendData.Select(t => new { 
+    date = t.Date.ToString("dd/MM"), 
+    completed = t.CompletedCount,
+    started = t.StartedCount,
+    average = t.AverageProgress
+})));
+
+new Chart(trendCtx, {
+    type: 'line',
+    data: {
+        labels: trendData.map(d => d.date),
+        datasets: [{
+            label: 'Hoàn thành',
+            data: trendData.map(d => d.completed),
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            borderWidth: 2,
+            fill: false
+        }, {
+            label: 'Bắt đầu',
+            data: trendData.map(d => d.started),
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            borderWidth: 2,
+            fill: false
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+// Distribution Chart
+const distCtx = document.getElementById('distributionChart').getContext('2d');
+const distData = @Html.Raw(Json.Serialize(Model.ProgressDistribution));
+
+new Chart(distCtx, {
+    type: 'doughnut',
+    data: {
+        labels: distData.map(d => d.range),
+        datasets: [{
+            data: distData.map(d => d.count),
+            backgroundColor: [
+                '#6c757d', // 0%
+                '#dc3545', // 1-25%
+                '#ffc107', // 26-50%
+                '#17a2b8', // 51-75%
+                '#007bff', // 76-99%
+                '#28a745'  // 100%
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.recent-progresses {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.recent-item {
+    display: flex;
+    align-items: start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.recent-item:last-child {
+    border-bottom: none;
+}
+
+.recent-icon {
+    margin-right: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+.recent-content {
+    flex: 1;
+}
+
+.recent-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.recent-details {
+    margin-bottom: 0.25rem;
+}
+
+.recent-time {
+    font-size: 0.8rem;
+}
+
+.detail-stat {
+    text-align: center;
+    padding: 1rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.learner-info strong, .lesson-info strong {
+    font-size: 0.9rem;
+}
+</style>

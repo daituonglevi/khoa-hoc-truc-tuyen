@@ -1,0 +1,350 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CommentDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết bình luận";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">
+                <i class="fas fa-comment-dots text-primary me-2"></i>
+                Chi tiết bình luận #@Model.Id
+            </h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index")">Bình luận</a></li>
+                    <li class="breadcrumb-item active">Chi tiết</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>
+                Quay lại
+            </a>
+            @if (!Model.IsDelete)
+            {
+                <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning">
+                    <i class="fas fa-edit me-1"></i>
+                    Chệnh sửa
+                </a>
+                <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i>
+                    Xóa
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Comment -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-comment me-2"></i>
+                        Nội dung bình luận
+                        @if (Model.IsDelete)
+                        {
+                            <span class="badge bg-danger ms-2">Đã xóa</span>
+                        }
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Parent Comment (if this is a reply) -->
+                    @if (Model.ParentCommentId.HasValue)
+                    {
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-reply me-1"></i>
+                                Phản hôi cho bình luận của @Model.ParentUserName
+                            </h6>
+                            <p class="mb-0">@Model.ParentCommentContent</p>
+                        </div>
+                    }
+
+                    <!-- User Info -->
+                    <div class="d-flex align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">@Model.UserName</h6>
+                            <small class="text-muted">@Model.UserEmail</small>
+                        </div>
+                        <div class="ms-auto">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>
+                                @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-edit me-1"></i>
+                                    Cập nhật: @Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Comment Content -->
+                    <div class="comment-content @(Model.IsDelete ? "text-decoration-line-through text-muted" : "")">
+                        <p class="mb-0">@Model.Content</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Replies -->
+            @if (Model.Replies.Any())
+            {
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-comments me-2"></i>
+                            Phản hôi (@Model.Replies.Count)
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var reply in Model.Replies.OrderBy(r => r.CreatedAt))
+                        {
+                            <div class="border-start border-3 border-primary ps-3 mb-3 @(reply.IsDelete ? "opacity-50" : "")">
+                                <div class="d-flex align-items-center mb-2">
+                                    <div>
+                                        <h6 class="mb-0">@reply.UserName</h6>
+                                        <small class="text-muted">@reply.UserEmail</small>
+                                    </div>
+                                    <div class="ms-auto">
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>
+                                            @reply.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                        </small>
+                                        @if (reply.IsDelete)
+                                        {
+                                            <span class="badge bg-danger ms-2">Đã xóa</span>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="@(reply.IsDelete ? "text-decoration-line-through text-muted" : "")">
+                                    <p class="mb-0">@reply.Content</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Lesson Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-play-circle me-2"></i>
+                        Thông tin bài học
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Bài học:</label>
+                        <div>
+                            <strong>@Model.LessonTitle</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted">Khóa học:</label>
+                        <div>
+                            <strong>@Model.CourseTitle</strong>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label text-muted">ID Bài học:</label>
+                        <div>
+                            <span class="badge bg-info">#@Model.LessonId</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comment Stats -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Thđng kê
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-0">@Model.Replies.Count</h4>
+                                <small class="text-muted">Phản hôi</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-success mb-0">@Model.Replies.Count(r => !r.IsDelete)</h4>
+                            <small class="text-muted">Hiăn thị</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Thao tác
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (!Model.IsDelete)
+                    {
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Edit", new { id = Model.Id })" class="btn btn-warning">
+                                <i class="fas fa-edit me-1"></i>
+                                Chệnh sửa bình luận
+                            </a>
+                            <a href="@Url.Action("Delete", new { id = Model.Id })" class="btn btn-danger">
+                                <i class="fas fa-trash me-1"></i>
+                                Xóa bình luận
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-success restore-btn" data-id="@Model.Id">
+                                <i class="fas fa-undo me-1"></i>
+                                Khôi phục bình luận
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Lịch sử
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-marker bg-primary"></div>
+                            <div class="timeline-content">
+                                <h6 class="timeline-title">Tạo bình luận</h6>
+                                <p class="timeline-text">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-warning"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Cập nhật</h6>
+                                    <p class="timeline-text">@Model.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                                </div>
+                            </div>
+                        }
+                        @if (Model.IsDelete)
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-danger"></div>
+                                <div class="timeline-content">
+                                    <h6 class="timeline-title">Đã xóa</h6>
+                                    <p class="timeline-text">Bình luận đã bị xóa</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-marker {
+            position: absolute;
+            left: -12px;
+            top: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+        
+        .timeline-content {
+            margin-left: 10px;
+        }
+        
+        .timeline-title {
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .timeline-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0;
+        }
+        
+        .comment-content {
+            line-height: 1.6;
+            word-wrap: break-word;
+        }
+    </style>
+}
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle restore button click
+            $('.restore-btn').click(function() {
+                var commentId = $(this).data('id');
+                
+                if (confirm('Bạn có chắc chắn muđn khôi phục bình luận này?')) {
+                    $.post('@Url.Action("Restore")', { id: commentId })
+                        .done(function(response) {
+                            if (response.success) {
+                                toastr.success(response.message);
+                                location.reload();
+                            } else {
+                                toastr.error(response.message);
+                            }
+                        })
+                        .fail(function() {
+                            toastr.error('Có lỗi xảy ra khi khôi phục bình luận');
+                        });
+                }
+            });
+        });
+    </script>
+}
+

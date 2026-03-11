@@ -1,0 +1,260 @@
+@model UsersIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Users";
+}
+
+@Html.AntiForgeryToken()
+
+<!-- Admin Users Management -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="admin-title">
+            <i class="fas fa-users me-2"></i>
+            Quản lý Users
+        </h2>
+        <p class="text-muted">Tổng cộng: <strong>@Model.TotalUsers</strong> users</p>
+    </div>
+
+    <div>
+        <button class="admin-btn admin-btn-primary" onclick="exportUsers()">
+            <i class="fas fa-download me-2"></i>
+            Xuất Excel
+        </button>
+    </div>
+</div>
+
+<!-- Search and Filter -->
+<div class="admin-card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" class="form-control" name="search" value="@Model.Search"
+                           placeholder="Tìm kiếm theo tên hoặc email...">
+                </div>
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="admin-btn admin-btn-primary me-2">
+                    <i class="fas fa-search me-1"></i>
+                    Tìm kiếm
+                </button>
+                <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Users Table -->
+<div class="admin-card">
+    <div class="card-header bg-transparent border-0 py-3">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-list me-2"></i>
+            Danh sách Users
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        @if (Model.Users.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="border-0">User</th>
+                            <th class="border-0">Email</th>
+                            <th class="border-0">Quyền</th>
+                            <th class="border-0">Trạng thái</th>
+                            <th class="border-0">Ngày tạo</th>
+                            <th class="border-0">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td class="border-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <strong>@user.FullName</strong>
+                                            <br>
+                                            <small class="text-muted">@user.UserName</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="border-0">
+                                    <span class="text-muted">@user.Email</span>
+                                    @if (user.EmailConfirmed)
+                                    {
+                                        <i class="fas fa-check-circle text-success ms-1" title="Email đã xác thực"></i>
+                                    }
+                                </td>
+                                <td class="border-0">
+                                    @{
+                                        var userRoles = Model.UserRoles.ContainsKey(user.Id) ? Model.UserRoles[user.Id] : new List<string>();
+                                        var currentRole = userRoles.FirstOrDefault() ?? "Student";
+                                    }
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-user-tag me-1"></i>
+                                            @currentRole
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            @foreach (var role in Model.AllRoles)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item @(currentRole == role.Name ? "active" : "")"
+                                                       href="#" onclick="changeUserRole(@user.Id, '@role.Name')">
+                                                        <i class="fas fa-@(role.Name == "Admin" ? "crown" : role.Name == "Instructor" ? "chalkboard-teacher" : "graduation-cap") me-2"></i>
+                                                        @role.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td class="border-0">
+                                    @if (user.IsVerified)
+                                    {
+                                        <span class="badge bg-success">Hoạt động</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">Chưa kích hoạt</span>
+                                    }
+                                </td>
+                                <td class="border-0">
+                                    <span class="text-muted">@user.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                                </td>
+                                <td class="border-0">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-warning"
+                                                onclick="toggleUserStatus('@user.Id', @user.IsVerified.ToString().ToLower())"
+                                                title="@(user.IsVerified ? "Vô hiệu hóa" : "Kích hoạt")">
+                                            <i class="fas fa-@(user.IsVerified ? "ban" : "check")"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không tìm thấy user nào</h5>
+                @if (!string.IsNullOrEmpty(Model.Search))
+                {
+                    <p class="text-muted">Thử tìm kiếm vơi từ khóa khác</p>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+            @if (Model.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, search = Model.Search })">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            }
+
+            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { page = i, search = Model.Search })">@i</a>
+                </li>
+            }
+
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, search = Model.Search })">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@section Scripts {
+    <script>
+        function toggleUserStatus(userId, currentStatus) {
+            const action = currentStatus ? 'vô hiệu hóa' : 'kích hoạt';
+
+            if (confirm(`Bạn có chắc chắn muđn ${action} user này?`)) {
+                const formData = new FormData();
+                formData.append('id', userId);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                fetch('@Url.Action("ToggleStatus")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+
+        function changeUserRole(userId, roleName) {
+            if (confirm(`Bạn có chắc chắn muđn thay đổi quyền thành ${roleName}?`)) {
+                const formData = new FormData();
+                formData.append('userId', userId);
+                formData.append('roleName', roleName);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+
+                fetch('@Url.Action("ChangeRole")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+
+        function exportUsers() {
+            showAdminNotification('Tính năng xuất Excel đang được phát triăn', 'info');
+        }
+    </script>
+}

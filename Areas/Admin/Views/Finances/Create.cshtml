@@ -1,0 +1,221 @@
+@model Finance
+@{
+    ViewData["Title"] = "Thêm bản ghi Tài chính";
+}
+
+<!-- Admin Create Finance -->
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-plus me-2"></i>
+            Thêm bản ghi Tài chính
+        </h2>
+        <a asp-action="Index" class="admin-btn admin-btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Thông tin tài chính</h5>
+                </div>
+                <div class="admin-card-body">
+                    <form asp-action="Create" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Month" class="form-label">
+                                        Tháng <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Month" class="form-control" required>
+                                        @for (int i = 1; i <= 12; i++)
+                                        {
+                                            <option value="@i">Tháng @i</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Month" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Year" class="form-label">
+                                        Năm <span class="text-danger">*</span>
+                                    </label>
+                                    <select asp-for="Year" class="form-control" required>
+                                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                                        {
+                                            <option value="@i">@i</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="Year" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Revenue" class="form-label">
+                                        Doanh thu <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input asp-for="Revenue" type="number" step="0.01" class="form-control" 
+                                               placeholder="Nhập doanh thu" required />
+                                        <span class="input-group-text">VNĐ</span>
+                                    </div>
+                                    <span asp-validation-for="Revenue" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Fee" class="form-label">Phí</label>
+                                    <div class="input-group">
+                                        <input asp-for="Fee" type="number" step="0.01" class="form-control" 
+                                               placeholder="Nhập phí (tùy chọn)" />
+                                        <span class="input-group-text">VNĐ</span>
+                                    </div>
+                                    <span asp-validation-for="Fee" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Type" class="form-label">Loại</label>
+                                    <select asp-for="Type" class="form-control">
+                                        <option value="">-- Chọn loại --</option>
+                                        <option value="Course Sale">Bán khóa học</option>
+                                        <option value="Subscription">Đăng ký</option>
+                                        <option value="Commission">Hoa hông</option>
+                                        <option value="Refund">Hoàn tiền</option>
+                                        <option value="Other">Khác</option>
+                                    </select>
+                                    <span asp-validation-for="Type" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Description" class="form-label">Mô tả</label>
+                                    <textarea asp-for="Description" class="form-control" rows="4" 
+                                              placeholder="Nhập mô tả chi tiết (tùy chọn)"></textarea>
+                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                Lưu bản ghi
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary ms-2">
+                                <i class="fas fa-times me-2"></i>
+                                Hủy bỏ
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Hương dẫn</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Lưu ý khi tạo bản ghi:</h6>
+                        <ul class="mb-0">
+                            <li>Tháng và năm là bắt buộc</li>
+                            <li>Doanh thu phải là sđ dương</li>
+                            <li>Phí có thă đă trđng (mặc định = 0)</li>
+                            <li>Loại giúp phân loại doanh thu</li>
+                            <li>Mô tả chi tiết giúp theo dõi</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-success">
+                        <h6><i class="fas fa-calculator me-2"></i>Tính toán:</h6>
+                        <p class="mb-0">
+                            <strong>Doanh thu ròng = Doanh thu - Phí</strong><br>
+                            Hệ thđng sẽ tự động tính toán doanh thu ròng dựa trên doanh thu và phí bạn nhập.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h5 class="admin-card-title">Các loại phổ biến</h5>
+                </div>
+                <div class="admin-card-body">
+                    <div class="list-group list-group-flush">
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Bán khóa học</span>
+                            <span class="badge bg-primary">Course Sale</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Đăng ký</span>
+                            <span class="badge bg-success">Subscription</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Hoa hông</span>
+                            <span class="badge bg-info">Commission</span>
+                        </div>
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Hoàn tiền</span>
+                            <span class="badge bg-warning">Refund</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Auto-focus on revenue field
+            $('#Revenue').focus();
+            
+            // Calculate net revenue in real-time
+            function calculateNet() {
+                const revenue = parseFloat($('#Revenue').val()) || 0;
+                const fee = parseFloat($('#Fee').val()) || 0;
+                const net = revenue - fee;
+                
+                if (!$('#net-display').length) {
+                    $('#Fee').closest('.form-group').after(
+                        '<div id="net-display" class="alert alert-light mt-2">' +
+                        '<strong>Doanh thu ròng: <span id="net-amount">0</span> VNĐ</strong>' +
+                        '</div>'
+                    );
+                }
+                
+                $('#net-amount').text(net.toLocaleString());
+                
+                if (net < 0) {
+                    $('#net-display').removeClass('alert-light alert-success').addClass('alert-warning');
+                } else {
+                    $('#net-display').removeClass('alert-light alert-warning').addClass('alert-success');
+                }
+            }
+            
+            $('#Revenue, #Fee').on('input', calculateNet);
+            calculateNet(); // Initial calculation
+        });
+    </script>
+}

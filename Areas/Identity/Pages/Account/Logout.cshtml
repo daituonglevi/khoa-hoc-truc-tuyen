@@ -1,0 +1,22 @@
+@page
+@model LogoutModel
+@{
+    ViewData["Title"] = "Đăng xuất";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-sign-out-alt fa-3x text-muted mb-3"></i>
+                    <h4>Bạn đã đăng xuất thành công</h4>
+                    <p class="text-muted">Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

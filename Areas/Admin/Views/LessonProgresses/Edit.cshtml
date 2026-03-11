@@ -1,0 +1,300 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.LessonProgressEditViewModel
+@{
+    ViewData["Title"] = "Chệnh sửa Tiến độ Học tập";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-edit text-primary"></i>
+                Chệnh sửa Tiến độ Học tập
+            </h1>
+            <p class="admin-page-subtitle">Cập nhật tiến độ học tập</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="admin-form-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-line text-primary"></i>
+                    Thông tin Tiến độ
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" class="admin-form">
+                    <input asp-for="Id" type="hidden">
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="LessonId" class="form-label required">Bài học</label>
+                                <select asp-for="LessonId" class="form-select">
+                                    <option value="">-- Chọn bài học --</option>
+                                    @foreach (var lesson in Model.AvailableLessons)
+                                    {
+                                        <option value="@lesson.Id" selected="@(Model.LessonId == lesson.Id)">
+                                            Bài học @lesson.Title
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="LessonId" class="text-danger"></span>
+                                <small class="form-text text-muted">Thay đổi bài học có thă ảnh hưởng đến dữ liệu</small>
+                                <span asp-validation-for="LessonId" class="text-danger"></span>
+                                <small class="form-text text-muted">Thay đổi bài học có thă ảnh hưởng đến dữ liệu</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="UserId" class="form-label required">Học viên</label>
+                                <select asp-for="UserId" class="form-select">
+                                    <option value="">-- Chọn học viên --</option>
+                                    @foreach (var user in Model.AvailableUsers)
+                                    {
+                                        <option value="@user.Id" selected="@(Model.UserId == user.Id)">
+                                            @user.UserName (@user.Email)
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="UserId" class="text-danger"></span>
+                                <small class="form-text text-muted">Thay đổi học viên có thă ảnh hưởng đến dữ liệu</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="ProgressPercentage" class="form-label required">Tiến độ (%)</label>
+                                <input asp-for="ProgressPercentage" type="number" class="form-control" 
+                                       min="0" max="100" step="0.1" onchange="updateProgressPreview()">
+                                <span asp-validation-for="ProgressPercentage" class="text-danger"></span>
+                                <small class="form-text text-muted">Nhập giá trị từ 0 đến 100</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="TimeSpent" class="form-label">Thời gian học (phút)</label>
+                                <input asp-for="TimeSpent" type="number" class="form-control" 
+                                       min="0" step="0.1">
+                                <span asp-validation-for="TimeSpent" class="text-danger"></span>
+                                <small class="form-text text-muted">Thời gian đã dành đă học bài này</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Status" class="form-label">Trạng thái</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="Not Started">Chưa bắt đầu</option>
+                                    <option value="In Progress">Đang học</option>
+                                    <option value="Completed">Hoàn thành</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="Passing" class="form-label">Kết quả</label>
+                                <select asp-for="Passing" class="form-select">
+                                    <option value="">Chưa xác định</option>
+                                    <option value="1">Đạt</option>
+                                    <option value="0">Không đạt</option>
+                                </select>
+                                <span asp-validation-for="Passing" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="CountDoing" class="form-label">Sđ lần thực hiện</label>
+                                <input asp-for="CountDoing" type="number" class="form-control" min="1">
+                                <span asp-validation-for="CountDoing" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="HighestMark" class="form-label">Điăm cao nhất</label>
+                                <input asp-for="HighestMark" type="number" class="form-control" 
+                                       min="0" max="100" step="0.1">
+                                <span asp-validation-for="HighestMark" class="text-danger"></span>
+                                <small class="form-text text-muted">Điăm cao nhất đạt được (nếu có)</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-label">Preview tiến độ</label>
+                                <div class="progress" style="height: 20px;">
+                                    <div id="progressPreview" class="progress-bar" style="width: @Model.ProgressPercentage%">
+                                        @Model.ProgressPercentage.ToString("F1")%
+                                    </div>
+                                </div>
+                                <small class="form-text text-muted">Xem trươc thanh tiến độ</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Current Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Thông tin hiện tại
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="detail-item">
+                    <label>ID Tiến độ:</label>
+                    <span class="detail-value">#@Model.Id</span>
+                </div>
+                <div class="detail-item">
+                    <label>Bài học:</label>
+                    <span class="detail-value">Bài học @Model.LessonId</span>
+                </div>
+                <div class="detail-item">
+                    <label>Học viên:</label>
+                    <span class="detail-value">@Model.UserId</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tiến độ hiện tại:</label>
+                    <div class="progress mb-1" style="height: 8px;">
+                        <div class="progress-bar bg-@(Model.ProgressPercentage >= 100 ? "success" : Model.ProgressPercentage > 50 ? "warning" : "info")" 
+                             style="width: @Model.ProgressPercentage%"></div>
+                    </div>
+                    <small class="text-muted">@Model.ProgressPercentage.ToString("F1")%</small>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày tạo:</label>
+                    <span class="detail-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help Card -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-question-circle text-primary"></i>
+                    Hương dẫn
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="help-content">
+                    <h6><i class="fas fa-info-circle text-info"></i> Chệnh sửa tiến độ:</h6>
+                    <ul class="help-list">
+                        <li>Thay đổi bài học hoặc học viên nếu cần</li>
+                        <li>Cập nhật tiến độ hiện tại (0-100%)</li>
+                        <li>Nhập thời gian học (nếu có)</li>
+                        <li>Chọn trạng thái và kết quả</li>
+                        <li>Nhập sđ lần thực hiện và điăm cao nhất (nếu có)</li>
+                    </ul>
+                    <h6><i class="fas fa-exclamation-circle text-warning"></i> Lưu ý:</h6>
+                    <ul class="help-list">
+                        <li>Tiến độ phải từ 0 đến 100%</li>
+                        <li>Thời gian học phải lơn hơn hoặc bằng 0</li>
+                        <li>Điăm cao nhất phải từ 0 đến 100</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateProgressPreview() {
+            const progress = document.getElementById('ProgressPercentage').value;
+            const preview = document.getElementById('progressPreview');
+            preview.style.width = progress + '%';
+            preview.textContent = progress + '%';
+
+            // Update color based on progress
+            if (progress >= 100) {
+                preview.className = 'progress-bar bg-success';
+            } else if (progress >= 75) {
+                preview.className = 'progress-bar bg-info';
+            } else if (progress >= 50) {
+                preview.className = 'progress-bar bg-primary';
+            } else if (progress >= 25) {
+                preview.className = 'progress-bar bg-warning';
+            } else {
+                preview.className = 'progress-bar bg-danger';
+            }
+        }
+
+        // Initialize progress preview
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgressPreview();
+        });
+    </script>
+}
+
+<style>
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #495057;
+}
+
+.help-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.help-content h6:first-child {
+    margin-top: 0;
+}
+
+.help-list {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
+}
+
+.help-list li {
+    margin-bottom: 0.25rem;
+}
+</style>

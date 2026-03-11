@@ -1,0 +1,336 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.LessonProgressDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết Tiến độ Học tập";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-chart-line text-primary"></i>
+                Chi tiết Tiến độ Học tập
+            </h1>
+            <p class="admin-page-subtitle">Thông tin chi tiết tiến độ học tập</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Chệnh sửa
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Progress Information -->
+    <div class="col-lg-8">
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-primary"></i>
+                    Thông tin Tiến độ
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Tiến độ:</label>
+                            <span class="detail-value">#@Model.Id</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Trạng thái:</label>
+                            <span class="badge bg-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 0 ? "warning" : "secondary") fs-6">
+                                @Model.ProgressStatus
+                            </span>
+                            @if (Model.IsPassing)
+                            {
+                                <span class="badge bg-success ms-2">Đạt</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Tiến độ hoàn thành:</label>
+                            <div class="progress-detail">
+                                <div class="progress mb-2" style="height: 20px;">
+                                    <div class="progress-bar bg-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 50 ? "warning" : "info")"
+                                         style="width: @Model.ProgressPercentage%">
+                                        @Model.ProgressPercentage.ToString("F1")%
+                                    </div>
+                                </div>
+                                <div class="progress-stats">
+                                    <span class="text-primary">@Model.ProgressPercentage.ToString("F1")% hoàn thành</span>
+                                    @if (Model.TimeSpent.HasValue)
+                                    {
+                                        <span class="text-muted ms-3">
+                                            <i class="fas fa-clock"></i> @Model.TimeSpent.Value.ToString("F1") phút
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @if (Model.HighestMark.HasValue)
+                    {
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label>Điăm cao nhất:</label>
+                                <span class="detail-value">
+                                    <span class="badge bg-@(Model.HighestMark >= 80 ? "success" : Model.HighestMark >= 60 ? "warning" : "danger") fs-6">
+                                        @Model.HighestMark.Value.ToString("F1")
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.CountDoing.HasValue)
+                    {
+                        <div class="col-md-6">
+                            <div class="detail-item">
+                                <label>Sđ lần thực hiện:</label>
+                                <span class="detail-value text-info">@Model.CountDoing.Value lần</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Lesson Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-play-circle text-success"></i>
+                    Thông tin Bài học
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>ID Bài học:</label>
+                            <span class="detail-value">#@Model.LessonId</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-user text-info"></i>
+                    Thông tin Học viên
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>ID Học viên:</label>
+                            <span class="detail-value">@Model.UserId</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-item">
+                            <label>Tên học viên:</label>
+                            <span class="detail-value">@Model.UserName</span>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="detail-item">
+                            <label>Email:</label>
+                            <span class="detail-value">@Model.UserEmail</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress History -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-history text-warning"></i>
+                    Lịch sử Tiến độ
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.ProgressHistory.Any())
+                {
+                    <div class="timeline">
+                        @foreach (var history in Model.ProgressHistory.OrderByDescending(h => h.Date))
+                        {
+                            <div class="timeline-item">
+                                <div class="timeline-marker bg-@(history.Action == "Completed" ? "success" : history.Action == "Started" ? "primary" : "info")"></div>
+                                <div class="timeline-content">
+                                    <h6>@history.Action</h6>
+                                    <p class="text-muted mb-1">@history.Date.ToString("dd/MM/yyyy HH:mm")</p>
+                                    <div class="timeline-details">
+                                        <span class="badge bg-@(history.ProgressPercentage >= 100 ? "success" : history.ProgressPercentage > 0 ? "warning" : "secondary")">
+                                            @history.ProgressPercentage.ToString("F1")%
+                                        </span>
+                                        @if (history.TimeSpent.HasValue)
+                                        {
+                                            <span class="text-muted ms-2">
+                                                <i class="fas fa-clock"></i> @history.TimeSpent.Value.ToString("F1") phút
+                                            </span>
+                                        }
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(history.Notes))
+                                    {
+                                        <small class="text-muted">@history.Notes</small>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Chưa có lịch sử</h6>
+                        <p class="text-muted">Chưa có thay đổi nào được ghi nhận</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <!-- Quick Stats -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie text-primary"></i>
+                    Thđng kê nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Tiến độ</div>
+                            <div class="stat-value text-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 0 ? "warning" : "secondary")">
+                                @Model.ProgressPercentage.ToString("F1")%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Thời gian học</div>
+                            <div class="stat-value text-info">
+                                @(Model.TimeSpent.HasValue ? $"{Model.TimeSpent.Value:F1} phút" : "Chưa có")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Sđ lần thực hiện</div>
+                            <div class="stat-value text-primary">
+                                @(Model.CountDoing.HasValue ? $"{Model.CountDoing.Value} lần" : "Chưa có")
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-label">Điăm cao nhất</div>
+                            <div class="stat-value text-@(Model.HighestMark >= 80 ? "success" : Model.HighestMark >= 60 ? "warning" : "danger")">
+                                @(Model.HighestMark.HasValue ? $"{Model.HighestMark.Value:F1}" : "Chưa có")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-cog text-secondary"></i>
+                    Thao tác
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="action-buttons">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-edit"></i> Chệnh sửa tiến độ
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger w-100">
+                        <i class="fas fa-trash"></i> Xóa tiến độ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-left: 30px;
+        margin-bottom: 20px;
+    }
+
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .timeline-content h6 {
+        margin: 0 0 5px;
+    }
+
+    .timeline-details {
+        margin-top: 10px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+</style>

@@ -1,0 +1,313 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CertificateIndexViewModel
+@{
+    ViewData["Title"] = "Quản lý Chứng chỉ";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-certificate text-warning"></i>
+                Quản lý Chứng chỉ
+            </h1>
+            <p class="admin-page-subtitle">Quản lý chứng chỉ hoàn thành khóa học</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Create" class="btn btn-success">
+                <i class="fas fa-plus"></i> Tạo chứng chỉ
+            </a>
+            <a asp-action="Generate" class="btn btn-primary">
+                <i class="fas fa-magic"></i> Tự động tạo
+            </a>
+            <a asp-action="Statistics" class="btn btn-info">
+                <i class="fas fa-chart-bar"></i> Thống kê
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="admin-filters-card">
+    <form method="get" class="admin-filters-form">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Tìm kiếm</label>
+                <input type="text" name="searchTerm" value="@Model.SearchTerm" class="form-control" 
+                       placeholder="Số chứng chỉ, tên khóa học...">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Khóa học</label>
+                <select name="courseId" class="form-select">
+                    <option value="">Tất cả khóa học</option>
+                    @foreach (var course in Model.AvailableCourses)
+                    {
+                        <option value="@course.Id" selected="@(Model.CourseId == course.Id)">
+                            @course.Title
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Người dùng</label>
+                <select name="userId" class="form-select">
+                    <option value="">Tất cả người dùng</option>
+                    @foreach (var user in Model.AvailableUsers)
+                    {
+                        <option value="@user.Id" selected="@(Model.UserId == user.Id)">
+                            @user.UserName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Trạng thái</label>
+                <select name="status" class="form-select">
+                    <option value="">Tất cả</option>
+                    <option value="issued" selected="@(Model.Status == "issued")">Đã cấp file</option>
+                    <option value="pending" selected="@(Model.Status == "pending")">Chưa có file</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-undo"></i> Reset
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row g-3 mt-2">
+            <div class="col-md-3">
+                <label class="form-label">Từ ngày</label>
+                <input type="date" name="fromDate" value="@Model.FromDate?.ToString("yyyy-MM-dd")" class="form-control">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Đến ngày</label>
+                <input type="date" name="toDate" value="@Model.ToDate?.ToString("yyyy-MM-dd")" class="form-control">
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Results Summary -->
+<div class="admin-summary-cards">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-primary">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.TotalItems</h3>
+                    <p>Tổng chứng chỉ</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-success">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.Certificates.Count(c => c.HasCertificateFile)</h3>
+                    <p>Đã có file</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.Certificates.Count(c => !c.HasCertificateFile)</h3>
+                    <p>Chưa có file</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="admin-summary-card">
+                <div class="summary-icon bg-info">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <div class="summary-content">
+                    <h3>@Model.Certificates.Count(c => c.IsCompleted)</h3>
+                    <p>Hoàn thành</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Certificates Table -->
+<div class="admin-table-card">
+    <div class="table-responsive">
+        <table class="table admin-table">
+            <thead>
+                <tr>
+                    <th>Số chứng chỉ</th>
+                    <th>Người dùng</th>
+                    <th>Khóa học</th>
+                    <th>Ngày cấp</th>
+                    <th>Tiến độ</th>
+                    <th>Trạng thái</th>
+                    <th>File</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Certificates.Any())
+                {
+                    @foreach (var certificate in Model.Certificates)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-certificate text-warning me-2"></i>
+                                    <div>
+                                        <strong>@certificate.CertificateNumber</strong>
+                                        <br>
+                                        <small class="text-muted">ID: @certificate.Id</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@certificate.UserName</strong>
+                                    <br>
+                                    <small class="text-muted">@certificate.UserEmail</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>@certificate.CourseTitle</strong>
+                                    <br>
+                                    <small class="text-muted">Đăng ký: @certificate.EnrollmentDate.ToString("dd/MM/yyyy")</small>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="text-primary">@certificate.IssueDate.ToString("dd/MM/yyyy HH:mm")</span>
+                            </td>
+                            <td>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar bg-success" style="width: @certificate.Progress%"></div>
+                                </div>
+                                <small class="text-muted">@certificate.Progress.ToString("F1")%</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-@(certificate.IsCompleted ? "success" : "warning")">
+                                    @certificate.EnrollmentStatusText
+                                </span>
+                            </td>
+                            <td>
+                                @if (certificate.HasCertificateFile)
+                                {
+                                    <a href="@certificate.CertificateUrl" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file-pdf"></i> Xem
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="fas fa-times"></i> Chưa có
+                                    </span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@certificate.Id" 
+                                       class="btn btn-sm btn-outline-info" title="Chi tiết">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@certificate.Id" 
+                                       class="btn btn-sm btn-outline-primary" title="Chỉnh sửa">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="Delete" asp-route-id="@certificate.Id" 
+                                       class="btn btn-sm btn-outline-danger" title="Xóa">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8" class="text-center py-4">
+                            <div class="empty-state">
+                                <i class="fas fa-certificate fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">Không có chứng chỉ nào</h5>
+                                <p class="text-muted">Chưa có chứng chỉ nào được tạo hoặc không khớp với bộ lọc</p>
+                                <a asp-action="Create" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Tạo chứng chỉ đầu tiên
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Certificates pagination">
+        <ul class="pagination justify-content-center">
+            @if (Model.CurrentPage > 1)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(Model.CurrentPage - 1)"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-courseId="@Model.CourseId"
+                       asp-route-userId="@Model.UserId"
+                       asp-route-status="@Model.Status"
+                       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            }
+
+            @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+            {
+                <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@i"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-courseId="@Model.CourseId"
+                       asp-route-userId="@Model.UserId"
+                       asp-route-status="@Model.Status"
+                       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                        @i
+                    </a>
+                </li>
+            }
+
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" 
+                       asp-route-page="@(Model.CurrentPage + 1)"
+                       asp-route-searchTerm="@Model.SearchTerm"
+                       asp-route-courseId="@Model.CourseId"
+                       asp-route-userId="@Model.UserId"
+                       asp-route-status="@Model.Status"
+                       asp-route-fromDate="@Model.FromDate?.ToString("yyyy-MM-dd")"
+                       asp-route-toDate="@Model.ToDate?.ToString("yyyy-MM-dd")">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            }
+        </ul>
+    </nav>
+}

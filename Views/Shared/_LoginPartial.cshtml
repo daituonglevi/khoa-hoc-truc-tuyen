@@ -1,0 +1,73 @@
+@using Microsoft.AspNetCore.Identity
+@using ELearningWebsite.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-user me-1"></i>
+            @User.Identity?.Name
+        </a>
+        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+            @if (User.IsInRole("Admin"))
+            {
+                <li><a class="dropdown-item" href="@Url.Action("Index", "Home", new { area = "Admin" })">
+                    <i class="fas fa-shield-alt me-2"></i>Admin Dashboard
+                </a></li>
+                <li><a class="dropdown-item" href="@Url.Action("Index", "Users", new { area = "Admin" })">
+                    <i class="fas fa-users me-2"></i>Quản lý Users
+                </a></li>
+                <li><a class="dropdown-item" href="@Url.Action("Index", "Courses", new { area = "Admin" })">
+                    <i class="fas fa-book me-2"></i>Quản lý Khóa học
+                </a></li>
+            }
+            else if (User.IsInRole("Instructor"))
+            {
+                <li><a class="dropdown-item" href="@Url.Action("Index", "Home", new { area = "Admin" })">
+                    <i class="fas fa-chalkboard-teacher me-2"></i>Instructor Dashboard
+                </a></li>
+                <li><a class="dropdown-item" href="@Url.Action("Index", "Courses", new { area = "Admin" })">
+                    <i class="fas fa-book me-2"></i>Quản lý Khóa học
+                </a></li>
+            }
+            else
+            {
+                <li><a class="dropdown-item" href="@Url.Action("Dashboard", "User")">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a></li>
+                <li><a class="dropdown-item" href="@Url.Action("MyCourses", "User")">
+                    <i class="fas fa-book me-2"></i>Khóa học của tôi
+                </a></li>
+            }
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index" title="Quản lý tài khoản">
+                <i class="fas fa-cog me-2"></i>Quản lý tài khoản
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })">
+                    <button type="submit" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Register">
+            <i class="fas fa-user-plus me-1"></i>Đăng ký
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link text-white" asp-area="Identity" asp-page="/Account/Login">
+            <i class="fas fa-sign-in-alt me-1"></i>Đăng nhập
+        </a>
+    </li>
+}
+</ul>

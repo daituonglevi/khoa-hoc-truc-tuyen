@@ -1,0 +1,272 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CertificateEditViewModel
+@{
+    ViewData["Title"] = "Chệnh sửa Chứng chệ";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-edit text-primary"></i>
+                Chệnh sửa Chứng chệ
+            </h1>
+            <p class="admin-page-subtitle">Cập nhật thông tin chứng chệ #@Model.CertificateNumber</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="admin-form-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-certificate text-warning"></i>
+                    Thông tin Chứng chệ
+                </h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" class="admin-form">
+                    <input asp-for="Id" type="hidden">
+                    <input asp-for="EnrollmentId" type="hidden">
+                    
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="CertificateNumber" class="form-label required">Sđ chứng chệ</label>
+                                <div class="input-group">
+                                    <input asp-for="CertificateNumber" class="form-control" placeholder="Nhập sđ chứng chệ">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="generateCertificateNumber()">
+                                        <i class="fas fa-magic"></i> Tạo mơi
+                                    </button>
+                                </div>
+                                <span asp-validation-for="CertificateNumber" class="text-danger"></span>
+                                <small class="form-text text-muted">Sđ chứng chệ duy nhất đă xác thực</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label asp-for="IssueDate" class="form-label">Ngày cấp</label>
+                                <input asp-for="IssueDate" type="datetime-local" class="form-control">
+                                <span asp-validation-for="IssueDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label asp-for="CertificateUrl" class="form-label">URL File chứng chệ</label>
+                                <div class="input-group">
+                                    <input asp-for="CertificateUrl" class="form-control" placeholder="https://example.com/certificate.pdf">
+                                    @if (!string.IsNullOrEmpty(Model.CertificateUrl))
+                                    {
+                                        <a href="@Model.CertificateUrl" target="_blank" class="btn btn-outline-primary">
+                                            <i class="fas fa-external-link-alt"></i> Xem
+                                        </a>
+                                    }
+                                </div>
+                                <span asp-validation-for="CertificateUrl" class="text-danger"></span>
+                                <small class="form-text text-muted">URL đến file PDF chứng chệ</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Cập nhật
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Enrollment Information -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-info"></i>
+                    Thông tin Đăng ký
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="detail-item">
+                    <label>ID Đăng ký:</label>
+                    <span class="detail-value">#@Model.EnrollmentId</span>
+                </div>
+                <div class="detail-item">
+                    <label>Học viên:</label>
+                    <span class="detail-value">@Model.UserName</span>
+                </div>
+                <div class="detail-item">
+                    <label>Khóa học:</label>
+                    <span class="detail-value">@Model.CourseTitle</span>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày đăng ký:</label>
+                    <span class="detail-value">@Model.EnrollmentDate.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tiến độ:</label>
+                    <div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: @Model.Progress%"></div>
+                        </div>
+                        <small class="text-muted">@Model.Progress.ToString("F1")%</small>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <label>Trạng thái:</label>
+                    <span class="badge bg-@(Model.Status == 3 ? "success" : "warning")">
+                        @(Model.Status == 1 ? "Đang học" : Model.Status == 2 ? "Tạm dừng" : "Hoàn thành")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Certificate Preview -->
+        @if (!string.IsNullOrEmpty(Model.CertificateUrl))
+        {
+            <div class="admin-detail-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-file-pdf text-danger"></i>
+                        Xem trươc Chứng chệ
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="certificate-preview">
+                        <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
+                        <p class="mb-3">File chứng chệ hiện tại</p>
+                        <a href="@Model.CertificateUrl" target="_blank" class="btn btn-outline-primary">
+                            <i class="fas fa-external-link-alt"></i> Mở file
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Help Card -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-question-circle text-primary"></i>
+                    Hương dẫn
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="help-content">
+                    <h6><i class="fas fa-edit text-primary"></i> Chệnh sửa:</h6>
+                    <ul class="help-list">
+                        <li>Có thă thay đổi sđ chứng chệ</li>
+                        <li>Cập nhật ngày cấp nếu cần</li>
+                        <li>Thêm hoặc thay đổi URL file</li>
+                    </ul>
+
+                    <h6><i class="fas fa-exclamation-triangle text-warning"></i> Lưu ý:</h6>
+                    <ul class="help-list">
+                        <li>Sđ chứng chệ phải là duy nhất</li>
+                        <li>URL phải là đường dẫn hợp lệ</li>
+                        <li>Không thă thay đổi đăng ký liên kết</li>
+                    </ul>
+
+                    <h6><i class="fas fa-tools text-secondary"></i> Thao tác:</h6>
+                    <ul class="help-list">
+                        <li>Sử dụng "Tạo mơi" đă tạo sđ chứng chệ mơi</li>
+                        <li>Kiăm tra file trươc khi lưu URL</li>
+                        <li>Xem chi tiết sau khi cập nhật</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateCertificateNumber() {
+    if (confirm('Bạn có chắc chắn muđn tạo sđ chứng chệ mơi? Sđ hiện tại sẽ bị thay thế.')) {
+        // Generate a UUID-like certificate number
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let result = 'CERT-';
+        for (let i = 0; i < 8; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        result += '-' + new Date().getFullYear();
+        
+        document.getElementById('CertificateNumber').value = result;
+        
+        toastr.success('Đã tạo sđ chứng chệ mơi: ' + result);
+    }
+}
+
+// Format datetime-local input
+document.addEventListener('DOMContentLoaded', function() {
+    const issueDateInput = document.querySelector('input[name="IssueDate"]');
+    if (issueDateInput && issueDateInput.value) {
+        // Convert to local datetime format if needed
+        const date = new Date(issueDateInput.value);
+        const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        issueDateInput.value = localDateTime;
+    }
+});
+</script>
+
+<style>
+.help-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.help-content h6:first-child {
+    margin-top: 0;
+}
+
+.help-list {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
+}
+
+.help-list li {
+    margin-bottom: 0.25rem;
+}
+
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #495057;
+}
+
+.certificate-preview {
+    padding: 1rem;
+    border: 2px dashed #dee2e6;
+    border-radius: 0.5rem;
+    background-color: #f8f9fa;
+}
+</style>

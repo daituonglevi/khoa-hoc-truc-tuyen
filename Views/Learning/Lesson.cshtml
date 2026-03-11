@@ -1,0 +1,384 @@
+@model ELearningWebsite.Models.Lesson
+@{
+    ViewData["Title"] = Model.Title;
+    var userProgress = ViewBag.UserProgress as float? ?? 0;
+    var chapterLessons = ViewBag.ChapterLessons as List<ELearningWebsite.Models.Lesson> ?? new List<ELearningWebsite.Models.Lesson>();
+}
+
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">@Model.Title</h4>
+                    <span class="badge bg-secondary">@Model.Type</span>
+                </div>
+                <div class="card-body">
+                    @if (!string.IsNullOrEmpty(Model.VideoUrl))
+                    {
+                        <div class="ratio ratio-16x9 mb-3">
+                            @if (Model.VideoUrl.Contains("youtube.com") || Model.VideoUrl.Contains("youtu.be"))
+                            {
+                                var videoId = string.Empty;
+                                if (Model.VideoUrl.Contains("youtu.be"))
+                                {
+                                    videoId = Model.VideoUrl.Split('/').Last();
+                                }
+                                else
+                                {
+                                    var parts = Model.VideoUrl.Split("v=");
+                                    if (parts.Length > 1)
+                                    {
+                                        videoId = parts[1].Split("&")[0];
+                                    }
+                                }
+
+                                if (!string.IsNullOrEmpty(videoId))
+                                {
+                                    <iframe id="lessonFrame" src="https://www.youtube.com/embed/@videoId"
+                                            title="@Model.Title" allowfullscreen class="w-100 rounded"></iframe>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-warning mb-0">Video URL YouTube không hợp lệ.</div>
+                                }
+                            }
+                            else
+                            {
+                                <video id="lessonVideo" controls class="w-100 rounded">
+                                    <source src="@Model.VideoUrl" type="video/mp4">
+                                    Trình duyệt của bạn không hỗ trợ video.
+                                </video>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">Bài học này chưa có video.</div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Content))
+                    {
+                        <div class="mb-3">@Html.Raw(Model.Content)</div>
+                    }
+
+                    <div class="d-flex gap-2 align-items-center">
+                        <button id="markCompleteBtn" class="btn btn-success" type="button">
+                            <i class="fas fa-check me-1"></i>Đánh dấu đã học xong
+                        </button>
+                        <span class="text-muted small">Thời lượng: @(Model.Duration ?? 0) phút</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-pen me-2"></i>Bài tập bài học</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Quiz != null && Model.Quiz.IsActive && Model.Quiz.Questions.Any())
+                    {
+                        <div class="alert alert-light border mb-3">
+                            <strong>@Model.Quiz.Title</strong><br />
+                            <span class="text-muted">Điểm đạt: @Model.Quiz.PassPercent%</span>
+                        </div>
+
+                        @foreach (var q in Model.Quiz.Questions.OrderBy(x => x.OrderIndex))
+                        {
+                            <div class="mb-3 p-3 border rounded">
+                                <div class="fw-semibold mb-2">Câu @q.OrderIndex: @q.Content</div>
+                                @foreach (var ans in q.Answers.OrderBy(a => a.OrderIndex))
+                                {
+                                    <div class="form-check mb-1">
+                                        <input class="form-check-input" type="radio" name="question_@q.Id" id="answer_@ans.Id" value="@ans.Id" />
+                                        <label class="form-check-label" for="answer_@ans.Id">@ans.AnswerText</label>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <button id="submitQuizBtn" type="button" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Nộp bài trắc nghiệm
+                        </button>
+                        <div id="quizResult" class="mt-3"></div>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info mb-0">Bài học này chưa có bài tập trắc nghiệm.</div>
+                    }
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Hỏi đáp và bình luận</h5>
+                </div>
+                <div class="card-body">
+                    @Html.AntiForgeryToken()
+                    <textarea id="commentContent" class="form-control mb-2" rows="3" maxlength="2000" placeholder="Nhập câu hỏi hoặc bình luận..."></textarea>
+                    <button id="postCommentBtn" class="btn btn-outline-primary" type="button">Gửi bình luận</button>
+                    <hr />
+                    <div id="commentsList" class="d-flex flex-column gap-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card mb-3">
+                <div class="card-header"><h6 class="mb-0">Tiến độ bài học</h6></div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <span>Hoàn thành</span>
+                        <strong id="progressLabel">@userProgress.ToString("F0")%</strong>
+                    </div>
+                    <div class="progress mt-2" style="height:10px;">
+                        <div id="progressBar" class="progress-bar" style="width:@userProgress%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-3">
+                <div class="card-header"><h6 class="mb-0">Danh sách bài học trong chương</h6></div>
+                <div class="list-group list-group-flush">
+                    @foreach (var lesson in chapterLessons)
+                    {
+                        <a href="@Url.Action("Lesson", "Learning", new { id = lesson.Id })"
+                           class="list-group-item list-group-item-action @(lesson.Id == Model.Id ? "active" : "")">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span>@lesson.Title</span>
+                                <small>@(lesson.Duration ?? 0)ph</small>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const lessonId = @Model.Id;
+        const tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+        const csrfToken = tokenInput ? tokenInput.value : '';
+
+        async function updateProgress(percent, timeSpent) {
+            const formData = new URLSearchParams();
+            formData.append('lessonId', lessonId);
+            formData.append('progressPercentage', percent);
+            formData.append('timeSpent', timeSpent || 0);
+
+            const response = await fetch('/Learning/UpdateProgress', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                    'RequestVerificationToken': csrfToken
+                },
+                body: formData.toString()
+            });
+
+            if (response.ok) {
+                const progressBar = document.getElementById('progressBar');
+                const progressLabel = document.getElementById('progressLabel');
+                progressBar.style.width = percent + '%';
+                progressLabel.textContent = Math.round(percent) + '%';
+            }
+        }
+
+        document.getElementById('markCompleteBtn')?.addEventListener('click', async function () {
+            await updateProgress(100, @((Model.Duration ?? 0)));
+            this.textContent = 'Da cap nhat hoan thanh';
+            this.classList.remove('btn-success');
+            this.classList.add('btn-secondary');
+        });
+
+        const video = document.getElementById('lessonVideo');
+        if (video) {
+            video.addEventListener('ended', async function () {
+                await updateProgress(100, Math.round(video.duration / 60));
+            });
+        }
+
+        document.getElementById('submitQuizBtn')?.addEventListener('click', async function () {
+            const answers = [];
+            document.querySelectorAll('[name^="question_"]').forEach(function (input) {
+                const qid = Number(input.name.replace('question_', ''));
+                if (!answers.some(a => a.questionId === qid)) {
+                    const checked = document.querySelector('[name="question_' + qid + '"]:checked');
+                    answers.push({ questionId: qid, answerId: checked ? Number(checked.value) : null });
+                }
+            });
+
+            const response = await fetch('/Learning/SubmitQuiz', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': csrfToken
+                },
+                body: JSON.stringify({ lessonId: lessonId, answers: answers })
+            });
+
+            const resultBox = document.getElementById('quizResult');
+            if (!response.ok) {
+                resultBox.className = 'alert alert-danger mt-3';
+                resultBox.textContent = 'Co loi khi nop bai. Vui long thu lai.';
+                return;
+            }
+
+            const data = await response.json();
+            if (!data.success) {
+                resultBox.className = 'alert alert-warning mt-3';
+                resultBox.textContent = data.message || 'Khong the cham bai.';
+                return;
+            }
+
+            const summary = 'Ban dung ' + data.correctAnswers + '/' + data.totalQuestions + ' cau (' + Math.round(data.scorePercent) + '%). ' + data.message;
+            resultBox.className = (data.passed ? 'alert alert-success mt-3' : 'alert alert-danger mt-3');
+            resultBox.textContent = summary;
+
+            if (data.passed) {
+                const progressBar = document.getElementById('progressBar');
+                const progressLabel = document.getElementById('progressLabel');
+                progressBar.style.width = '100%';
+                progressLabel.textContent = '100%';
+            }
+        });
+
+        function escapeHtml(text) {
+            return (text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderComment(comment, level) {
+            const item = document.createElement('div');
+            const leftMargin = Math.min(level * 20, 80);
+            item.className = 'border rounded p-2 mt-2';
+            item.style.marginLeft = leftMargin + 'px';
+
+            const mentionText = comment.mentionUserName
+                ? '<span class="text-primary fw-semibold">&#64;' + escapeHtml(comment.mentionUserName) + '</span> '
+                : '';
+
+            let html = '<div class="d-flex">' +
+                '<div class="flex-grow-1">' +
+                '<div class="fw-semibold">' + escapeHtml(comment.userName) + '</div>' +
+                '<div class="small text-muted">' + new Date(comment.createdAt).toLocaleString() + '</div>' +
+                '<div class="mt-1">' + mentionText + escapeHtml(comment.content) + '</div>' +
+                '<div class="mt-2">' +
+                '<button type="button" class="btn btn-sm btn-link p-0 reply-toggle-btn" data-comment-id="' + comment.id + '">' +
+                '<i class="fas fa-reply me-1"></i>Tra loi</button>' +
+                '</div>' +
+                '<div id="replyForm_' + comment.id + '" class="mt-2" style="display:none;"></div>' +
+                '</div>' +
+                '</div>';
+
+            item.innerHTML = html;
+
+            (comment.replies || []).forEach(function (child) {
+                item.appendChild(renderComment(child, level + 1));
+            });
+
+            return item;
+        }
+
+        function showReplyForm(commentId) {
+            document.querySelectorAll('[id^="replyForm_"]').forEach(function (el) {
+                el.style.display = 'none';
+                el.innerHTML = '';
+            });
+
+            const formDiv = document.getElementById('replyForm_' + commentId);
+            if (!formDiv) return;
+
+            formDiv.style.display = 'block';
+            formDiv.innerHTML =
+                '<textarea class="form-control mb-2" rows="2" maxlength="2000" placeholder="Nhap noi dung tra loi..." data-reply-input="' + commentId + '"></textarea>' +
+                '<div class="d-flex gap-2">' +
+                '<button type="button" class="btn btn-sm btn-primary submit-reply-btn" data-comment-id="' + commentId + '">Gui</button>' +
+                '<button type="button" class="btn btn-sm btn-outline-secondary cancel-reply-btn">Huy</button>' +
+                '</div>';
+        }
+
+        async function postComment(content, parentCommentId) {
+            const response = await fetch('/Comment/PostComment', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': csrfToken
+                },
+                body: JSON.stringify({
+                    lessonId: lessonId,
+                    content: content,
+                    parentCommentId: parentCommentId || null
+                })
+            });
+
+            return response.ok;
+        }
+
+        async function loadComments() {
+            const response = await fetch('/Comment/GetComments?lessonId=' + lessonId);
+            if (!response.ok) return;
+            const data = await response.json();
+            if (!data.success) return;
+
+            const container = document.getElementById('commentsList');
+            container.innerHTML = '';
+
+            data.comments.forEach(function (c) {
+                container.appendChild(renderComment(c, 0));
+            });
+        }
+
+        document.getElementById('commentsList')?.addEventListener('click', async function (event) {
+            const replyToggleBtn = event.target.closest('.reply-toggle-btn');
+            if (replyToggleBtn) {
+                const commentId = Number(replyToggleBtn.getAttribute('data-comment-id'));
+                showReplyForm(commentId);
+                return;
+            }
+
+            const cancelReplyBtn = event.target.closest('.cancel-reply-btn');
+            if (cancelReplyBtn) {
+                const formDiv = cancelReplyBtn.closest('[id^="replyForm_"]');
+                if (formDiv) {
+                    formDiv.style.display = 'none';
+                    formDiv.innerHTML = '';
+                }
+                return;
+            }
+
+            const submitReplyBtn = event.target.closest('.submit-reply-btn');
+            if (submitReplyBtn) {
+                const commentId = Number(submitReplyBtn.getAttribute('data-comment-id'));
+                const input = document.querySelector('[data-reply-input="' + commentId + '"]');
+                const content = input ? (input.value || '').trim() : '';
+                if (!content) return;
+
+                const success = await postComment(content, commentId);
+                if (success) {
+                    await loadComments();
+                }
+            }
+        });
+
+        document.getElementById('postCommentBtn')?.addEventListener('click', async function () {
+            const contentEl = document.getElementById('commentContent');
+            const content = (contentEl.value || '').trim();
+            if (!content) return;
+
+            const success = await postComment(content, null);
+            if (success) {
+                contentEl.value = '';
+                await loadComments();
+            }
+        });
+
+        loadComments();
+    })();
+</script>
+

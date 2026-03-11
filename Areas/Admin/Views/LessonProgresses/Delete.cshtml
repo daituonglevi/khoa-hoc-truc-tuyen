@@ -1,0 +1,255 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.LessonProgressDeleteViewModel
+@{
+    ViewData["Title"] = "Xóa Tiến độ Học tập";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-trash text-danger"></i>
+                Xóa Tiến độ Học tập
+            </h1>
+            <p class="admin-page-subtitle">Xác nhận xóa tiến độ học tập</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+                <i class="fas fa-eye"></i> Xem chi tiết
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="admin-form-card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Xác nhận xóa tiến độ học tập
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <h6 class="alert-heading">
+                        <i class="fas fa-warning"></i> Cảnh báo!
+                    </h6>
+                    <p class="mb-0">
+                        Bạn đang thực hiện xóa tiến độ học tập. Hành động này <strong>không thă hoàn tác</strong>.
+                        Tất cả dữ liệu liên quan đến tiến độ này sẽ bị mất vĩnh viổn.
+                    </p>
+                </div>
+
+                <!-- Progress Information -->
+                <div class="progress-info">
+                    <h6 class="section-title">
+                        <i class="fas fa-chart-line text-primary"></i>
+                        Thông tin tiến độ sẽ bị xóa:
+                    </h6>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>ID Tiến độ:</label>
+                            <span class="info-value">#@Model.Id</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Tiến độ hoàn thành:</label>
+                            <div class="progress-display">
+                                <div class="progress mb-1" style="height: 8px;">
+                                    <div class="progress-bar bg-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 50 ? "warning" : "info")"
+                                         style="width: @Model.ProgressPercentage%"></div>
+                                </div>
+                                <span class="text-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 50 ? "warning" : "info")">
+                                    @Model.ProgressPercentage.ToString("F1")%
+                                </span>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Thời gian học:</label>
+                            @if (Model.TimeSpent.HasValue)
+                            {
+                                <span class="info-value text-info">@Model.TimeSpent.Value.ToString("F1") phút</span>
+                            }
+                            else
+                            {
+                                <span class="info-value text-muted">Chưa có</span>
+                            }
+                        </div>
+                        <div class="info-item">
+                            <label>Trạng thái:</label>
+                            <span class="badge bg-@(Model.IsCompleted ? "success" : Model.ProgressPercentage > 0 ? "warning" : "secondary")">
+                                @(Model.IsCompleted ? "Hoàn thành" : Model.ProgressPercentage > 0 ? "Đang học" : "Chưa bắt đầu")
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <label>Ngày tạo:</label>
+                            <span class="info-value">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        @if (Model.CountDoing.HasValue)
+                        {
+                            <div class="info-item">
+                                <label>Sđ lần thực hiện:</label>
+                                <span class="info-value text-warning">@Model.CountDoing.Value lần</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Lesson Information -->
+                <div class="lesson-info mt-4">
+                    <h6 class="section-title">
+                        <i class="fas fa-play-circle text-success"></i>
+                        Thông tin bài học:
+                    </h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>ID Bài học:</label>
+                            <span class="info-value text-primary">#@Model.LessonId</span>
+                        </div>
+                        @if (Model.HighestMark.HasValue)
+                        {
+                            <div class="info-item">
+                                <label>Điăm cao nhất:</label>
+                                <span class="badge bg-@(Model.HighestMark >= 80 ? "success" : Model.HighestMark >= 60 ? "warning" : "danger")">
+                                    @Model.HighestMark.Value.ToString("F1")
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- User Information -->
+                <div class="user-info mt-4">
+                    <h6 class="section-title">
+                        <i class="fas fa-user text-info"></i>
+                        Thông tin học viên:
+                    </h6>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Tên học viên:</label>
+                            <span class="info-value text-primary">@Model.UserName</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email:</label>
+                            <span class="info-value">@Model.UserEmail</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consequences -->
+                <div class="consequences mt-4">
+                    <h6 class="section-title">
+                        <i class="fas fa-exclamation-circle text-warning"></i>
+                        Hậu quả khi xóa:
+                    </h6>
+                    <ul class="consequence-list">
+                        <li>Tiến độ học tập sẽ bị xóa vĩnh viổn khỏi hệ thđng</li>
+                        <li>Thông tin về thời gian học và sđ lần thực hiện sẽ mất</li>
+                        <li>Điăm sđ và kết quả đánh giá sẽ bị xóa</li>
+                        <li>Lịch sử học tập của học viên sẽ bị ảnh hưởng</li>
+                        <li>Không thă khôi phục dữ liệu sau khi xóa</li>
+                    </ul>
+                </div>
+
+                <!-- Confirmation Form -->
+                <form asp-action="Delete" method="post" class="confirmation-form mt-4">
+                    <input asp-for="Id" type="hidden">
+
+                    <div class="confirmation-checkbox">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="confirmDelete" required>
+                            <label class="form-check-label" for="confirmDelete">
+                                Tôi hiău rằng hành động này không thă hoàn tác và xác nhận muđn xóa tiến độ học tập này
+                                <strong>(@Model.ProgressPercentage.ToString("F1")% - @Model.UserName - Bài học #@Model.LessonId)</strong>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-danger" id="deleteButton" disabled>
+                            <i class="fas fa-trash"></i> Xác nhận xóa
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Hủy bỏ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enable delete button only when checkbox is checked
+document.getElementById('confirmDelete').addEventListener('change', function() {
+    document.getElementById('deleteButton').disabled = !this.checked;
+});
+</script>
+
+<style>
+.section-title {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    margin-bottom: 1rem;
+}
+
+.info-item label {
+    display: block;
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.info-item .info-value {
+    font-weight: 500;
+}
+
+.progress-display {
+    margin-top: 0.25rem;
+}
+
+.consequence-list {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.consequence-list li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #dc3545;
+}
+
+.consequence-list li::before {
+    content: 'ệđ;
+    position: absolute;
+    left: 0.5rem;
+    color: inherit;
+}
+
+.confirmation-checkbox {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+}
+</style>

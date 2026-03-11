@@ -1,0 +1,90 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Thanh toán - " + Model.Course.Title;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")">Trang chủ</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home")">Khóa học</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })">@Model.Course.Title</a></li>
+                    <li class="breadcrumb-item active">Thanh toán</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Xác nhận thanh toán</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Course Info -->
+                    <div class="d-flex align-items-center mb-4">
+                        <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title" 
+                             class="rounded me-3" style="width: 120px; height: 80px; object-fit: cover;">
+                        <div>
+                            <h5 class="mb-2">@Model.Course.Title</h5>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-tag me-1"></i>@Model.Course.Category.Name
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Price Info -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">Chi tiết thanh toán</h5>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span>Giá khóa học:</span>
+                                <span class="text-primary fw-bold">@Model.OriginalPrice.ToString("N0") VNĐ</span>
+                            </div>
+                            <hr>
+                            <div class="d-flex justify-content-between">
+                                <strong>Tổng thanh toán:</strong>
+                                <strong class="text-primary fs-4">@Model.FinalPrice.ToString("N0") VNĐ</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Form -->
+                    <form asp-action="ProcessPayment" method="post">
+                        <input type="hidden" name="CourseId" value="@Model.Course.Id" />
+                        <input type="hidden" name="OriginalPrice" value="@Model.OriginalPrice" />
+                        <input type="hidden" name="FinalPrice" value="@Model.FinalPrice" />
+                        
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" type="checkbox" id="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                Tôi đông ý vơi <a href="#">điều khoản</a> và <a href="#">chính sách</a> của khóa học
+                            </label>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-lock me-2"></i>Xác nhận thanh toán
+                            </button>
+                            <a href="@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })" 
+                               class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang xử lý...';
+            submitBtn.disabled = true;
+        });
+    </script>
+}

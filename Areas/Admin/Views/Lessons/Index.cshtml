@@ -1,0 +1,55 @@
+@model IEnumerable<ELearningWebsite.Models.Lesson>
+@{
+    ViewData["Title"] = "Danh sách bài học";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-book me-2"></i>
+            Danh sách bài học
+        </h2>
+        <a href="/Admin/Lessons/Create" class="admin-btn admin-btn-primary">
+            <i class="fas fa-plus me-2"></i>
+            Thêm bài học mơi
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên bài học</th>
+                        <th>Chương</th>
+                        <th>Loại</th>
+                        <th>Thứ tự</th>
+                        <th>Trạng thái</th>
+                        <th>Ngày tạo</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lesson in Model)
+                    {
+                        <tr>
+                            <td>@lesson.Id</td>
+                            <td>@lesson.Title</td>
+                            <td>@lesson.Chapter?.Name</td>
+                            <td>@lesson.Type</td>
+                            <td>@lesson.OrderIndex</td>
+                            <td>@lesson.Status</td>
+                            <td>@lesson.CreatedAt.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a href="/Admin/Lessons/Details/@lesson.Id" class="btn btn-sm btn-primary">Xem</a>
+                                <a href="/Admin/Lessons/Edit/@lesson.Id" class="btn btn-sm btn-warning">Sửa</a>
+                                <a href="/Admin/Lessons/Quiz?lessonId=@lesson.Id" class="btn btn-sm btn-info">Bai tap</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

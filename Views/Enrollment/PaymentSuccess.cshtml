@@ -1,0 +1,65 @@
+@model Enrollment
+@{
+    ViewData["Title"] = "Thanh toán thành công";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body text-center p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                    </div>
+                    
+                    <h2 class="mb-4">Thanh toán thành công!</h2>
+                    
+                    <div class="alert alert-success mb-4">
+                        <p class="mb-0">
+                            Bạn đã đăng ký thành công khóa học <strong>@Model.Course.Title</strong>
+                        </p>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title">Thông tin khóa học</h5>
+                            <hr>
+                            <div class="row">
+                                <div class="col-md-6 text-start">
+                                    <p><strong>Khóa học:</strong></p>
+                                    <p><strong>Danh mục:</strong></p>
+                                    <p><strong>Ngày đăng ký:</strong></p>
+                                    @if (Model.ExpiredDate.HasValue)
+                                    {
+                                        <p><strong>Ngày hết hạn:</strong></p>
+                                    }
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <p>@Model.Course.Title</p>
+                                    <p>@Model.Course.Category.Name</p>
+                                    <p>@Model.EnrollmentDate.ToString("dd/MM/yyyy")</p>
+                                    @if (Model.ExpiredDate.HasValue)
+                                    {
+                                        <p>@Model.ExpiredDate.Value.ToString("dd/MM/yyyy")</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-3">
+                        <a href="@Url.Action("Learn", "Course", new { id = Model.CourseId })" 
+                           class="btn btn-primary btn-lg">
+                            <i class="fas fa-play-circle me-2"></i>Bắt đầu học ngay
+                        </a>
+                        
+                        <a href="@Url.Action("MyCourses", "User")" 
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-book me-2"></i>Xem khóa học của tôi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

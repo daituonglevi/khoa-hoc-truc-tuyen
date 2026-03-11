@@ -1,0 +1,354 @@
+@model CourseDetailsViewModel
+@{
+    ViewData["Title"] = "Chi tiết Course";
+}
+
+<div class="admin-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-title">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Chi tiết Course
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home", new { area = "Admin" })">Admin</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Courses", new { area = "Admin" })">Quản lý Courses</a></li>
+                    <li class="breadcrumb-item active">Chi tiết Course</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a href="@Url.Action("Edit", new { id = Model.Course.Id })" class="btn btn-primary me-2">
+                <i class="fas fa-edit me-2"></i>Chệnh sửa
+            </a>
+            <a href="@Url.Action("Index", "Courses", new { area = "Admin" })" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Quay lại
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Course Information -->
+    <div class="col-lg-8 mb-4">
+        <div class="admin-card">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Thông tin khóa học
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title" 
+                             class="img-fluid rounded" style="width: 100%; height: 200px; object-fit: cover;">
+                    </div>
+                    <div class="col-md-8">
+                        <h3 class="mb-3">@Model.Course.Title</h3>
+                        
+                        <div class="course-info">
+                            <div class="info-item mb-3">
+                                <label class="form-label text-muted">Mô tả:</label>
+                                <div>@Model.Course.Description</div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted">Danh mục:</label>
+                                        <div><span class="badge bg-light text-dark">@Model.Course.Category.Name</span></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted">Trạng thái:</label>
+                                        <div>
+                                            <span class="badge bg-@(Model.Course.Status == "Published" ? "success" : Model.Course.Status == "Draft" ? "warning" : "secondary")">
+                                                @(Model.Course.Status == "Published" ? "Đã xuất bản" : Model.Course.Status == "Draft" ? "Nháp" : "Lưu trữ")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted">Giá:</label>
+                                        <div class="fw-bold text-success fs-5">@Model.Course.Price.ToString("N0") VNĐ</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted">Thời lượng:</label>
+                                        <div class="fw-bold">@Model.Course.Duration phút</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            @if (Model.Course.LimitDay.HasValue)
+                            {
+                                <div class="info-item mb-3">
+                                    <label class="form-label text-muted">Thời hạn truy cập:</label>
+                                    <div class="fw-bold">@Model.Course.LimitDay ngày</div>
+                                </div>
+                            }
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-item mb-3">
+                                        <label class="form-label text-muted">Ngày tạo:</label>
+                                        <div>@Model.Course.CreatedAt.ToString("dd/MM/yyyy HH:mm")</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    @if (Model.Course.UpdatedAt.HasValue)
+                                    {
+                                        <div class="info-item mb-3">
+                                            <label class="form-label text-muted">Cập nhật lần cuđi:</label>
+                                            <div>@Model.Course.UpdatedAt.Value.ToString("dd/MM/yyyy HH:mm")</div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                @if (!string.IsNullOrEmpty(Model.Course.PreviewVideo))
+                {
+                    <div class="mt-4">
+                        <label class="form-label text-muted">Video giơi thiệu:</label>
+                        <div class="ratio ratio-16x9">
+                            <iframe src="@Model.Course.PreviewVideo" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Statistics -->
+    <div class="col-lg-4 mb-4">
+        <div class="admin-card">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Thđng kê
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="stat-item text-center mb-4">
+                    <h2 class="text-primary mb-1">@Model.TotalEnrollments</h2>
+                    <small class="text-muted">Tổng học viên đăng ký</small>
+                </div>
+                
+                <div class="row text-center">
+                    <div class="col-6 mb-3">
+                        <div class="stat-item">
+                            <h4 class="text-success mb-1">0</h4>
+                            <small class="text-muted">Đã hoàn thành</small>
+                        </div>
+                    </div>
+                    <div class="col-6 mb-3">
+                        <div class="stat-item">
+                            <h4 class="text-warning mb-1">@Model.TotalEnrollments</h4>
+                            <small class="text-muted">Đang học</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <label class="form-label text-muted">Doanh thu ươc tính:</label>
+                    <div class="fw-bold text-success fs-4">@((Model.Course.Price * Model.TotalEnrollments).ToString("N0")) VNĐ</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="admin-card mt-4">
+            <div class="card-header bg-transparent border-0 py-3">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Thao tác nhanh
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    @if (Model.Course.Status == "Draft")
+                    {
+                        <button class="btn btn-success" onclick="updateCourseStatus(@Model.Course.Id, 'Published')">
+                            <i class="fas fa-check-circle me-2"></i>Xuất bản
+                        </button>
+                    }
+                    else if (Model.Course.Status == "Published")
+                    {
+                        <button class="btn btn-warning" onclick="updateCourseStatus(@Model.Course.Id, 'Draft')">
+                            <i class="fas fa-edit me-2"></i>Chuyăn về nháp
+                        </button>
+                    }
+                    
+                    <button class="btn btn-secondary" onclick="updateCourseStatus(@Model.Course.Id, 'Archived')">
+                        <i class="fas fa-archive me-2"></i>Lưu trữ
+                    </button>
+                    
+                    <hr>
+                    
+                    <a href="@Url.Action("Edit", new { id = Model.Course.Id })" class="btn btn-primary">
+                        <i class="fas fa-edit me-2"></i>Chệnh sửa
+                    </a>
+                    
+                    <button class="btn btn-outline-danger" onclick="deleteCourse(@Model.Course.Id)">
+                        <i class="fas fa-trash me-2"></i>Xóa khóa học
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Enrollments -->
+@if (Model.RecentEnrollments.Any())
+{
+    <div class="admin-card mt-4">
+        <div class="card-header bg-transparent border-0 py-3">
+            <h5 class="card-title mb-0">
+                <i class="fas fa-users me-2"></i>
+                Học viên gần đây
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Học viên</th>
+                            <th>Ngày đăng ký</th>
+                            <th>Tiến độ</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var enrollment in Model.RecentEnrollments)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                            <i class="fas fa-user text-white"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold">User ID: @enrollment.UserId</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>@enrollment.EnrollmentDate.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: @enrollment.Progress%" 
+                                             aria-valuenow="@enrollment.Progress" 
+                                             aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <small class="text-muted">@enrollment.Progress.ToString("F0")%</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(enrollment.Status == 1 ? "primary" : enrollment.Status == 3 ? "success" : "warning")">
+                                        @(enrollment.Status == 1 ? "Đang học" : enrollment.Status == 3 ? "Hoàn thành" : "Tạm dừng")
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function updateCourseStatus(courseId, status) {
+            if (confirm(`Bạn có chắc chắn muđn thay đổi trạng thái course?`)) {
+                const formData = new FormData();
+                formData.append('id', courseId);
+                formData.append('status', status);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+                
+                fetch('@Url.Action("UpdateStatus")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+
+        function deleteCourse(courseId) {
+            if (confirm('Bạn có chắc chắn muđn xóa course này? Hành động này không thă hoàn tác!')) {
+                const formData = new FormData();
+                formData.append('id', courseId);
+                formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
+                
+                fetch('@Url.Action("Delete")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAdminNotification(data.message, 'success');
+                        setTimeout(() => window.location.href = '@Url.Action("Index")'), 1000);
+                    } else {
+                        showAdminNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showAdminNotification('Có lỗi xảy ra', 'error');
+                });
+            }
+        }
+    </script>
+}
+
+@Html.AntiForgeryToken()
+
+<style>
+    .course-info .info-item {
+        border-bottom: 1px solid #f0f0f0;
+        padding-bottom: 0.5rem;
+    }
+    
+    .course-info .info-item:last-child {
+        border-bottom: none;
+    }
+    
+    .stat-item {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .avatar-sm {
+        width: 40px;
+        height: 40px;
+    }
+</style>

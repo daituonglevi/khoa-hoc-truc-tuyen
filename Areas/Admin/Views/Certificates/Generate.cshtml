@@ -1,0 +1,343 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.CertificateGenerateViewModel
+@{
+    ViewData["Title"] = "Tự động tạo Chứng chệ";
+}
+
+<div class="admin-content-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="admin-page-title">
+                <i class="fas fa-magic text-primary"></i>
+                Tự động tạo Chứng chệ
+            </h1>
+            <p class="admin-page-subtitle">Tạo chứng chệ tự động cho các khóa học đã hoàn thành</p>
+        </div>
+        <div class="admin-actions">
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+            <a asp-action="Create" class="btn btn-outline-success">
+                <i class="fas fa-plus"></i> Tạo thủ công
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="admin-form-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-robot text-primary"></i>
+                    Tạo chứng chệ tự động
+                </h5>
+            </div>
+            <div class="card-body">
+                @if (Model.AvailableEnrollments.Any())
+                {
+                    <form asp-action="Generate" method="post" class="admin-form">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="form-group">
+                            <label asp-for="EnrollmentId" class="form-label required">Chọn đăng ký đă tạo chứng chệ</label>
+                            <select asp-for="EnrollmentId" class="form-select" id="enrollmentSelect" onchange="updateEnrollmentInfo()">
+                                <option value="">-- Chọn đăng ký khóa học --</option>
+                                @foreach (var enrollment in Model.AvailableEnrollments)
+                                {
+                                    <option value="@enrollment.Id" 
+                                            data-user="@enrollment.UserName"
+                                            data-course="@enrollment.CourseTitle"
+                                            data-progress="@enrollment.Progress"
+                                            data-status="@enrollment.Status"
+                                            data-date="@enrollment.EnrollmentDate.ToString("dd/MM/yyyy")">
+                                        @enrollment.UserName - @enrollment.CourseTitle (@enrollment.Progress.ToString("F1")%)
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="EnrollmentId" class="text-danger"></span>
+                            <small class="form-text text-muted">
+                                Chệ hiăn thị các đăng ký đã hoàn thành và chưa có chứng chệ
+                            </small>
+                        </div>
+
+                        <div class="auto-generate-info">
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading">
+                                    <i class="fas fa-info-circle"></i> Thông tin tự động tạo:
+                                </h6>
+                                <ul class="mb-0">
+                                    <li><strong>Sđ chứng chệ:</strong> Sẽ được tạo tự động theo định dạng GUID</li>
+                                    <li><strong>Ngày cấp:</strong> Thời điăm hiện tại</li>
+                                    <li><strong>File chứng chệ:</strong> Sẽ được tạo sau (có thă cập nhật URL sau)</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="generateButton" disabled>
+                                <i class="fas fa-magic"></i> Tạo chứng chệ tự động
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Hủy
+                            </a>
+                        </div>
+                    </form>
+                }
+                else
+                {
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">Không có đăng ký nào đủ điều kiện</h5>
+                        <p class="text-muted mb-4">
+                            Hiện tại không có đăng ký khóa học nào đã hoàn thành và chưa có chứng chệ.
+                        </p>
+                        <div class="empty-actions">
+                            <a asp-action="Index" class="btn btn-outline-primary">
+                                <i class="fas fa-list"></i> Xem danh sách chứng chệ
+                            </a>
+                            <a asp-controller="Enrollments" asp-action="Index" class="btn btn-outline-info">
+                                <i class="fas fa-users"></i> Xem đăng ký khóa học
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.AvailableEnrollments.Any())
+        {
+            <!-- Bulk Generate -->
+            <div class="admin-form-card">
+                <div class="card-header">
+                    <h5 class="card-title">
+                        <i class="fas fa-layer-group text-success"></i>
+                        Tạo hàng loạt
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-exclamation-triangle"></i> Tính năng sắp có!
+                        </h6>
+                        <p class="mb-0">
+                            Tính năng tạo chứng chệ hàng loạt cho tất cả đăng ký đủ điều kiện sẽ được phát triăn trong phiên bản tiếp theo.
+                        </p>
+                    </div>
+                    
+                    <div class="bulk-info">
+                        <p><strong>Hiện có @Model.AvailableEnrollments.Count đăng ký đủ điều kiện:</strong></p>
+                        <ul class="eligible-list">
+                            @foreach (var enrollment in Model.AvailableEnrollments.Take(5))
+                            {
+                                <li>@enrollment.UserName - @enrollment.CourseTitle</li>
+                            }
+                            @if (Model.AvailableEnrollments.Count > 5)
+                            {
+                                <li class="text-muted">... và @(Model.AvailableEnrollments.Count - 5) đăng ký khác</li>
+                            }
+                        </ul>
+                    </div>
+
+                    <button type="button" class="btn btn-outline-success" disabled>
+                        <i class="fas fa-layer-group"></i> Tạo tất cả (Sắp có)
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="col-lg-4">
+        <!-- Enrollment Preview -->
+        <div class="admin-detail-card" id="enrollmentPreview" style="display: none;">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-eye text-info"></i>
+                    Thông tin Đăng ký
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="detail-item">
+                    <label>Học viên:</label>
+                    <span class="detail-value" id="previewUser">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Khóa học:</label>
+                    <span class="detail-value" id="previewCourse">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Ngày đăng ký:</label>
+                    <span class="detail-value" id="previewDate">-</span>
+                </div>
+                <div class="detail-item">
+                    <label>Tiến độ:</label>
+                    <div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" id="previewProgressBar" style="width: 0%"></div>
+                        </div>
+                        <small class="text-success" id="previewProgress">0%</small>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <label>Trạng thái:</label>
+                    <span class="badge bg-success" id="previewStatus">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-chart-pie text-primary"></i>
+                    Thđng kê
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="stat-item">
+                    <div class="stat-number text-success">@Model.AvailableEnrollments.Count</div>
+                    <div class="stat-label">Đăng ký đủ điều kiện</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-info">@Model.AvailableEnrollments.Select(e => e.CourseId).Distinct().Count()</div>
+                    <div class="stat-label">Khóa học khác nhau</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number text-warning">@Model.AvailableEnrollments.Select(e => e.UserId).Distinct().Count()</div>
+                    <div class="stat-label">Học viên khác nhau</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help -->
+        <div class="admin-detail-card">
+            <div class="card-header">
+                <h5 class="card-title">
+                    <i class="fas fa-question-circle text-primary"></i>
+                    Hương dẫn
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="help-content">
+                    <h6><i class="fas fa-magic text-primary"></i> Tự động tạo:</h6>
+                    <ul class="help-list">
+                        <li>Chọn đăng ký từ danh sách</li>
+                        <li>Hệ thđng tự động tạo sđ chứng chệ</li>
+                        <li>Ngày cấp là thời điăm hiện tại</li>
+                    </ul>
+
+                    <h6><i class="fas fa-check-circle text-success"></i> Điều kiện:</h6>
+                    <ul class="help-list">
+                        <li>Tiến độ học tập 100%</li>
+                        <li>Trạng thái "Hoàn thành"</li>
+                        <li>Chưa có chứng chệ</li>
+                    </ul>
+
+                    <h6><i class="fas fa-lightbulb text-warning"></i> Lưu ý:</h6>
+                    <ul class="help-list">
+                        <li>Có thă cập nhật URL file sau</li>
+                        <li>Sđ chứng chệ là duy nhất</li>
+                        <li>Không thă hoàn tác sau khi tạo</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateEnrollmentInfo() {
+    const select = document.getElementById('enrollmentSelect');
+    const preview = document.getElementById('enrollmentPreview');
+    const generateButton = document.getElementById('generateButton');
+    
+    if (select.value) {
+        const option = select.options[select.selectedIndex];
+        
+        document.getElementById('previewUser').textContent = option.dataset.user;
+        document.getElementById('previewCourse').textContent = option.dataset.course;
+        document.getElementById('previewDate').textContent = option.dataset.date;
+        document.getElementById('previewProgress').textContent = option.dataset.progress + '%';
+        document.getElementById('previewProgressBar').style.width = option.dataset.progress + '%';
+        document.getElementById('previewStatus').textContent = 'Hoàn thành';
+        
+        preview.style.display = 'block';
+        generateButton.disabled = false;
+    } else {
+        preview.style.display = 'none';
+        generateButton.disabled = true;
+    }
+}
+</script>
+
+<style>
+.detail-item {
+    margin-bottom: 1rem;
+}
+
+.detail-item label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #495057;
+}
+
+.stat-item {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+.help-content h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.help-content h6:first-child {
+    margin-top: 0;
+}
+
+.help-list {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    padding-left: 1.2rem;
+}
+
+.help-list li {
+    margin-bottom: 0.25rem;
+}
+
+.eligible-list {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+.eligible-list li {
+    margin-bottom: 0.25rem;
+}
+
+.auto-generate-info {
+    margin: 1.5rem 0;
+}
+
+.bulk-info {
+    margin-bottom: 1rem;
+}
+</style>

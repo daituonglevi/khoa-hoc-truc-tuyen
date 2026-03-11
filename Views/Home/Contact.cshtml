@@ -1,0 +1,119 @@
+@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        Liên hệ vơi chúng tôi
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="text-primary mb-3">Thông tin liên hệ</h4>
+                            <div class="contact-info">
+                                <div class="mb-3">
+                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                    <strong>Địa chệ:</strong><br>
+                                    <span class="ms-4">123 Đường ABC, Quận XYZ, TP.HCM</span>
+                                </div>
+                                <div class="mb-3">
+                                    <i class="fas fa-phone text-primary me-2"></i>
+                                    <strong>Điện thoại:</strong><br>
+                                    <span class="ms-4">+84 123 456 789</span>
+                                </div>
+                                <div class="mb-3">
+                                    <i class="fas fa-envelope text-primary me-2"></i>
+                                    <strong>Email:</strong><br>
+                                    <span class="ms-4">contact@elearning.com</span>
+                                </div>
+                                <div class="mb-3">
+                                    <i class="fas fa-clock text-primary me-2"></i>
+                                    <strong>Giờ làm việc:</strong><br>
+                                    <span class="ms-4">Thứ 2 - Thứ 6: 8:00 - 17:00</span><br>
+                                    <span class="ms-4">Thứ 7: 8:00 - 12:00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="text-primary mb-3">Gửi tin nhắn</h4>
+                            <form>
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Họ và tên *</label>
+                                    <input type="text" class="form-control" id="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email *</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Sđ điện thoại</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Chủ đề *</label>
+                                    <select class="form-select" id="subject" required>
+                                        <option value="">Chọn chủ đề</option>
+                                        <option value="course">Tư vấn khóa học</option>
+                                        <option value="technical">Hỗ trợ kỹ thuật</option>
+                                        <option value="payment">Thanh toán</option>
+                                        <option value="other">Khác</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Nội dung *</label>
+                                    <textarea class="form-control" id="message" rows="4" required></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Gửi tin nhắn
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Section -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-secondary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-map me-2"></i>
+                        Vị trí của chúng tôi
+                    </h4>
+                </div>
+                <div class="card-body p-0">
+                    <div class="map-container" style="height: 300px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
+                            <p>Bản đô sẽ được hiăn thị tại đây</p>
+                            <small>Tích hợp Google Maps hoặc OpenStreetMap</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.contact-info i {
+    width: 20px;
+}
+.card {
+    border: none;
+    border-radius: 10px;
+}
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+</style>

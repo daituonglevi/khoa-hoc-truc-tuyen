@@ -1,0 +1,270 @@
+@model Enrollment
+@{
+    ViewData["Title"] = "Chi tiết Đăng ký";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Chi tiết Đăng ký #@Model.Id</h3>
+                    <div class="card-tools">
+                        <a asp-action="Index" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Thông tin học viên -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thông tin Học viên</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>User ID:</strong></td>
+                                            <td>@Model.UserId</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Họ tên:</strong></td>
+                                            <td>Cần load thông tin user</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Email:</strong></td>
+                                            <td>Cần load thông tin user</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Sđ điện thoại:</strong></td>
+                                            <td>Cần load thông tin user</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Ngày tham gia:</strong></td>
+                                            <td>Cần load thông tin user</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Trạng thái tài khoản:</strong></td>
+                                            <td>
+                                                <span class="badge bg-secondary">Cần load thông tin user</span>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin khóa học -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thông tin Khóa học</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Tên khóa học:</strong></td>
+                                            <td>@Model.Course?.Title</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Mô tả:</strong></td>
+                                            <td>@Model.Course?.Description</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Giá:</strong></td>
+                                            <td>@Model.Course?.Price.ToString("N0") VNĐ</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Thời hạn:</strong></td>
+                                            <td>
+                                                @if (Model.Course?.LimitDay.HasValue == true)
+                                                {
+                                                    @Model.Course.LimitDay.Value @(Model.Course.LimitDay.Value > 1 ? "ngày" : "ngày")
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Không giơi hạn</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Trạng thái khóa học:</strong></td>
+                                            <td>
+                                                @switch (Model.Course?.Status)
+                                                {
+                                                    case "Published":
+                                                        <span class="badge bg-success">Đã xuất bản</span>
+                                                        break;
+                                                    case "Draft":
+                                                        <span class="badge bg-warning">Nháp</span>
+                                                        break;
+                                                    case "Archived":
+                                                        <span class="badge bg-secondary">Lưu trữ</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge bg-secondary">@Model.Course?.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin đăng ký -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thông tin Đăng ký</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>ID Đăng ký:</strong></td>
+                                                    <td>@Model.Id</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Ngày đăng ký:</strong></td>
+                                                    <td>@Model.EnrollmentDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Ngày hết hạn:</strong></td>
+                                                    <td>
+                                                        @if (Model.ExpiredDate.HasValue)
+                                                        {
+                                                            @Model.ExpiredDate.Value.ToString("dd/MM/yyyy HH:mm")
+                                                            @if (Model.ExpiredDate.Value < DateTime.Now)
+                                                            {
+                                                                <span class="badge bg-danger ms-2">Đã hết hạn</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-success ms-2">Còn hiệu lực</span>
+                                                            }
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Không giơi hạn</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <table class="table table-borderless">
+                                                <tr>
+                                                    <td><strong>Tiến độ học tập:</strong></td>
+                                                    <td>
+                                                        <div class="progress" style="height: 25px;">
+                                                            <div class="progress-bar" role="progressbar"
+                                                                 style="width: @Model.Progress%"
+                                                                 aria-valuenow="@Model.Progress"
+                                                                 aria-valuemin="0" aria-valuemax="100">
+                                                                @Model.Progress%
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Trạng thái:</strong></td>
+                                                    <td>
+                                                        @switch (Model.Status)
+                                                        {
+                                                            case 1:
+                                                                <span class="badge bg-success">Đang học</span>
+                                                                break;
+                                                            case 3:
+                                                                <span class="badge bg-primary">Hoàn thành</span>
+                                                                break;
+                                                            case 2:
+                                                                <span class="badge bg-danger">Tạm dừng</span>
+                                                                break;
+                                                            default:
+                                                                <span class="badge bg-secondary">@Model.GetStatusText()</span>
+                                                                break;
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Thao tác</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-warning" onclick="updateStatus(@Model.Id, 1)">
+                                            <i class="fas fa-play"></i> Kích hoạt
+                                        </button>
+                                        <button type="button" class="btn btn-primary" onclick="updateStatus(@Model.Id, 3)">
+                                            <i class="fas fa-check"></i> Hoàn thành
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" onclick="updateStatus(@Model.Id, 2)">
+                                            <i class="fas fa-pause"></i> Tạm dừng
+                                        </button>
+                                    </div>
+
+                                    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;"
+                                          onsubmit="return confirm('Bạn có chắc chắn muđn xóa đăng ký này? Hành động này không thă hoàn tác!')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger ms-3">
+                                            <i class="fas fa-trash"></i> Xóa đăng ký
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStatus(enrollmentId, status) {
+        if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái?')) {
+            const formData = new FormData();
+            formData.append('id', enrollmentId);
+            formData.append('status', status);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            fetch('@Url.Action("UpdateStatus")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Cập nhật trạng thái thành công!');
+                    location.reload();
+                } else {
+                    alert('Có lỗi xảy ra: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật trạng thái');
+            });
+        }
+    }
+</script>
+
+@Html.AntiForgeryToken()

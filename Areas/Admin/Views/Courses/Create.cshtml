@@ -1,0 +1,132 @@
+@model Course
+
+@{
+    ViewData["Title"] = "Thêm khóa học mơi";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-plus-circle"></i>
+                        Thêm khóa học mơi
+                    </h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Index")" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Quay lại
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            @TempData["ErrorMessage"]
+                        </div>
+                    }
+
+                    <form asp-action="CreateSimple" method="post">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Title" class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+                                    <input asp-for="Title" class="form-control" placeholder="Nhập tên khóa học" required />
+                                    <span asp-validation-for="Title" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="CategoryId" class="form-label">Danh mục <span class="text-danger">*</span></label>
+                                    <select asp-for="CategoryId" class="form-control" required>
+                                        <option value="">-- Chọn danh mục --</option>
+                                        @if (ViewBag.Categories != null)
+                                        {
+                                            @foreach (var category in (List<Category>)ViewBag.Categories)
+                                            {
+                                                <option value="@category.Id">@category.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Price" class="form-label">Giá (VNĐ) <span class="text-danger">*</span></label>
+                                    <input asp-for="Price" type="number" class="form-control" placeholder="0" min="0" required />
+                                    <span asp-validation-for="Price" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Duration" class="form-label">Thời lượng (phút)</label>
+                                    <input asp-for="Duration" type="number" class="form-control" placeholder="0" min="0" />
+                                    <span asp-validation-for="Duration" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Nhập mô tả khóa học"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Thumbnail" class="form-label">URL Thumbnail</label>
+                                    <input asp-for="Thumbnail" class="form-control" placeholder="https://example.com/image.jpg" />
+                                    <span asp-validation-for="Thumbnail" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PreviewVideo" class="form-label">URL Video Preview</label>
+                                    <input asp-for="PreviewVideo" class="form-control" placeholder="https://example.com/video.mp4" />
+                                    <span asp-validation-for="PreviewVideo" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="LimitDay" class="form-label">Thời hạn (ngày)</label>
+                                    <input asp-for="LimitDay" type="number" class="form-control" placeholder="0" min="0" />
+                                    <span asp-validation-for="LimitDay" class="text-danger"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                                    <select asp-for="Status" class="form-control">
+                                        <option value="Active">Hoạt động</option>
+                                        <option value="Draft" selected>Nháp</option>
+                                        <option value="Inactive">Không hoạt động</option>
+                                    </select>
+                                    <span asp-validation-for="Status" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Lưu khóa học
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Quay lại
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
