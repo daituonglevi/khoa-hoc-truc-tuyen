@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 using ELearningWebsite.Data;
 using ELearningWebsite.Services;
@@ -15,15 +16,18 @@ namespace ELearningWebsite.Controllers
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly IChatbotService _chatbotService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly ILogger<ChatbotController> _logger;
 
         public ChatbotController(
             ApplicationDbContext dbContext,
             IChatbotService chatbotService,
+            IWebHostEnvironment webHostEnvironment,
             ILogger<ChatbotController> logger)
         {
             _dbContext = dbContext;
             _chatbotService = chatbotService;
+            _webHostEnvironment = webHostEnvironment;
             _logger = logger;
         }
 
@@ -50,17 +54,34 @@ namespace ELearningWebsite.Controllers
                 return BadRequest(new { error = "Câu hỏi không hợp lệ." });
             }
 
-            var context = "";  // Không giới hạn context - chatbot trả lời bất kỳ câu hỏi gì
+            var context = await BuildWebsiteContextAsync(request, cancellationToken);
 
             var sessionKey = $"chatbot_history_{userId}";
             var history = GetHistory(sessionKey);
+            var aiHistory = history
+                .Where(h => !string.IsNullOrWhiteSpace(h.Role) && !string.IsNullOrWhiteSpace(h.Content))
+                .Select(h => (h.Role!, h.Content!))
+                .ToList();
+            var imageUrlForHistory = imageDataUrl;
+            var userMessageForHistory = !string.IsNullOrWhiteSpace(request.Message)
+                ? request.Message.Trim()
+                : "Người dùng đã gửi ảnh để hỏi.";
 
             try
             {
-                var answer = await _chatbotService.AskAsync(trimmedMessage, context, imageDataUrl, history, cancellationToken);
+                var answer = await _chatbotService.AskAsync(trimmedMessage, context, imageDataUrl, aiHistory, cancellationToken);
 
-                history.Add(("user", trimmedMessage));
-                history.Add(("assistant", answer));
+                history.Add(new ChatHistoryItem
+                {
+                    Role = "user",
+                    Content = userMessageForHistory,
+                    ImageUrl = imageUrlForHistory
+                });
+                history.Add(new ChatHistoryItem
+                {
+                    Role = "assistant",
+                    Content = answer
+                });
                 history = history.TakeLast(12).ToList();
                 SaveHistory(sessionKey, history);
 
@@ -88,36 +109,59 @@ namespace ELearningWebsite.Controllers
         public IActionResult ClearHistory()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
-            HttpContext.Session.Remove($"chatbot_history_{userId}");
+            var sessionKey = $"chatbot_history_{userId}";
+            HttpContext.Session.Remove(sessionKey);
             return Ok(new { message = "Đã xóa lịch sử chat." });
         }
 
-        private List<(string Role, string Content)> GetHistory(string sessionKey)
+        [HttpGet("history")]
+        public IActionResult GetHistoryApi()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+            var sessionKey = $"chatbot_history_{userId}";
+            var history = GetHistory(sessionKey)
+                .Select(h => new ChatHistoryResponseItem
+                {
+                    Role = h.Role ?? string.Empty,
+                    Content = h.Content ?? string.Empty,
+                    ImageUrl = h.ImageUrl
+                })
+                .ToList();
+
+            return Ok(new { history });
+        }
+
+        private List<ChatHistoryItem> GetHistory(string sessionKey)
         {
             var raw = HttpContext.Session.GetString(sessionKey);
             if (string.IsNullOrWhiteSpace(raw))
             {
-                return new List<(string Role, string Content)>();
+                return new List<ChatHistoryItem>();
             }
 
             try
             {
                 var items = JsonSerializer.Deserialize<List<ChatHistoryItem>>(raw) ?? new List<ChatHistoryItem>();
                 return items
-                    .Where(i => !string.IsNullOrWhiteSpace(i.Role) && !string.IsNullOrWhiteSpace(i.Content))
-                    .Select(i => (i.Role!, i.Content!))
+                    .Where(i => !string.IsNullOrWhiteSpace(i.Role) &&
+                                (!string.IsNullOrWhiteSpace(i.Content) || !string.IsNullOrWhiteSpace(i.ImageUrl)))
                     .ToList();
             }
             catch
             {
-                return new List<(string Role, string Content)>();
+                return new List<ChatHistoryItem>();
             }
         }
 
-        private void SaveHistory(string sessionKey, IReadOnlyList<(string Role, string Content)> history)
+        private void SaveHistory(string sessionKey, IReadOnlyList<ChatHistoryItem> history)
         {
             var items = history
-                .Select(h => new ChatHistoryItem { Role = h.Role, Content = h.Content })
+                .Select(h => new ChatHistoryItem
+                {
+                    Role = h.Role,
+                    Content = h.Content,
+                    ImageUrl = h.ImageUrl
+                })
                 .ToList();
 
             HttpContext.Session.SetString(sessionKey, JsonSerializer.Serialize(items));
@@ -127,6 +171,8 @@ namespace ELearningWebsite.Controllers
         {
             public string Message { get; set; } = string.Empty;
             public int? CourseId { get; set; }
+            public string? CurrentUrl { get; set; }
+            public string? CurrentPageTitle { get; set; }
             public IFormFile? Image { get; set; }
         }
 
@@ -140,6 +186,14 @@ namespace ELearningWebsite.Controllers
         {
             public string? Role { get; set; }
             public string? Content { get; set; }
+            public string? ImageUrl { get; set; }
+        }
+
+        public class ChatHistoryResponseItem
+        {
+            public string Role { get; set; } = string.Empty;
+            public string Content { get; set; } = string.Empty;
+            public string? ImageUrl { get; set; }
         }
 
         private async Task<string?> BuildImageDataUrlAsync(IFormFile? image, CancellationToken cancellationToken)
@@ -171,6 +225,90 @@ namespace ELearningWebsite.Controllers
             var base64 = Convert.ToBase64String(memoryStream.ToArray());
 
             return $"data:{contentType};base64,{base64}";
+        }
+
+        private async Task<string> BuildWebsiteContextAsync(ChatbotAskRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var sb = new StringBuilder();
+                var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
+                sb.AppendLine("Thông tin hệ thống LMS VJU:");
+                sb.AppendLine("- Tên website: LMS VJU");
+                sb.AppendLine("- Trang chủ: " + baseUrl + "/");
+                sb.AppendLine("- Trang khóa học: " + baseUrl + "/Home/Courses");
+                sb.AppendLine("- Trang giới thiệu: " + baseUrl + "/Home/About");
+                sb.AppendLine("- Trang liên hệ: " + baseUrl + "/Home/Contact");
+
+                if (!string.IsNullOrWhiteSpace(request.CurrentUrl))
+                {
+                    sb.AppendLine("Thông tin trang người dùng đang xem:");
+                    sb.AppendLine("- URL hiện tại: " + request.CurrentUrl.Trim());
+                }
+
+                if (!string.IsNullOrWhiteSpace(request.CurrentPageTitle))
+                {
+                    sb.AppendLine("- Tiêu đề trang hiện tại: " + request.CurrentPageTitle.Trim());
+                }
+
+                var activeCategories = await _dbContext.Categories
+                    .AsNoTracking()
+                    .Where(c => c.Status == 1)
+                    .OrderBy(c => c.Name)
+                    .Select(c => c.Name)
+                    .Take(12)
+                    .ToListAsync(cancellationToken);
+
+                var publishedCourseCount = await _dbContext.Courses
+                    .AsNoTracking()
+                    .Where(c => c.Status == "Published")
+                    .CountAsync(cancellationToken);
+
+                var latestCourses = await _dbContext.Courses
+                    .AsNoTracking()
+                    .Where(c => c.Status == "Published")
+                    .OrderByDescending(c => c.CreatedAt)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        Title = c.Title ?? "Khóa học chưa có tên",
+                        c.Price,
+                        CategoryName = c.Category.Name
+                    })
+                    .Take(10)
+                    .ToListAsync(cancellationToken);
+
+                sb.AppendLine("Dữ liệu nội bộ website:");
+                sb.AppendLine("- Số lượng khóa học đang published: " + publishedCourseCount);
+
+                if (activeCategories.Count > 0)
+                {
+                    sb.AppendLine("- Danh mục đang hoạt động: " + string.Join(", ", activeCategories));
+                }
+
+                if (latestCourses.Count > 0)
+                {
+                    sb.AppendLine("- Một số khóa học gần đây:");
+                    foreach (var course in latestCourses)
+                    {
+                        var courseUrl = $"{baseUrl}/Home/CourseDetail/{course.Id}";
+                        sb.AppendLine($"  * #{course.Id} - {course.Title} | Danh mục: {course.CategoryName} | Giá: {course.Price:N0} VNĐ | Link: {courseUrl}");
+                    }
+                }
+
+                sb.AppendLine("Nguyên tắc trả lời:");
+                sb.AppendLine("- Nếu người dùng hỏi liên quan LMS VJU, ưu tiên trả lời theo dữ liệu website ở trên.");
+                sb.AppendLine("- Nếu người dùng hỏi chung ngoài LMS VJU, vẫn trả lời bình thường.");
+                sb.AppendLine("- Không tự bịa link hoặc dữ liệu không có trong ngữ cảnh.");
+
+                return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Không thể build website context cho chatbot");
+                return "Thông tin website LMS VJU tạm thời chưa tải được. Vẫn có thể trả lời câu hỏi chung bằng tiếng Việt.";
+            }
         }
     }
 }

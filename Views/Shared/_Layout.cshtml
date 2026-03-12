@@ -140,7 +140,7 @@
 
                 <div id="ai-chatbot-messages" class="ai-chatbot-messages"></div>
 
-                <form id="ai-chatbot-form" class="ai-chatbot-form" enctype="multipart/form-data">
+                <div id="ai-chatbot-form" class="ai-chatbot-form" role="form" aria-label="Chatbot form">
                     <div class="ai-chatbot-input-row">
                         <input id="ai-chatbot-input" type="text" class="form-control" maxlength="800"
                                placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
@@ -148,7 +148,7 @@
                             <i class="fas fa-image"></i>
                         </label>
                         <input id="ai-chatbot-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="d-none" />
-                        <button class="btn btn-primary" type="submit">
+                        <button id="ai-chatbot-send" class="btn btn-primary" type="button">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -158,7 +158,7 @@
                         <button id="ai-chatbot-image-remove" type="button" class="btn btn-sm btn-outline-secondary">Bỏ ảnh</button>
                     </div>
                     <div id="ai-chatbot-image-name" class="ai-chatbot-image-name"></div>
-                </form>
+                </div>
             </div>
         </div>
     }

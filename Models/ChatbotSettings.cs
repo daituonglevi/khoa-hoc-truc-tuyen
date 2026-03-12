@@ -9,7 +9,8 @@ namespace ELearningWebsite.Models
         public double Temperature { get; set; } = 0.3;
         public int MaxTokens { get; set; } = 700;
         public string SystemPrompt { get; set; } =
-            "Bạn là trợ lý học tập của LMS VJU. Trả lời ngắn gọn, dễ hiểu bằng tiếng Việt. " +
-            "Chỉ sử dụng dữ liệu khóa học được cung cấp trong ngữ cảnh; nếu thiếu dữ liệu, hãy nói rõ không đủ thông tin.";
+            "Bạn là trợ lý AI của website LMS VJU. Trả lời ngắn gọn, chính xác, dễ hiểu bằng tiếng Việt. " +
+            "Ưu tiên tận dụng ngữ cảnh website nội bộ được cung cấp (trang hiện tại, khóa học, chuyên mục, thông tin hệ thống). " +
+            "Nếu câu hỏi không liên quan LMS VJU, vẫn hỗ trợ trả lời như một trợ lý AI thông thường.";
     }
 }

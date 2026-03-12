@@ -8,6 +8,7 @@
     const clearBtn = document.getElementById('ai-chatbot-clear');
     const form = document.getElementById('ai-chatbot-form');
     const input = document.getElementById('ai-chatbot-input');
+    const sendBtn = document.getElementById('ai-chatbot-send');
     const imageInput = document.getElementById('ai-chatbot-image');
     const imageName = document.getElementById('ai-chatbot-image-name');
     const imagePreview = document.getElementById('ai-chatbot-image-preview');
@@ -106,6 +107,8 @@
     async function ask(message, imageFile) {
         const formData = new FormData();
         formData.append('message', message || '');
+        formData.append('currentUrl', window.location.href || '');
+        formData.append('currentPageTitle', document.title || '');
         if (imageFile) {
             formData.append('image', imageFile);
         }
@@ -128,6 +131,20 @@
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
+    }
+
+    async function loadHistory() {
+        const res = await fetch('/api/chatbot/history', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!res.ok) {
+            throw new Error('Không thể tải lịch sử chat');
+        }
+
+        const payload = await res.json();
+        return Array.isArray(payload.history) ? payload.history : [];
     }
 
     toggleBtn.addEventListener('click', function () {
@@ -175,8 +192,8 @@
         input.focus();
     });
 
-    form.addEventListener('submit', async function (event) {
-        event.preventDefault();
+    async function handleSend() {
+        if (!form) return;
 
         const message = input.value.trim();
         const imageFile = imageInput.files && imageInput.files[0] ? imageInput.files[0] : null;
@@ -206,7 +223,41 @@
             typing.remove();
             appendMessage(error.message || 'Chatbot tạm thời không khả dụng.', 'bot');
         }
+    }
+
+    if (sendBtn) {
+        sendBtn.addEventListener('click', function () {
+            handleSend();
+        });
+    }
+
+    input.addEventListener('keydown', function (event) {
+        if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+            event.preventDefault();
+            handleSend();
+        }
     });
 
-    appendMessage('Xin chào! Bạn có thể nhập câu hỏi hoặc tải ảnh để mình hỗ trợ.', 'bot');
+    (async function initializeChat() {
+        try {
+            const history = await loadHistory();
+            if (history.length > 0) {
+                for (const item of history) {
+                    const role = item.role === 'user' ? 'user' : 'bot';
+                    const content = typeof item.content === 'string' ? item.content : '';
+                    if (content) {
+                        appendMessage(content, role);
+                    }
+                    const imageUrl = typeof item.imageUrl === 'string' ? item.imageUrl : '';
+                    if (imageUrl) {
+                        appendImageMessage(imageUrl, role, 'Ảnh trong lịch sử chat');
+                    }
+                }
+                return;
+            }
+        } catch {
+        }
+
+        appendMessage('Xin chào! Bạn có thể nhập câu hỏi hoặc tải ảnh để mình hỗ trợ.', 'bot');
+    })();
 })();
