@@ -37,7 +37,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     options.Password.RequireLowercase = false;
 })
 .AddRoles<IdentityRole<int>>()
-.AddEntityFrameworkStores<ApplicationDbContext>();
+.AddEntityFrameworkStores<ApplicationDbContext>()
+.AddDefaultTokenProviders();
 
 // Configure Identity Pages
 builder.Services.ConfigureApplicationCookie(options =>

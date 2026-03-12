@@ -2,118 +2,118 @@
     ViewData["Title"] = "Liên hệ";
 }
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h2 class="mb-0">
-                        <i class="fas fa-envelope me-2"></i>
-                        Liên hệ vơi chúng tôi
-                    </h2>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h4 class="text-primary mb-3">Thông tin liên hệ</h4>
-                            <div class="contact-info">
-                                <div class="mb-3">
-                                    <i class="fas fa-map-marker-alt text-primary me-2"></i>
-                                    <strong>Địa chệ:</strong><br>
-                                    <span class="ms-4">123 Đường ABC, Quận XYZ, TP.HCM</span>
-                                </div>
-                                <div class="mb-3">
-                                    <i class="fas fa-phone text-primary me-2"></i>
-                                    <strong>Điện thoại:</strong><br>
-                                    <span class="ms-4">+84 123 456 789</span>
-                                </div>
-                                <div class="mb-3">
-                                    <i class="fas fa-envelope text-primary me-2"></i>
-                                    <strong>Email:</strong><br>
-                                    <span class="ms-4">contact@elearning.com</span>
-                                </div>
-                                <div class="mb-3">
-                                    <i class="fas fa-clock text-primary me-2"></i>
-                                    <strong>Giờ làm việc:</strong><br>
-                                    <span class="ms-4">Thứ 2 - Thứ 6: 8:00 - 17:00</span><br>
-                                    <span class="ms-4">Thứ 7: 8:00 - 12:00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h4 class="text-primary mb-3">Gửi tin nhắn</h4>
-                            <form>
-                                <div class="mb-3">
-                                    <label for="name" class="form-label">Họ và tên *</label>
-                                    <input type="text" class="form-control" id="name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="email" class="form-label">Email *</label>
-                                    <input type="email" class="form-control" id="email" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">Sđ điện thoại</label>
-                                    <input type="tel" class="form-control" id="phone">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="subject" class="form-label">Chủ đề *</label>
-                                    <select class="form-select" id="subject" required>
-                                        <option value="">Chọn chủ đề</option>
-                                        <option value="course">Tư vấn khóa học</option>
-                                        <option value="technical">Hỗ trợ kỹ thuật</option>
-                                        <option value="payment">Thanh toán</option>
-                                        <option value="other">Khác</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="message" class="form-label">Nội dung *</label>
-                                    <textarea class="form-control" id="message" rows="4" required></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>
-                                    Gửi tin nhắn
-                                </button>
-                            </form>
-                        </div>
+<div class="container py-5 mt-4">
+    <div class="row mb-5 text-center">
+        <div class="col-12" data-aos="fade-up">
+            <h1 class="display-4 fw-bold mb-3" style="letter-spacing: -1px;">Kết nối với chúng tôi</h1>
+            <p class="lead text-muted" style="font-size: 1.15rem;">Chúng tôi luôn sẵn lòng lắng nghe và hỗ trợ bạn mọi lúc</p>
+        </div>
+    </div>
+
+    <div class="row g-5">
+        <div class="col-lg-5" data-aos="fade-right">
+            <div class="h-100 p-5 bg-dark text-white rounded-5" style="background-image: linear-gradient(135deg, #111827 0%, #374151 100%);">
+                <h3 class="fw-bold mb-4">Thông tin liên hệ</h3>
+                <p class="mb-5 text-light" style="opacity: 0.9;">Điền vào biểu mẫu hoặc liên hệ trực tiếp qua thông tin dưới đây. Đội ngũ của chúng tôi sẽ phản hồi trong vòng 24 giờ.</p>
+                
+                <div class="d-flex align-items-start mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle me-3" style="width: 48px; height: 48px;">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Trụ sở chính</h6>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">123 Đường ABC, Quận XYZ<br>TP.HCM, Việt Nam</p>
                     </div>
                 </div>
+                
+                <div class="d-flex align-items-start mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle me-3" style="width: 48px; height: 48px;">
+                        <i class="fas fa-phone-alt"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Điện thoại</h6>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">+84 123 456 789</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-start mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle me-3" style="width: 48px; height: 48px;">
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Email</h6>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">contact@elearning.com</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-start">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle me-3" style="width: 48px; height: 48px;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Giờ làm việc</h6>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">Thứ 2 - Thứ 6: 8:00 - 17:00<br>Thứ 7: 8:00 - 12:00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7" data-aos="fade-left">
+            <div class="bg-white p-5 rounded-5 border border-light-subtle h-100" style="box-shadow: 0 4px 24px rgba(0,0,0,0.02);">
+                <h4 class="fw-bold mb-4 text-dark" style="letter-spacing: -0.5px;">Gửi lời nhắn cho chúng tôi</h4>
+                <form>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label fw-medium small text-dark">Họ và tên *</label>
+                            <input type="text" class="form-control form-control-lg border-light-subtle rounded-3 fs-6" id="name" required placeholder="Nguyễn Văn A">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label fw-medium small text-dark">Email *</label>
+                            <input type="email" class="form-control form-control-lg border-light-subtle rounded-3 fs-6" id="email" required placeholder="name@example.com">
+                        </div>
+                        <div class="col-12 mb-3">
+                            <label for="subject" class="form-label fw-medium small text-dark">Chủ đề quan tâm *</label>
+                            <select class="form-select form-select-lg border-light-subtle rounded-3 fs-6" id="subject" required>
+                                <option value="" selected disabled>-- Vui lòng chọn chủ đề --</option>
+                                <option value="course">Tư vấn khóa học</option>
+                                <option value="technical">Hỗ trợ kỹ thuật</option>
+                                <option value="payment">Thanh toán</option>
+                                <option value="other">Vấn đề khác</option>
+                            </select>
+                        </div>
+                        <div class="col-12 mb-4">
+                            <label for="message" class="form-label fw-medium small text-dark">Nội dung chi tiết *</label>
+                            <textarea class="form-control form-control-lg border-light-subtle rounded-3 fs-6" id="message" rows="5" required placeholder="Viết câu hỏi của bạn tại đây..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-dark btn-lg rounded-3 px-5 fw-medium">
+                                Gửi đi <i class="fas fa-paper-plane ms-2 small"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
     
     <!-- Map Section -->
-    <div class="row mt-5">
+    <div class="row mt-5 pt-4" data-aos="fade-up">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-secondary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-map me-2"></i>
-                        Vị trí của chúng tôi
-                    </h4>
+            <div class="bg-light rounded-5 overflow-hidden border border-light-subtle" style="height: 400px; display: flex; align-items: center; justify-content: center; position: relative;">
+                <div class="text-center text-muted z-1">
+                    <i class="fas fa-map-marker-alt fs-1 mb-3 text-secondary opacity-50"></i>
+                    <h5 class="fw-bold mb-1">Bản đồ đang được tải...</h5>
+                    <p class="small mb-0">Tích hợp Google Maps API</p>
                 </div>
-                <div class="card-body p-0">
-                    <div class="map-container" style="height: 300px; background-color: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-map-marked-alt fa-3x mb-3"></i>
-                            <p>Bản đô sẽ được hiăn thị tại đây</p>
-                            <small>Tích hợp Google Maps hoặc OpenStreetMap</small>
-                        </div>
-                    </div>
-                </div>
+                <!-- Background placeholder giả lập bản đồ -->
+                <div class="position-absolute align-items-center w-100 h-100 bg-light opacity-50" style="background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;"></div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-.contact-info i {
-    width: 20px;
-}
-.card {
-    border: none;
-    border-radius: 10px;
-}
-.card-header {
-    border-radius: 10px 10px 0 0 !important;
-}
+    .border-light-subtle {
+        border-color: rgba(0,0,0,0.08) !important;
+    }
 </style>

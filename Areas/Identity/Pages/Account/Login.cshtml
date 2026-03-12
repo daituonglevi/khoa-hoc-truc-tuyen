@@ -5,60 +5,57 @@
     ViewData["Title"] = "Đăng nhập";
 }
 
-<div class="container mt-5">
+<div class="container py-5 mt-4">
     <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white text-center">
-                    <h4 class="mb-0">
-                        <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-                    </h4>
+        <div class="col-md-5">
+            <div class="bg-white p-4 p-md-5 rounded-4 border" style="box-shadow: 0 4px 24px rgba(0,0,0,0.04);">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-3" style="width: 64px; height: 64px;">
+                        <i class="fas fa-user text-secondary fs-4"></i>
+                    </div>
+                    <h3 class="fw-bold mb-2" style="font-family: inherit; letter-spacing: -0.5px;">Chào mừng trở lại!</h3>
+                    <p class="text-muted small">
+                        Đăng nhập để tiếp tục hành trình học tập của bạn.
+                    </p>
                 </div>
-                <div class="card-body p-4">
-                    <form id="account" method="post">
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
-                        
-                        <div class="mb-3">
-                            <label asp-for="Input.Email" class="form-label">Email</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="Nhập email của bạn" />
-                            </div>
-                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                
+                <form id="account" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 small" role="alert"></div>
+                    
+                    <div class="mb-4">
+                        <label asp-for="Input.Email" class="form-label fw-medium small text-dark">
+                            Địa chỉ email
+                        </label>
+                        <input asp-for="Input.Email" class="form-control form-control-lg border-light-subtle rounded-3 fs-6" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                        <span asp-validation-for="Input.Email" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label asp-for="Input.Password" class="form-label fw-medium small text-dark mb-0">Mật khẩu</label>
+                            <a id="forgot-password" asp-page="./ForgotPassword" class="small text-decoration-none text-muted fw-medium text-hover-dark">Quên mật khẩu?</a>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label asp-for="Input.Password" class="form-label">Mật khẩu</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="Nhập mật khẩu" />
-                            </div>
-                            <span asp-validation-for="Input.Password" class="text-danger"></span>
-                        </div>
-                        
-                        <div class="mb-3 form-check">
-                            <input class="form-check-input" asp-for="Input.RememberMe" />
-                            <label class="form-check-label" asp-for="Input.RememberMe">
-                                Ghi nhơ đăng nhập
-                            </label>
-                        </div>
-                        
-                        <div class="d-grid">
-                            <button id="login-submit" type="submit" class="btn btn-primary btn-lg">
-                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-                            </button>
-                        </div>
-                        
-                        <div class="text-center mt-3">
-                            <p class="mb-1">
-                                <a id="forgot-password" asp-page="./ForgotPassword">Quên mật khẩu?</a>
-                            </p>
-                            <p class="mb-0">
-                                Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl">Đăng ký ngay</a>
-                            </p>
-                        </div>
-                    </form>
-                </div>
+                        <input asp-for="Input.Password" class="form-control form-control-lg border-light-subtle rounded-3 fs-6" autocomplete="current-password" aria-required="true" placeholder="Nhập mật khẩu" />
+                        <span asp-validation-for="Input.Password" class="text-danger small mt-1 d-block"></span>
+                    </div>
+                    
+                    <div class="mb-4 form-check">
+                        <input class="form-check-input" asp-for="Input.RememberMe" />
+                        <label class="form-check-label small text-muted select-none" asp-for="Input.RememberMe" style="cursor: pointer;">
+                            Ghi nhớ cho lần sau
+                        </label>
+                    </div>
+                    
+                    <button id="login-submit" type="submit" class="btn btn-dark w-100 btn-lg rounded-3 fs-6 mb-4">
+                        Đăng nhập
+                    </button>
+                    
+                    <div class="text-center">
+                        <p class="mb-0 small text-muted">
+                            Chưa có tài khoản? <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl" class="text-dark fw-bold text-decoration-none border-bottom border-dark pb-1">Đăng ký ngay</a>
+                        </p>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

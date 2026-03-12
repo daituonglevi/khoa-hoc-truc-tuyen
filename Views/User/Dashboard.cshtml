@@ -3,18 +3,18 @@
     ViewData["Title"] = "Dashboard - " + Model.User.FullName;
 }
 
-<div class="container py-4">
+<div class="container py-5 mt-3">
     <!-- Header -->
-    <div class="row mb-4">
+    <div class="row mb-5" data-aos="fade-down">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center bg-white p-4 rounded-4 border border-light-subtle" style="box-shadow: 0 4px 24px rgba(0,0,0,0.02);">
                 <div>
-                    <h2 class="mb-1">Chào mừng trở lại, @Model.User.FullName!</h2>
-                    <p class="text-muted mb-0">Theo dõi tiến độ học tập của bạn</p>
+                    <h2 class="fw-bold mb-1" style="letter-spacing: -0.5px;">Chào mừng trở lại, @Model.User.FullName!</h2>
+                    <p class="text-secondary mb-0">Theo dõi tiến độ học tập và thành tích của bạn</p>
                 </div>
                 <div>
-                    <a href="@Url.Action("Courses", "Home")" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Tìm khóa học mơi
+                    <a href="@Url.Action("Courses", "Home")" class="btn btn-dark rounded-pill px-4 fw-medium">
+                        <i class="fas fa-plus me-2 small"></i>Tđm khóa học mới
                     </a>
                 </div>
             </div>
@@ -22,122 +22,116 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0">@Model.TotalCourses</h4>
-                            <p class="mb-0">Tổng khóa học</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-book fa-2x opacity-75"></i>
-                        </div>
+    <div class="row mb-5 g-4">
+        <div class="col-md-3">
+            <div class="bg-white rounded-4 border border-light-subtle h-100 p-4 stat-card relative overflow-hidden">
+                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                    <div>
+                        <p class="text-secondary fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Tổng khóa học</p>
+                        <h3 class="fw-bold mb-0 text-dark display-6">@Model.TotalCourses</h3>
+                    </div>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle" style="width: 48px; height: 48px;">
+                        <i class="fas fa-book text-dark fs-5"></i>
+                    </div>
+                </div>
+                <div class="position-absolute end-0 bottom-0 opacity-10" style="transform: translate(20%, 20%);">
+                    <i class="fas fa-book fa-5x"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="bg-white rounded-4 border border-light-subtle h-100 p-4 stat-card relative overflow-hidden">
+                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                    <div>
+                        <p class="text-secondary fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Đã hoàn thành</p>
+                        <h3 class="fw-bold mb-0 text-dark display-6">@Model.CompletedCourses</h3>
+                    </div>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 rounded-circle" style="width: 48px; height: 48px;">
+                        <i class="fas fa-check-circle text-success fs-5"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0">@Model.CompletedCourses</h4>
-                            <p class="mb-0">Đã hoàn thành</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-check-circle fa-2x opacity-75"></i>
-                        </div>
+        <div class="col-md-3">
+            <div class="bg-white rounded-4 border border-light-subtle h-100 p-4 stat-card relative overflow-hidden">
+                <div class="d-flex justify-content-between align-items-start position-relative z-1">
+                    <div>
+                        <p class="text-secondary fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Đang học</p>
+                        <h3 class="fw-bold mb-0 text-dark display-6">@Model.InProgressCourses</h3>
+                    </div>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 rounded-circle" style="width: 48px; height: 48px;">
+                        <i class="fas fa-play text-primary fs-5"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0">@Model.InProgressCourses</h4>
-                            <p class="mb-0">Đang học</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-play-circle fa-2x opacity-75"></i>
-                        </div>
+        <div class="col-md-3">
+            <div class="bg-dark rounded-4 h-100 p-4 stat-card relative overflow-hidden" style="background-image: linear-gradient(135deg, #111827 0%, #374151 100%);">
+                <div class="d-flex justify-content-between align-items-start position-relative z-1 text-white">
+                    <div>
+                        <p class="text-light fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px; opacity: 0.8;">Tiến độ trung bđnh</p>
+                        <h3 class="fw-bold mb-0 display-6">@Model.AverageProgress.ToString("F1")<span class="fs-5 text-light">%</span></h3>
                     </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-info text-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h4 class="mb-0">@Model.AverageProgress.ToString("F1")%</h4>
-                            <p class="mb-0">Tiến độ trung bình</p>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="fas fa-chart-line fa-2x opacity-75"></i>
-                        </div>
+                    <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle" style="width: 48px; height: 48px;">
+                        <i class="fas fa-chart-line text-white fs-5"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <div class="row g-4">
         <!-- Recent Courses -->
-        <div class="col-lg-8 mb-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>Khóa học gần đây</h5>
-                    <a href="@Url.Action("MyCourses", "User")" class="btn btn-sm btn-outline-primary">
+        <div class="col-lg-8" data-aos="fade-right">
+            <div class="bg-white rounded-4 border border-light-subtle h-100 overflow-hidden">
+                <div class="p-4 border-bottom border-light-subtle bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-history text-secondary me-2"></i>Khóa học găn đây</h5>
+                    <a href="@Url.Action("MyCourses", "User")" class="text-dark text-decoration-none fw-medium small border-bottom border-dark pb-1">
                         Xem tất cả
                     </a>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     @if (Model.RecentEnrollments.Any())
                     {
-                        @foreach (var enrollment in Model.RecentEnrollments)
-                        {
-                            <div class="d-flex align-items-center mb-3 pb-3 @(enrollment != Model.RecentEnrollments.Last() ? "border-bottom" : "")">
-                                <img src="@enrollment.Course.Thumbnail" alt="@enrollment.Course.Title" 
-                                     class="rounded me-3" style="width: 60px; height: 40px; object-fit: cover;">
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">
-                                        <a href="@Url.Action("CourseProgress", "User", new { id = enrollment.Id })" 
-                                           class="text-decoration-none">@enrollment.Course.Title</a>
-                                    </h6>
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="progress flex-grow-1 me-3" style="height: 6px;">
-                                            <div class="progress-bar" role="progressbar" 
-                                                 style="width: @enrollment.Progress%" 
-                                                 aria-valuenow="@enrollment.Progress" 
-                                                 aria-valuemin="0" aria-valuemax="100"></div>
+                        <div class="list-group list-group-flush gap-3">
+                            @foreach (var enrollment in Model.RecentEnrollments)
+                            {
+                                <div class="list-group-item bg-transparent border-0 p-0">
+                                    <div class="d-flex align-items-center bg-light rounded-4 p-3 border border-light-subtle hover-lift cursor-pointer" onclick="window.location.href='@Url.Action("CourseProgress", "User", new { id = enrollment.Id })'">
+                                        <img src="@enrollment.Course.Thumbnail" alt="@enrollment.Course.Title" 
+                                             class="rounded-3 me-3 object-fit-cover shadow-sm" style="width: 80px; height: 60px;">
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                                <h6 class="mb-0 fw-bold text-dark w-75 lh-base">
+                                                    @enrollment.Course.Title
+                                                </h6>
+                                                <span class="badge bg-@(enrollment.Status == 1 ? "dark text-white" : enrollment.Status == 3 ? "success" : "light border text-dark") rounded-pill fw-medium">
+                                                    @enrollment.GetStatusText()
+                                                </span>
+                                            </div>
+                                            <div class="d-flex align-items-center mt-2">
+                                                <div class="progress flex-grow-1 me-3 bg-white border border-light-subtle rounded-pill" style="height: 8px;">
+                                                    <div class="progress-bar bg-dark rounded-pill" role="progressbar" 
+                                                         style="width: @enrollment.Progress%" 
+                                                         aria-valuenow="@enrollment.Progress" 
+                                                         aria-valuemin="0" aria-valuemax="100"></div>
+                                                </div>
+                                                <small class="text-dark fw-bold">@enrollment.Progress.ToString("F0")%</small>
+                                            </div>
                                         </div>
-                                        <small class="text-muted">@enrollment.Progress.ToString("F0")%</small>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-muted">
-                                            <i class="fas fa-calendar me-1"></i>
-                                            @enrollment.EnrollmentDate.ToString("dd/MM/yyyy")
-                                        </small>
-                                        <span class="badge bg-@(enrollment.Status == 1 ? "primary" : enrollment.Status == 3 ? "success" : "warning")">
-                                            @enrollment.GetStatusText()
-                                        </span>
                                     </div>
                                 </div>
-                            </div>
-                        }
+                            }
+                        </div>
                     }
                     else
                     {
-                        <div class="text-center py-4">
-                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                            <h6 class="text-muted">Chưa có khóa học nào</h6>
-                            <p class="text-muted">Hãy đăng ký khóa học đầu tiên của bạn!</p>
-                            <a href="@Url.Action("Courses", "Home")" class="btn btn-primary">
-                                <i class="fas fa-search me-2"></i>Tìm khóa học
+                        <div class="text-center py-5">
+                            <i class="fas fa-book-reader fa-3x text-muted mb-3 opacity-50"></i>
+                            <h6 class="fw-bold mb-2">Chưa có khóa học nào</h6>
+                            <p class="text-muted small mb-4">Bạn chđa tham gia khóa học nào. Hãy bắt đău ngay!</p>
+                            <a href="@Url.Action("Courses", "Home")" class="btn btn-dark rounded-pill px-4">
+                                Khám phá khóa học
                             </a>
                         </div>
                     }
@@ -146,62 +140,56 @@
         </div>
 
         <!-- Quick Actions & Profile -->
-        <div class="col-lg-4">
-            <!-- Quick Actions -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Thao tác nhanh</h5>
+        <div class="col-lg-4" data-aos="fade-left">
+            <!-- Profile Summary -->
+            <div class="bg-white rounded-4 border border-light-subtle mb-4 overflow-hidden text-center p-4 text-center">
+                <div class="mb-3 position-relative d-inline-block">
+                    @if (!string.IsNullOrEmpty(Model.User.Avatar))
+                    {
+                        <img src="@Model.User.Avatar" alt="Avatar" 
+                             class="rounded-circle border border-3 border-white shadow-sm" style="width: 96px; height: 96px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="rounded-circle bg-dark text-white d-inline-flex align-items-center justify-content-center shadow-sm" 
+                             style="width: 96px; height: 96px; font-size: 2.5rem; border: 3px solid white;">
+                            @Model.User.FullName.FirstOrDefault()
+                        </div>
+                    }
+                    @if (Model.User.IsVerified)
+                    {
+                        <div class="position-absolute bottom-0 end-0 bg-success rounded-circle border border-2 border-white text-white d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" title="Tài khoản đã xác thực">
+                            <i class="fas fa-check small"></i>
+                        </div>
+                    }
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="@Url.Action("MyCourses", "User")" class="btn btn-outline-primary">
-                            <i class="fas fa-book me-2"></i>Khóa học của tôi
-                        </a>
-                        <a href="@Url.Action("Courses", "Home")" class="btn btn-outline-success">
-                            <i class="fas fa-search me-2"></i>Tìm khóa học mơi
-                        </a>
-                        <a href="/Identity/Account/Manage" class="btn btn-outline-info">
-                            <i class="fas fa-user-cog me-2"></i>Cài đặt tài khoản
-                        </a>
-                    </div>
+                <h5 class="fw-bold mb-1">@Model.User.FullName</h5>
+                <p class="text-secondary small mb-3">@Model.User.Email</p>
+                <div class="bg-light rounded-3 p-2 small text-muted">
+                    <i class="fas fa-calendar-alt me-1"></i> Tham gia: @Model.User.CreatedAt.ToString("MM/yyyy")
                 </div>
             </div>
 
-            <!-- Profile Summary -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-user me-2"></i>Thông tin cá nhân</h5>
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-4 border border-light-subtle overflow-hidden">
+                <div class="p-3 border-bottom border-light-subtle bg-light bg-opacity-50">
+                    <h6 class="mb-0 fw-bold"><i class="fas fa-bolt text-warning me-2"></i>Thao tác nhanh</h6>
                 </div>
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        @if (!string.IsNullOrEmpty(Model.User.Avatar))
-                        {
-                            <img src="@Model.User.Avatar" alt="Avatar" 
-                                 class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                        }
-                        else
-                        {
-                            <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center" 
-                                 style="width: 80px; height: 80px; font-size: 2rem;">
-                                @Model.User.FullName.FirstOrDefault()
-                            </div>
-                        }
+                <div class="p-3">
+                    <div class="d-flex flex-column gap-2">
+                        <a href="@Url.Action("MyCourses", "User")" class="btn btn-light border border-light-subtle text-start d-flex align-items-center p-3 rounded-3 hover-lift text-dark fw-medium">
+                            <div class="bg-white rounded p-2 border shadow-sm me-3 d-flex align-items-center"><i class="fas fa-book-open"></i></div>
+                            Hồ sđ học tập
+                        </a>
+                        <a href="@Url.Action("Courses", "Home")" class="btn btn-light border border-light-subtle text-start d-flex align-items-center p-3 rounded-3 hover-lift text-dark fw-medium">
+                            <div class="bg-white rounded p-2 border shadow-sm me-3 d-flex align-items-center"><i class="fas fa-search"></i></div>
+                            Tđm khóa học mới
+                        </a>
+                        <a href="/Identity/Account/Manage" class="btn btn-light border border-light-subtle text-start d-flex align-items-center p-3 rounded-3 hover-lift text-dark fw-medium">
+                            <div class="bg-white rounded p-2 border shadow-sm me-3 d-flex align-items-center"><i class="fas fa-cog"></i></div>
+                            Cài đđt tài khoản
+                        </a>
                     </div>
-                    <h6 class="mb-1">@Model.User.FullName</h6>
-                    <p class="text-muted mb-2">@Model.User.Email</p>
-                    <small class="text-muted">
-                        <i class="fas fa-calendar me-1"></i>
-                        Tham gia từ @Model.User.CreatedAt.ToString("MM/yyyy")
-                    </small>
-                    
-                    @if (Model.User.IsVerified)
-                    {
-                        <div class="mt-2">
-                            <span class="badge bg-success">
-                                <i class="fas fa-check-circle me-1"></i>Đã xác thực
-                            </span>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
@@ -209,28 +197,20 @@
 </div>
 
 <style>
-    .card {
-        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        border: 1px solid rgba(0, 0, 0, 0.125);
-        transition: transform 0.2s ease-in-out;
-    }
+    .border-light-subtle { border-color: rgba(0,0,0,0.08) !important; }
     
-    .card:hover {
-        transform: translateY(-2px);
+    .stat-card {
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    
-    .progress {
-        background-color: #e9ecef;
+    .hover-lift {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-decoration: none;
     }
-    
-    .opacity-75 {
-        opacity: 0.75;
+    .hover-lift:hover, .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.05);
     }
-    
-    .bg-primary { background-color: #0d6efd !important; }
-    .bg-success { background-color: #198754 !important; }
-    .bg-warning { background-color: #ffc107 !important; }
-    .bg-info { background-color: #0dcaf0 !important; }
+    .cursor-pointer { cursor: pointer; }
 </style>
 
 <script>
