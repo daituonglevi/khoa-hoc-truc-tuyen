@@ -53,6 +53,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 // Add custom services
 builder.Services.AddScoped<IReportExportService, ReportExportService>();
+builder.Services.Configure<ChatbotSettings>(builder.Configuration.GetSection("Chatbot"));
+builder.Services.AddHttpClient<IChatbotService, OpenAIChatbotService>();
 
 // Configure Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));

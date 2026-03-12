@@ -116,6 +116,41 @@
         </div>
     </footer>
 
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <div id="ai-chatbot-root" class="ai-chatbot-root">
+            <button id="ai-chatbot-toggle" class="ai-chatbot-toggle" type="button" aria-label="Mở chatbot AI">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </button>
+
+            <div id="ai-chatbot-panel" class="ai-chatbot-panel">
+                <div class="ai-chatbot-header">
+                    <div>
+                        <strong>Trợ lý học tập AI</strong>
+                        <div class="small text-muted">Hỏi về khóa học, bài học, lộ trình</div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button id="ai-chatbot-clear" class="btn btn-sm btn-outline-secondary" type="button">Xóa</button>
+                        <button id="ai-chatbot-close" class="btn btn-sm btn-outline-secondary" type="button">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="ai-chatbot-messages" class="ai-chatbot-messages"></div>
+
+                <form id="ai-chatbot-form" class="ai-chatbot-form">
+                    <input id="ai-chatbot-input" type="text" class="form-control" maxlength="800"
+                           placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
@@ -140,6 +175,11 @@
         // Website initialization
         console.log('LMS VJU Website loaded successfully!');
     </script>
+
+    @if (User.Identity?.IsAuthenticated ?? false)
+    {
+        <script src="~/js/chatbot.js"></script>
+    }
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
