@@ -7,6 +7,12 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var openRouterApiKey = Environment.GetEnvironmentVariable("OPENROUTER_API_KEY");
+if (!string.IsNullOrWhiteSpace(openRouterApiKey) && string.IsNullOrWhiteSpace(builder.Configuration["Chatbot:ApiKey"]))
+{
+    builder.Configuration["Chatbot:ApiKey"] = openRouterApiKey;
+}
+
 // Set encoding to UTF-8
 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
 
