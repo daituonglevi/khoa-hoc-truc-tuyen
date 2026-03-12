@@ -5,6 +5,7 @@ namespace ELearningWebsite.Services
         Task<string> AskAsync(
             string userMessage,
             string context,
+            string? imageDataUrl,
             IReadOnlyList<(string Role, string Content)> history,
             CancellationToken cancellationToken = default);
     }

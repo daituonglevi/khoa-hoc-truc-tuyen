@@ -140,12 +140,24 @@
 
                 <div id="ai-chatbot-messages" class="ai-chatbot-messages"></div>
 
-                <form id="ai-chatbot-form" class="ai-chatbot-form">
-                    <input id="ai-chatbot-input" type="text" class="form-control" maxlength="800"
-                           placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
-                    <button class="btn btn-primary" type="submit">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
+                <form id="ai-chatbot-form" class="ai-chatbot-form" enctype="multipart/form-data">
+                    <div class="ai-chatbot-input-row">
+                        <input id="ai-chatbot-input" type="text" class="form-control" maxlength="800"
+                               placeholder="Nhập câu hỏi của bạn..." autocomplete="off" />
+                        <label for="ai-chatbot-image" class="btn btn-outline-secondary" title="Tải ảnh">
+                            <i class="fas fa-image"></i>
+                        </label>
+                        <input id="ai-chatbot-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" class="d-none" />
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div id="ai-chatbot-image-preview" class="ai-chatbot-image-preview d-none" aria-live="polite">
+                        <img id="ai-chatbot-image-preview-img" alt="Ảnh đã chọn" />
+                        <span id="ai-chatbot-image-preview-name"></span>
+                        <button id="ai-chatbot-image-remove" type="button" class="btn btn-sm btn-outline-secondary">Bỏ ảnh</button>
+                    </div>
+                    <div id="ai-chatbot-image-name" class="ai-chatbot-image-name"></div>
                 </form>
             </div>
         </div>

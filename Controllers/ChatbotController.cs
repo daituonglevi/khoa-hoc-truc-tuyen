@@ -28,15 +28,28 @@ namespace ELearningWebsite.Controllers
         }
 
         [HttpPost("ask")]
-        public async Task<IActionResult> Ask([FromBody] ChatbotAskRequest request, CancellationToken cancellationToken)
+        [RequestFormLimits(MultipartBodyLengthLimit = 5_000_000)]
+        [RequestSizeLimit(5_000_000)]
+        public async Task<IActionResult> Ask([FromForm] ChatbotAskRequest request, CancellationToken cancellationToken)
         {
-            if (request == null || string.IsNullOrWhiteSpace(request.Message))
+            if (request == null || (string.IsNullOrWhiteSpace(request.Message) && request.Image == null))
             {
-                return BadRequest(new { error = "Message is required." });
+                return BadRequest(new { error = "Vui lòng nhập câu hỏi hoặc tải ảnh lên." });
             }
 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
-            var trimmedMessage = request.Message.Trim();
+            var trimmedMessage = (request.Message ?? string.Empty).Trim();
+            var imageDataUrl = await BuildImageDataUrlAsync(request.Image, cancellationToken);
+            if (string.IsNullOrWhiteSpace(trimmedMessage) && !string.IsNullOrWhiteSpace(imageDataUrl))
+            {
+                trimmedMessage = "Hãy phân tích ảnh này và trả lời ngắn gọn bằng tiếng Việt.";
+            }
+
+            if (string.IsNullOrWhiteSpace(trimmedMessage))
+            {
+                return BadRequest(new { error = "Câu hỏi không hợp lệ." });
+            }
+
             var context = "";  // Không giới hạn context - chatbot trả lời bất kỳ câu hỏi gì
 
             var sessionKey = $"chatbot_history_{userId}";
@@ -44,7 +57,7 @@ namespace ELearningWebsite.Controllers
 
             try
             {
-                var answer = await _chatbotService.AskAsync(trimmedMessage, context, history, cancellationToken);
+                var answer = await _chatbotService.AskAsync(trimmedMessage, context, imageDataUrl, history, cancellationToken);
 
                 history.Add(("user", trimmedMessage));
                 history.Add(("assistant", answer));
@@ -56,6 +69,10 @@ namespace ELearningWebsite.Controllers
                     Answer = answer,
                     Timestamp = DateTime.UtcNow
                 });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { error = ex.Message });
             }
             catch (Exception ex)
             {
@@ -110,6 +127,7 @@ namespace ELearningWebsite.Controllers
         {
             public string Message { get; set; } = string.Empty;
             public int? CourseId { get; set; }
+            public IFormFile? Image { get; set; }
         }
 
         public class ChatbotAskResponse
@@ -122,6 +140,37 @@ namespace ELearningWebsite.Controllers
         {
             public string? Role { get; set; }
             public string? Content { get; set; }
+        }
+
+        private async Task<string?> BuildImageDataUrlAsync(IFormFile? image, CancellationToken cancellationToken)
+        {
+            if (image == null)
+            {
+                return null;
+            }
+
+            if (image.Length <= 0)
+            {
+                throw new InvalidOperationException("Ảnh tải lên không hợp lệ.");
+            }
+
+            if (image.Length > 5_000_000)
+            {
+                throw new InvalidOperationException("Ảnh vượt quá dung lượng cho phép (tối đa 5MB).");
+            }
+
+            var allowedTypes = new[] { "image/jpeg", "image/png", "image/webp", "image/gif" };
+            var contentType = (image.ContentType ?? string.Empty).ToLowerInvariant();
+            if (!allowedTypes.Contains(contentType))
+            {
+                throw new InvalidOperationException("Định dạng ảnh chưa được hỗ trợ. Vui lòng dùng JPG, PNG, WEBP hoặc GIF.");
+            }
+
+            using var memoryStream = new MemoryStream();
+            await image.CopyToAsync(memoryStream, cancellationToken);
+            var base64 = Convert.ToBase64String(memoryStream.ToArray());
+
+            return $"data:{contentType};base64,{base64}";
         }
     }
 }

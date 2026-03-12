@@ -25,6 +25,7 @@ namespace ELearningWebsite.Services
         public async Task<string> AskAsync(
             string userMessage,
             string context,
+            string? imageDataUrl,
             IReadOnlyList<(string Role, string Content)> history,
             CancellationToken cancellationToken = default)
         {
@@ -70,19 +71,62 @@ namespace ELearningWebsite.Services
                 }
             }
 
-            messages.Add(new Dictionary<string, string>
+            object request;
+            if (!string.IsNullOrWhiteSpace(imageDataUrl))
             {
-                ["role"] = "user",
-                ["content"] = userMessage
-            });
+                var multimodalMessages = messages
+                    .Select(m => new Dictionary<string, object>
+                    {
+                        ["role"] = m["role"],
+                        ["content"] = m["content"]
+                    })
+                    .ToList();
 
-            var request = new
+                multimodalMessages.Add(new Dictionary<string, object>
+                {
+                    ["role"] = "user",
+                    ["content"] = new object[]
+                    {
+                        new Dictionary<string, object>
+                        {
+                            ["type"] = "text",
+                            ["text"] = userMessage
+                        },
+                        new Dictionary<string, object>
+                        {
+                            ["type"] = "image_url",
+                            ["image_url"] = new Dictionary<string, object>
+                            {
+                                ["url"] = imageDataUrl
+                            }
+                        }
+                    }
+                });
+
+                request = new
+                {
+                    model = _settings.Model,
+                    messages = multimodalMessages,
+                    temperature = _settings.Temperature,
+                    max_tokens = _settings.MaxTokens
+                };
+            }
+            else
             {
-                model = _settings.Model,
-                messages,
-                temperature = _settings.Temperature,
-                max_tokens = _settings.MaxTokens
-            };
+                messages.Add(new Dictionary<string, string>
+                {
+                    ["role"] = "user",
+                    ["content"] = userMessage
+                });
+
+                request = new
+                {
+                    model = _settings.Model,
+                    messages,
+                    temperature = _settings.Temperature,
+                    max_tokens = _settings.MaxTokens
+                };
+            }
 
             using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/chat/completions")
             {
