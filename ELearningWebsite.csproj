@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>ELearningWebsite-Chatbot-Secrets</UserSecretsId>
+    <UserSecretsId>LMS VJU-Chatbot-Secrets</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
