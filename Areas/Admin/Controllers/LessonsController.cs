@@ -16,12 +16,57 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         }
 
         // GET: Admin/Lessons
-        public IActionResult Index()
+        public IActionResult Index(int? courseId, int? chapterId, string? lessonKeyword)
         {
-            var lessons = _context.Set<Lesson>()
-                .Include(l => l.Chapter)
-                .Include(l => l.Quiz)
+            var courses = _context.Courses
+                .OrderBy(c => c.Title)
+                .Select(c => new { c.Id, Title = c.Title ?? string.Empty })
                 .ToList();
+
+            var chaptersQuery = _context.Chapters.AsQueryable();
+            if (courseId.HasValue)
+            {
+                chaptersQuery = chaptersQuery.Where(ch => ch.CourseId == courseId.Value);
+            }
+
+            var chapters = chaptersQuery
+                .OrderBy(ch => ch.Name)
+                .Select(ch => new { ch.Id, ch.Name, ch.CourseId })
+                .ToList();
+
+            var lessonsQuery = _context.Set<Lesson>()
+                .Include(l => l.Chapter)
+                    .ThenInclude(ch => ch!.Course)
+                .Include(l => l.Quiz)
+                .AsQueryable();
+
+            if (courseId.HasValue)
+            {
+                lessonsQuery = lessonsQuery.Where(l => l.Chapter != null && l.Chapter.CourseId == courseId.Value);
+            }
+
+            if (chapterId.HasValue)
+            {
+                lessonsQuery = lessonsQuery.Where(l => l.ChapterId == chapterId.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(lessonKeyword))
+            {
+                var keyword = lessonKeyword.Trim();
+                lessonsQuery = lessonsQuery.Where(l => l.Title.Contains(keyword));
+            }
+
+            var lessons = lessonsQuery
+                .OrderBy(l => l.ChapterId)
+                .ThenBy(l => l.OrderIndex)
+                .ToList();
+
+            ViewBag.Courses = courses;
+            ViewBag.Chapters = chapters;
+            ViewBag.SelectedCourseId = courseId;
+            ViewBag.SelectedChapterId = chapterId;
+            ViewBag.LessonKeyword = lessonKeyword ?? string.Empty;
+
             return View(lessons);
         }
 
@@ -171,7 +216,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
 
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da luu bai tap trac nghiem.";
+            TempData["SuccessMessage"] = "Đã lưu bài tập trắc nghiệm.";
             return RedirectToAction(nameof(Quiz), new { lessonId });
         }
 
@@ -187,7 +232,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (string.IsNullOrWhiteSpace(content))
             {
-                TempData["ErrorMessage"] = "Noi dung cau hoi khong duoc de trong.";
+                TempData["ErrorMessage"] = "Nội dung câu hỏi không được để trống.";
                 return RedirectToAction(nameof(Quiz), new { lessonId = quiz.LessonId });
             }
 
@@ -201,7 +246,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             });
 
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da them cau hoi.";
+            TempData["SuccessMessage"] = "Đã thêm câu hỏi.";
             return RedirectToAction(nameof(Quiz), new { lessonId = quiz.LessonId });
         }
 
@@ -219,7 +264,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (string.IsNullOrWhiteSpace(answerText))
             {
-                TempData["ErrorMessage"] = "Noi dung dap an khong duoc de trong.";
+                TempData["ErrorMessage"] = "Nội dung đáp án không được để trống.";
                 return RedirectToAction(nameof(Quiz), new { lessonId = question.Quiz.LessonId });
             }
 
@@ -242,7 +287,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             });
 
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da them dap an.";
+            TempData["SuccessMessage"] = "Đã thêm đáp án.";
             return RedirectToAction(nameof(Quiz), new { lessonId = question.Quiz.LessonId });
         }
 
@@ -260,7 +305,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             _context.QuizQuestions.Remove(question);
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da xoa cau hoi.";
+            TempData["SuccessMessage"] = "Đã xóa câu hỏi.";
             return RedirectToAction(nameof(Quiz), new { lessonId = question.Quiz.LessonId });
         }
 
@@ -279,7 +324,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             _context.QuizAnswers.Remove(answer);
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da xoa dap an.";
+            TempData["SuccessMessage"] = "Đã xóa đáp án.";
             return RedirectToAction(nameof(Quiz), new { lessonId = answer.Question.Quiz.LessonId });
         }
 
@@ -307,7 +352,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
 
             _context.SaveChanges();
-            TempData["SuccessMessage"] = "Da cap nhat dap an dung.";
+            TempData["SuccessMessage"] = "Đã cập nhật đáp án đúng.";
             return RedirectToAction(nameof(Quiz), new { lessonId = answer.Question.Quiz.LessonId });
         }
 

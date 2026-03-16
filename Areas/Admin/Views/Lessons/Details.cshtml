@@ -5,14 +5,14 @@
 
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="admin-title"><i class="fas fa-book-open me-2"></i>Chi tiet bai hoc</h2>
+        <h2 class="admin-title"><i class="fas fa-book-open me-2"></i>Chi tiết bài học</h2>
         <div class="d-flex gap-2">
-            <a href="/Admin/Lessons" class="btn btn-outline-secondary">Quay lai danh sach</a>
+            <a href="/Admin/Lessons" class="btn btn-outline-secondary">Quay lại danh sách</a>
             <a href="/Admin/Lessons/Edit/@Model.Id" class="btn btn-warning">
-                <i class="fas fa-edit me-1"></i>Sua bai hoc
+                <i class="fas fa-edit me-1"></i>Sửa bài học
             </a>
             <a href="/Admin/Lessons/Quiz?lessonId=@Model.Id" class="btn btn-primary">
-                <i class="fas fa-list-check me-1"></i>Them bai tap
+                <i class="fas fa-list-check me-1"></i>Thêm bài tập
             </a>
         </div>
     </div>
@@ -22,17 +22,17 @@
             <div class="row g-3">
                 <div class="col-md-8">
                     <h4>@Model.Title</h4>
-                    <p class="text-muted mb-2">@(Model.Description ?? "Khong co mo ta")</p>
+                    <p class="text-muted mb-2">@(Model.Description ?? "Không có mô tả")</p>
                     <div>@Html.Raw(Model.Content ?? "")</div>
                 </div>
                 <div class="col-md-4">
                     <ul class="list-group">
                         <li class="list-group-item"><strong>ID:</strong> @Model.Id</li>
-                        <li class="list-group-item"><strong>Chuong:</strong> @Model.Chapter?.Name</li>
-                        <li class="list-group-item"><strong>Loai:</strong> @Model.Type</li>
-                        <li class="list-group-item"><strong>Thu tu:</strong> @Model.OrderIndex</li>
-                        <li class="list-group-item"><strong>Trang thai:</strong> @Model.Status</li>
-                        <li class="list-group-item"><strong>Thoi luong:</strong> @(Model.Duration ?? 0) phut</li>
+                        <li class="list-group-item"><strong>Chương:</strong> @Model.Chapter?.Name</li>
+                        <li class="list-group-item"><strong>Loại:</strong> @Model.Type</li>
+                        <li class="list-group-item"><strong>Thứ tự:</strong> @Model.OrderIndex</li>
+                        <li class="list-group-item"><strong>Trạng thái:</strong> @Model.Status</li>
+                        <li class="list-group-item"><strong>Thời lượng:</strong> @(Model.Duration ?? 0) phút</li>
                     </ul>
                 </div>
             </div>
@@ -40,7 +40,7 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header"><strong>Video bai hoc</strong></div>
+        <div class="card-header"><strong>Video bài học</strong></div>
         <div class="card-body">
             @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
             {
@@ -67,21 +67,21 @@
                         }
                         else
                         {
-                            <div class="alert alert-warning">Video URL YouTube khong hop le.</div>
+                            <div class="alert alert-warning">Video URL YouTube không hợp lệ.</div>
                         }
                     }
                     else
                     {
                         <video controls class="w-100 rounded">
                             <source src="@Model.VideoUrl" type="video/mp4" />
-                            Trinh duyet khong ho tro video.
+                            Trình duyệt không hỗ trợ video.
                         </video>
                     }
                 </div>
             }
             else
             {
-                <div class="alert alert-info mb-0">Bai hoc nay chua co video.</div>
+                <div class="alert alert-info mb-0">ài học này chưa có video.</div>
             }
         </div>
     </div>
@@ -89,11 +89,11 @@
     <div class="card">
         <div class="card-body d-flex justify-content-between align-items-center">
             <div>
-                <strong>Bai tap trac nghiem:</strong>
-                @(Model.Quiz != null ? "Da tao" : "Chua tao")
+                <strong>Bài tập trắc nghiệm:</strong>
+                @(Model.Quiz != null ? "Đã tạo" : "Chưa tạo")
             </div>
             <a href="/Admin/Lessons/Quiz?lessonId=@Model.Id" class="btn btn-success">
-                <i class="fas fa-plus me-1"></i>@(Model.Quiz != null ? "Quan ly bai tap" : "Them bai tap")
+                <i class="fas fa-plus me-1"></i>@(Model.Quiz != null ? "Quản lý bài tập" : "Thêm bài tập")
             </a>
         </div>
     </div>

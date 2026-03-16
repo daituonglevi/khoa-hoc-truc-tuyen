@@ -15,6 +15,48 @@
         </a>
     </div>
 
+    <div class="admin-card mb-3">
+        <div class="card-body">
+            <form method="get" asp-action="Index" class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Khóa học</label>
+                    <select name="courseId" class="form-select">
+                        <option value="">-- Tất cả khóa học --</option>
+                        @if (ViewBag.Courses != null)
+                        {
+                            foreach (var course in ViewBag.Courses)
+                            {
+                                <option value="@course.Id" selected="@(ViewBag.SelectedCourseId != null && ViewBag.SelectedCourseId == course.Id)">@course.Title</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Chương</label>
+                    <select name="chapterId" class="form-select">
+                        <option value="">-- Tất cả chương --</option>
+                        @if (ViewBag.Chapters != null)
+                        {
+                            foreach (var chapter in ViewBag.Chapters)
+                            {
+                                <option value="@chapter.Id" selected="@(ViewBag.SelectedChapterId != null && ViewBag.SelectedChapterId == chapter.Id)">@chapter.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Bài học</label>
+                    <input type="text" name="lessonKeyword" class="form-control" value="@ViewBag.LessonKeyword" placeholder="Nhập tên bài học..." />
+                </div>
+                <div class="col-md-1 d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="admin-card">
         <div class="card-body">
             <table class="table table-bordered table-hover">
@@ -22,6 +64,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Tên bài học</th>
+                        <th>Khóa học</th>
                         <th>Chương</th>
                         <th>Loại</th>
                         <th>Thứ tự</th>
@@ -36,6 +79,7 @@
                         <tr>
                             <td>@lesson.Id</td>
                             <td>@lesson.Title</td>
+                            <td>@lesson.Chapter?.Course?.Title</td>
                             <td>@lesson.Chapter?.Name</td>
                             <td>@lesson.Type</td>
                             <td>@lesson.OrderIndex</td>
