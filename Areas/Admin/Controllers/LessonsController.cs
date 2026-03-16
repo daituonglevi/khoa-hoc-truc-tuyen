@@ -69,6 +69,56 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             return View(lesson);
         }
 
+        // GET: Admin/Lessons/Edit/5
+        public IActionResult Edit(int id)
+        {
+            var lesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
+            if (lesson == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Chapters = _context.Set<Chapter>().ToList();
+            return View(lesson);
+        }
+
+        // POST: Admin/Lessons/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(int id, Lesson lesson)
+        {
+            if (id != lesson.Id)
+            {
+                return NotFound();
+            }
+
+            var existingLesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
+            if (existingLesson == null)
+            {
+                return NotFound();
+            }
+
+            if (ModelState.IsValid)
+            {
+                existingLesson.ChapterId = lesson.ChapterId;
+                existingLesson.Title = lesson.Title;
+                existingLesson.Description = lesson.Description;
+                existingLesson.Content = lesson.Content;
+                existingLesson.VideoUrl = lesson.VideoUrl;
+                existingLesson.Duration = lesson.Duration;
+                existingLesson.OrderIndex = lesson.OrderIndex;
+                existingLesson.Type = lesson.Type;
+                existingLesson.Status = lesson.Status;
+                existingLesson.UpdatedAt = DateTime.Now;
+
+                _context.SaveChanges();
+                return RedirectToAction("Details", "Chapters", new { id = existingLesson.ChapterId });
+            }
+
+            ViewBag.Chapters = _context.Set<Chapter>().ToList();
+            return View(lesson);
+        }
+
         // GET: Admin/Lessons/Quiz?lessonId=1
         public IActionResult Quiz(int lessonId)
         {

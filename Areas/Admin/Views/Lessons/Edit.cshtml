@@ -1,0 +1,88 @@
+@model ELearningWebsite.Models.Lesson
+@{
+    ViewData["Title"] = "Chỉnh sửa bài học";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="admin-title">
+            <i class="fas fa-edit text-warning"></i>
+            Chỉnh sửa bài học
+        </h2>
+        <a href="/Admin/Lessons" class="admin-btn admin-btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>
+            Quay lại danh sách
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="form-group">
+                    <label for="ChapterId">Chương</label>
+                    <select asp-for="ChapterId" class="form-select">
+                        <option value="">-- Chọn chương --</option>
+                        @if (ViewBag.Chapters != null)
+                        {
+                            foreach (var chapter in (List<ELearningWebsite.Models.Chapter>)ViewBag.Chapters)
+                            {
+                                <option value="@chapter.Id" selected="@(Model.ChapterId == chapter.Id ? "selected" : null)">@chapter.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Title" class="form-label">Tên bài học</label>
+                    <input asp-for="Title" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Description" class="form-label">Mô tả</label>
+                    <textarea asp-for="Description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Content" class="form-label">Nội dung chi tiết</label>
+                    <textarea asp-for="Content" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label asp-for="VideoUrl" class="form-label">Video URL</label>
+                    <input asp-for="VideoUrl" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Duration" class="form-label">Thời lượng (phút)</label>
+                    <input asp-for="Duration" type="number" class="form-control" min="0" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="OrderIndex" class="form-label">Thứ tự hiển thị</label>
+                    <input asp-for="OrderIndex" type="number" class="form-control" min="1" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="Type" class="form-label">Loại nội dung</label>
+                    <select asp-for="Type" class="form-select">
+                        <option value="Video">Video</option>
+                        <option value="Text">Text</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Assignment">Assignment</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label asp-for="Status" class="form-label">Trạng thái</label>
+                    <select asp-for="Status" class="form-select">
+                        <option value="Active">Active</option>
+                        <option value="Draft">Draft</option>
+                        <option value="Archived">Archived</option>
+                    </select>
+                </div>
+                <div class="form-actions mt-3">
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-save"></i> Lưu thay đổi
+                    </button>
+                    <a href="/Admin/Lessons/Details/@Model.Id" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

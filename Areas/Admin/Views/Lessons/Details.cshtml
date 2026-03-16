@@ -8,6 +8,9 @@
         <h2 class="admin-title"><i class="fas fa-book-open me-2"></i>Chi tiet bai hoc</h2>
         <div class="d-flex gap-2">
             <a href="/Admin/Lessons" class="btn btn-outline-secondary">Quay lai danh sach</a>
+            <a href="/Admin/Lessons/Edit/@Model.Id" class="btn btn-warning">
+                <i class="fas fa-edit me-1"></i>Sua bai hoc
+            </a>
             <a href="/Admin/Lessons/Quiz?lessonId=@Model.Id" class="btn btn-primary">
                 <i class="fas fa-list-check me-1"></i>Them bai tap
             </a>
