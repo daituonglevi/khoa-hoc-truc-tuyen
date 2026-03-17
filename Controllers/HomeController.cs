@@ -62,7 +62,7 @@ namespace ELearningWebsite.Controllers
             return View(viewModel);
         }
 
-        public async Task<IActionResult> Courses(int? categoryId, string? search, int page = 1, int pageSize = 12)
+        public async Task<IActionResult> Courses(int? categoryId, string? search, string? sortBy = "newest", int page = 1, int pageSize = 12)
         {
             var query = _context.Courses
                 .Include(c => c.Category)
@@ -80,9 +80,18 @@ namespace ELearningWebsite.Controllers
                 query = query.Where(c => c.CategoryId == categoryId.Value);
             }
 
+            sortBy = string.IsNullOrWhiteSpace(sortBy) ? "newest" : sortBy.Trim().ToLower();
+
+            query = sortBy switch
+            {
+                "popular" => query.OrderByDescending(c => c.Enrollments.Count),
+                "price-asc" => query.OrderBy(c => c.Price),
+                "price-desc" => query.OrderByDescending(c => c.Price),
+                _ => query.OrderByDescending(c => c.CreatedAt)
+            };
+
             var totalCourses = await query.CountAsync();
             var courses = await query
-                .OrderByDescending(c => c.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -93,6 +102,7 @@ namespace ELearningWebsite.Controllers
                 Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync(),
                 CurrentCategoryId = categoryId,
                 SearchTerm = search,
+                CurrentSortBy = sortBy,
                 CurrentPage = page,
                 PageSize = pageSize,
                 TotalCourses = totalCourses,
@@ -177,6 +187,7 @@ namespace ELearningWebsite.Controllers
         public IEnumerable<Category> Categories { get; set; } = new List<Category>();
         public int? CurrentCategoryId { get; set; }
         public string? SearchTerm { get; set; }
+        public string? CurrentSortBy { get; set; }
         public int CurrentPage { get; set; }
         public int PageSize { get; set; }
         public int TotalCourses { get; set; }

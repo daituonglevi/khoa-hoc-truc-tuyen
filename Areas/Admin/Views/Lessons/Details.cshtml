@@ -45,38 +45,13 @@
             @if (!string.IsNullOrWhiteSpace(Model.VideoUrl))
             {
                 <div class="ratio ratio-16x9">
-                    @if (Model.VideoUrl.Contains("youtube.com") || Model.VideoUrl.Contains("youtu.be"))
+                    <partial name="_VideoEmbed" model='new ELearningWebsite.Models.ViewModels.VideoEmbedViewModel
                     {
-                        var videoId = string.Empty;
-                        if (Model.VideoUrl.Contains("youtu.be"))
-                        {
-                            videoId = Model.VideoUrl.Split('/').Last();
-                        }
-                        else
-                        {
-                            var parts = Model.VideoUrl.Split("v=");
-                            if (parts.Length > 1)
-                            {
-                                videoId = parts[1].Split("&")[0];
-                            }
-                        }
-
-                        if (!string.IsNullOrEmpty(videoId))
-                        {
-                            <iframe src="https://www.youtube.com/embed/@videoId" allowfullscreen class="rounded"></iframe>
-                        }
-                        else
-                        {
-                            <div class="alert alert-warning">Video URL YouTube không hợp lệ.</div>
-                        }
-                    }
-                    else
-                    {
-                        <video controls class="w-100 rounded">
-                            <source src="@Model.VideoUrl" type="video/mp4" />
-                            Trình duyệt không hỗ trợ video.
-                        </video>
-                    }
+                        Url = Model.VideoUrl,
+                        Title = Model.Title,
+                        IframeClass = "w-100 rounded",
+                        VideoClass = "w-100 rounded"
+                    }' />
                 </div>
             }
             else

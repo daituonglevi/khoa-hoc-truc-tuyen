@@ -17,39 +17,15 @@
                     @if (!string.IsNullOrEmpty(Model.VideoUrl))
                     {
                         <div class="ratio ratio-16x9 mb-3">
-                            @if (Model.VideoUrl.Contains("youtube.com") || Model.VideoUrl.Contains("youtu.be"))
+                            <partial name="_VideoEmbed" model='new ELearningWebsite.Models.ViewModels.VideoEmbedViewModel
                             {
-                                var videoId = string.Empty;
-                                if (Model.VideoUrl.Contains("youtu.be"))
-                                {
-                                    videoId = Model.VideoUrl.Split('/').Last();
-                                }
-                                else
-                                {
-                                    var parts = Model.VideoUrl.Split("v=");
-                                    if (parts.Length > 1)
-                                    {
-                                        videoId = parts[1].Split("&")[0];
-                                    }
-                                }
-
-                                if (!string.IsNullOrEmpty(videoId))
-                                {
-                                    <iframe id="lessonFrame" src="https://www.youtube.com/embed/@videoId"
-                                            title="@Model.Title" allowfullscreen class="w-100 rounded"></iframe>
-                                }
-                                else
-                                {
-                                    <div class="alert alert-warning mb-0">Video URL YouTube không hợp lệ.</div>
-                                }
-                            }
-                            else
-                            {
-                                <video id="lessonVideo" controls class="w-100 rounded">
-                                    <source src="@Model.VideoUrl" type="video/mp4">
-                                    Trình duyệt của bạn không hỗ trợ video.
-                                </video>
-                            }
+                                Url = Model.VideoUrl,
+                                Title = Model.Title,
+                                IframeClass = "w-100 rounded",
+                                VideoClass = "w-100 rounded",
+                                IframeId = "lessonFrame",
+                                VideoId = "lessonVideo"
+                            }' />
                         </div>
                     }
                     else

@@ -67,50 +67,67 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <h5><i class="fas fa-graduation-cap me-2"></i>LMS VJU</h5>
-                    <p class="mb-3">Nền tảng học tập trực tuyến hàng đầu tại Việt Nam. Chúng tôi cung cấp các khóa học chất lượng cao từ cơ bản đến nâng cao.</p>
-                    <div class="social-links">
-                        <a href="#" class="me-3"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" class="me-3"><i class="fab fa-youtube"></i></a>
+            <div class="footer-shell">
+                <div class="row g-4 g-lg-5 align-items-start">
+                    <div class="col-lg-5">
+                        <a class="footer-brand" href="@Url.Action("Index", "Home")">
+                            <span class="footer-brand-icon"><i class="fas fa-graduation-cap"></i></span>
+                            <span>LMS VJU</span>
+                        </a>
+                        <p class="footer-desc mb-3">
+                            Nền tảng học tập trực tuyến tập trung kỹ năng thực chiến, giúp bạn xây lộ trình rõ ràng từ cơ bản đến nâng cao.
+                        </p>
+                        <div class="footer-badges mb-3">
+                            <span><i class="fas fa-check-circle"></i> 50+ khóa học</span>
+                            <span><i class="fas fa-users"></i> 5.000+ học viên</span>
+                            <span><i class="fas fa-certificate"></i> Chứng chỉ hoàn thành</span>
+                        </div>
+                        <div class="footer-social">
+                            <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                            <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="footer-title">Liên kết nhanh</h5>
+                        <ul class="footer-links list-unstyled mb-0">
+                            <li><a href="@Url.Action("Courses", "Home")">Khóa học</a></li>
+                            <li><a href="@Url.Action("About", "Home")">Giới thiệu</a></li>
+                            <li><a href="@Url.Action("Contact", "Home")">Liên hệ</a></li>
+                            <li><a href="#">FAQ</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-4 col-md-6">
+                        <h5 class="footer-title">Thông tin liên hệ</h5>
+                        <div class="footer-contact-cards">
+                            <a href="#" class="footer-contact-card text-decoration-none">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>144 Xuân Thủy, Cầu Giấy, Hà Nội</span>
+                            </a>
+                            <a href="tel:+84365218839" class="footer-contact-card text-decoration-none">
+                                <i class="fas fa-phone"></i>
+                                <span>+84 36 521 8839</span>
+                            </a>
+                            <a href="mailto:info@lms-vju.com" class="footer-contact-card text-decoration-none">
+                                <i class="fas fa-envelope"></i>
+                                <span>info@lms-vju.com</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Courses</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Web Development</a></li>
-                        <li><a href="#">Mobile Development</a></li>
-                        <li><a href="#">Database Fundamentals</a></li>
-                        <li><a href="#">DevOps & Cloud</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-2 col-md-6 mb-4">
-                    <h5>Support</h5>
-                    <ul class="list-unstyled">
-                        <li><a href="#">Help Center</a></li>
-                        <li><a href="#">Contact Us</a></li>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Privacy Policy</a></li>
-                    </ul>
-                </div>
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <h5>Contact</h5>
-                    <p><i class="fas fa-map-marker-alt me-2"></i>144 Xuân Thủy, Cầu Giấy, Hà Nội</p>
-                    <p><i class="fas fa-phone me-2"></i>+84 36 521 8839</p>
-                    <p><i class="fas fa-envelope me-2"></i>info@lms-vju.com</p>
-                </div>
             </div>
-            <hr class="my-4">
-            <div class="row align-items-center">
+            <div class="footer-divider"></div>
+            <div class="footer-bottom row align-items-center g-3">
                 <div class="col-md-6">
-                    <p class="mb-0">&copy; 2024 LMS VJU</p>
+                    <p class="mb-0">&copy; @DateTime.Now.Year LMS VJU</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <a href="#" class="me-3">Terms of Service</a>
-                    <a href="#">Privacy Policy</a>
+                    <span class="footer-note">Made for practical learning</span>
                 </div>
             </div>
         </div>

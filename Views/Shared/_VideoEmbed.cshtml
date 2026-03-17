@@ -1,0 +1,87 @@
+@model ELearningWebsite.Models.ViewModels.VideoEmbedViewModel
+@{
+    var rawUrl = (Model.Url ?? string.Empty).Trim();
+    var decodedUrl = System.Net.WebUtility.HtmlDecode(rawUrl);
+
+    var iframeSrcMatch = System.Text.RegularExpressions.Regex.Match(
+        decodedUrl,
+        "src\\s*=\\s*['\"](?<src>[^'\"]+)['\"]",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase
+    );
+
+    var mediaUrl = iframeSrcMatch.Success ? iframeSrcMatch.Groups["src"].Value.Trim() : decodedUrl;
+    var mediaUrlLower = mediaUrl.ToLowerInvariant();
+
+    var isYoutube = mediaUrlLower.Contains("youtube.com") || mediaUrlLower.Contains("youtu.be");
+    var isGoogleDrive = mediaUrlLower.Contains("drive.google.com");
+
+    var iframeIdAttr = string.IsNullOrWhiteSpace(Model.IframeId) ? null : Model.IframeId;
+    var videoIdAttr = string.IsNullOrWhiteSpace(Model.VideoId) ? null : Model.VideoId;
+}
+
+@if (string.IsNullOrWhiteSpace(mediaUrl))
+{
+    <div class="alert alert-info mb-0">Video chưa được cấu hình.</div>
+}
+else if (isYoutube)
+{
+    var videoId = string.Empty;
+    if (mediaUrl.Contains("youtu.be"))
+    {
+        videoId = mediaUrl.Split('/').Last();
+    }
+    else
+    {
+        var parts = mediaUrl.Split("v=");
+        if (parts.Length > 1)
+        {
+            videoId = parts[1].Split("&")[0];
+        }
+    }
+
+    if (!string.IsNullOrWhiteSpace(videoId))
+    {
+        <iframe id="@iframeIdAttr"
+                src="https://www.youtube.com/embed/@videoId"
+                title="@(Model.Title ?? "Video")"
+                allowfullscreen
+                class="@Model.IframeClass"></iframe>
+    }
+    else
+    {
+        <div class="alert alert-warning mb-0">Video URL YouTube không hợp lệ.</div>
+    }
+}
+else if (isGoogleDrive)
+{
+    var driveRegex = System.Text.RegularExpressions.Regex.Match(mediaUrl, @"(?:/d/|id=)([a-zA-Z0-9_-]{10,})");
+    var driveFileId = driveRegex.Success ? driveRegex.Groups[1].Value : string.Empty;
+    var driveEmbedUrl = !string.IsNullOrWhiteSpace(driveFileId)
+        ? $"https://drive.google.com/file/d/{driveFileId}/preview"
+        : string.Empty;
+
+    if (!string.IsNullOrWhiteSpace(driveEmbedUrl))
+    {
+        <iframe id="@iframeIdAttr"
+                src="@driveEmbedUrl"
+                width="640"
+                height="480"
+                title="@(Model.Title ?? "Video")"
+                allowfullscreen
+                class="@Model.IframeClass"></iframe>
+    }
+    else
+    {
+        <div class="alert alert-warning mb-0">
+            Video URL Google Drive không hợp lệ.
+            <a href="@mediaUrl" target="_blank" class="btn btn-sm btn-outline-secondary ms-2">Mở tab mới</a>
+        </div>
+    }
+}
+else
+{
+    <video id="@videoIdAttr" controls class="@Model.VideoClass">
+        <source src="@mediaUrl" type="video/mp4" />
+        Trình duyệt không hỗ trợ video.
+    </video>
+}

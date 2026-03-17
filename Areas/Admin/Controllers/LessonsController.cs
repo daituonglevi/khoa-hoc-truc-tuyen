@@ -104,6 +104,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                lesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
                 _context.Set<Lesson>().Add(lesson);
                 _context.SaveChanges();
                 // Sau khi tạo, chuy�fn về trang chi tiết chương
@@ -149,7 +150,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 existingLesson.Title = lesson.Title;
                 existingLesson.Description = lesson.Description;
                 existingLesson.Content = lesson.Content;
-                existingLesson.VideoUrl = lesson.VideoUrl;
+                existingLesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
                 existingLesson.Duration = lesson.Duration;
                 existingLesson.OrderIndex = lesson.OrderIndex;
                 existingLesson.Type = lesson.Type;
@@ -162,6 +163,42 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             ViewBag.Chapters = _context.Set<Chapter>().ToList();
             return View(lesson);
+        }
+
+        private static string? NormalizeVideoUrlForStorage(string? videoUrl)
+        {
+            if (string.IsNullOrWhiteSpace(videoUrl))
+            {
+                return videoUrl;
+            }
+
+            var rawValue = videoUrl.Trim();
+            var decodedValue = System.Net.WebUtility.HtmlDecode(rawValue);
+
+            var iframeSrcMatch = System.Text.RegularExpressions.Regex.Match(
+                decodedValue,
+                "src\\s*=\\s*['\"](?<src>[^'\"]+)['\"]",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+
+            var sourceUrl = iframeSrcMatch.Success
+                ? iframeSrcMatch.Groups["src"].Value.Trim()
+                : decodedValue;
+
+            if (!sourceUrl.Contains("drive.google.com", StringComparison.OrdinalIgnoreCase))
+            {
+                return sourceUrl;
+            }
+
+            var driveRegex = System.Text.RegularExpressions.Regex.Match(sourceUrl, @"(?:/d/|id=)([a-zA-Z0-9_-]{10,})");
+            if (!driveRegex.Success)
+            {
+                return sourceUrl;
+            }
+
+            var driveFileId = driveRegex.Groups[1].Value;
+            var driveEmbedUrl = $"https://drive.google.com/file/d/{driveFileId}/preview";
+            return $"<iframe src=\"{driveEmbedUrl}\" width=\"640\" height=\"480\"></iframe>";
         }
 
         // GET: Admin/Lessons/Quiz?lessonId=1

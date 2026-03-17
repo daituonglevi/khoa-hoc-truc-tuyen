@@ -3,145 +3,213 @@
     ViewData["Title"] = Model.Course.Title;
 }
 
-<div class="container py-5">
-    <div class="row">
-        <!-- Main Content -->
-        <div class="col-lg-8">
-            <!-- Course Header -->
-            <div class="mb-4" data-aos="fade-up">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-3">
-                        <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-decoration-none text-muted small fw-medium">Trang chủ</a></li>
-                        <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home")" class="text-decoration-none text-muted small fw-medium">Khóa học</a></li>
-                        <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home", new { categoryId = Model.Course.CategoryId })" class="text-decoration-none text-muted small fw-medium">@Model.Course.Category.Name</a></li>
-                        <li class="breadcrumb-item active small fw-medium text-dark" aria-current="page">@Model.Course.Title</li>
-                    </ol>
-                </nav>
+<!-- Hero Section -->
+<div class="course-detail-hero position-relative" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 320px; overflow: hidden;">
+    <div class="position-absolute top-0 start-0 w-100 h-100" 
+         style="background-image: url('@Model.Course.Thumbnail'); background-size: cover; background-position: center; opacity: 0.2; filter: blur(8px);"></div>
+    
+    <div class="container position-relative py-5">
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb breadcrumb-white mb-0">
+                <li class="breadcrumb-item"><a href="@Url.Action("Index", "Home")" class="text-white-50 text-decoration-none">Trang chủ</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home")" class="text-white-50 text-decoration-none">Khóa học</a></li>
+                <li class="breadcrumb-item"><a href="@Url.Action("Courses", "Home", new { categoryId = Model.Course.CategoryId })" class="text-white-50 text-decoration-none">@Model.Course.Category.Name</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">@Model.Course.Title</li>
+            </ol>
+        </nav>
 
-                <h1 class="display-5 fw-bold mb-3" style="letter-spacing: -1px;">@Model.Course.Title</h1>
+        <div class="row align-items-end gap-4">
+            <!-- Hero Thumbnail -->
+            <div class="col-lg-3">
+                <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title"
+                     class="img-fluid rounded-4 shadow-lg border-3 border-white" style="object-fit: cover; height: 220px; width: 100%;" data-aos="zoom-in">
+            </div>
 
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
-                    <span class="badge bg-light text-dark border px-3 py-2 fs-6 rounded-pill fw-medium">@Model.Course.Category.Name</span>
-                    <div class="rating d-flex align-items-center bg-light border px-3 py-2 rounded-pill">
-                        @for (int i = 1; i <= 5; i++)
-                        {
-                            @if (i <= Model.Rating)
+            <!-- Hero Content -->
+            <div class="col-lg-auto flex-grow-1 text-white" data-aos="fade-up">
+                <div class="mb-3">
+                    <span class="badge bg-white bg-opacity-20 backdrop-blur px-4 py-2 rounded-pill fw-medium text-white position-relative" style="border: 1px solid rgba(255,255,255,0.3);">
+                        <i class="fas fa-tag me-1"></i>@Model.Course.Category.Name
+                    </span>
+                </div>
+                
+                <h1 class="display-4 fw-bold mb-3 text-white" style="letter-spacing: -0.5px; line-height: 1.3; word-wrap: break-word; overflow-wrap: break-word;">@Model.Course.Title</h1>
+                
+                <div class="d-flex flex-wrap gap-4 mb-0">
+                    <!-- Rating -->
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex gap-1">
+                            @for (int i = 1; i <= 5; i++)
                             {
-                                <i class="fas fa-star text-warning small me-1"></i>
+                                @if (i <= Model.Rating)
+                                {
+                                    <i class="fas fa-star" style="color: #ffc107; font-size: 1rem;"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star" style="color: rgba(255,255,255,0.5); font-size: 1rem;"></i>
+                                }
                             }
-                            else
-                            {
-                                <i class="far fa-star text-warning small me-1"></i>
-                            }
-                        }
-                        <span class="ms-1 small fw-medium text-dark">@Model.Rating.ToString("F1") <span class="text-muted fw-normal">(@Model.ReviewCount đánh giá)</span></span>
+                        </div>
+                        <span class="fw-medium">@Model.Rating.ToString("F1")</span>
+                        <span class="text-white-50">(@Model.ReviewCount)</span>
                     </div>
-                    <span class="text-secondary small d-flex align-items-center bg-light border px-3 py-2 rounded-pill">
-                        <i class="fas fa-users me-2"></i>@Model.Course.Enrollments.Count() học viên
-                    </span>
-                    <span class="text-secondary small d-flex align-items-center bg-light border px-3 py-2 rounded-pill">
-                        <i class="fas fa-clock me-2"></i>Cập nhật @(Model.Course.UpdatedAt?.ToString("dd/MM/yyyy") ?? Model.Course.CreatedAt.ToString("dd/MM/yyyy"))
-                    </span>
+
+                    <!-- Students -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-users"></i>
+                        <span class="fw-medium">@Model.Course.Enrollments.Count() học viên</span>
+                    </div>
+
+                    <!-- Updated -->
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-clock"></i>
+                        <span class="fw-medium">Cập nhật @(Model.Course.UpdatedAt?.ToString("dd/MM/yyyy") ?? Model.Course.CreatedAt.ToString("dd/MM/yyyy"))</span>
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
 
-            <!-- Course Video -->
-            <div class="mb-4" data-aos="fade-up" data-aos-delay="100">
-                <div class="ratio ratio-16x9">
-                    @if (Model.Course.PreviewVideo.Contains("youtube.com") || Model.Course.PreviewVideo.Contains("youtu.be"))
-                    {
-                        string videoId;
-                        if (Model.Course.PreviewVideo.Contains("youtu.be"))
+<div class="container py-5">
+
+    <!-- Main Grid -->
+    <div class="row g-4">
+        <!-- Left Column: Video + Description + Content + Comments -->
+        <div class="col-lg-8">
+            <!-- Video Section -->
+            <div class="mb-5" data-aos="fade-up">
+                <div class="position-relative rounded-4 overflow-hidden shadow-lg bg-dark" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 450px;">
+                    <div class="ratio ratio-16x9">
+                        <partial name="_VideoEmbed" model='new ELearningWebsite.Models.ViewModels.VideoEmbedViewModel
                         {
-                            videoId = Model.Course.PreviewVideo.Split('/').Last();
-                        }
-                        else
-                        {
-                            var parts = Model.Course.PreviewVideo.Split("v=");
-                            if (parts.Length > 1)
-                            {
-                                videoId = parts[1].Split("&")[0];
-                            }
-                            else
-                            {
-                                videoId = "dQw4w9WgXcQ"; // Default video ID
-                            }
-                        }
-                        <iframe src="https://www.youtube.com/embed/@videoId"
-                                title="@Model.Course.Title"
-                                allowfullscreen
-                                class="rounded"></iframe>
-                    }
-                    else
-                    {
-                        <video controls class="w-100 rounded">
-                            <source src="@Model.Course.PreviewVideo" type="video/mp4">
-                            Trình duyệt của bạn không hỗ trợ video.
-                        </video>
-                    }
+                            Url = Model.Course.PreviewVideo,
+                            Title = Model.Course.Title,
+                            IframeClass = "w-100 h-100 rounded-0",
+                            VideoClass = "w-100 rounded-0"
+                        }' />
+                    </div>
                 </div>
             </div>
 
-            <!-- Course Description -->
-            <div class="bg-white p-4 rounded-4 border border-light-subtle mb-4" data-aos="fade-up" data-aos-delay="200">
-                <h3 class="fw-bold mb-3 h4">Mô tả khóa học</h3>
-                <div class="course-description text-secondary">
-                    @Html.Raw(Model.Course.Description)
+            <!-- Quick Stats Grid -->
+            <div class="row g-3 mb-5" data-aos="fade-up" data-aos-delay="100">
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 rounded-3 shadow-sm text-center p-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%); min-height: 160px;">
+                        @* <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-10" style="font-size: 4rem;">
+                            <i class="fas fa-book"></i>
+                        </div> *@
+                        <div class="position-relative z-2">
+                            <div class="fs-5 fw-bold text-dark mb-2">@Model.Course.Chapters.Count()</div>
+                            <small class="text-muted fw-medium" style="font-size: 0.9rem; line-height: 1.4; display: block; text-transform: uppercase;">Chương</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 rounded-3 shadow-sm text-center p-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(56, 142, 60, 0.1) 100%); min-height: 160px;">
+                            @* <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-10" style="font-size: 4rem;">
+                                <i class="fas fa-play"></i>
+                            </div> *@
+                        <div class="position-relative z-2">
+                            <div class="fs-5 fw-bold text-dark mb-2">@Model.Course.Chapters.Sum(c => c.Lessons.Count())</div>
+                            <small class="text-muted fw-medium" style="font-size: 0.9rem; line-height: 1.4; display: block; text-transform: uppercase;">Bài học</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 rounded-3 shadow-sm text-center p-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(255, 152, 0, 0.1) 0%, rgba(255, 111, 0, 0.1) 100%); min-height: 160px;">
+                        @* <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-10" style="font-size: 4rem;">
+                            <i class="fas fa-clock"></i>
+                        </div> *@
+                        <div class="position-relative z-2">
+                            <div class="fs-5 fw-bold text-dark mb-2">@(Model.Course.Duration?.ToString(@"hh\:mm") ?? "N/A")</div>
+                            <small class="text-muted fw-medium" style="font-size: 0.9rem; line-height: 1.4; display: block; text-transform: uppercase;">Thời lượng</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="card border-0 rounded-3 shadow-sm text-center p-4 h-100 position-relative overflow-hidden" style="background: linear-gradient(135deg, rgba(233, 30, 99, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%); min-height: 160px;">
+                        @* <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center opacity-10" style="font-size: 4rem;">
+                            <i class="fas fa-certificate"></i>
+                        </div> *@
+                        <div class="position-relative z-2">
+                            <div class="fs-5 fw-bold text-dark mb-2">Có</div>
+                            <small class="text-muted fw-medium" style="font-size: 0.9rem; line-height: 1.4; display: block; text-transform: uppercase;">Chứng chỉ</small>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Course Content -->
-            <div class="bg-white rounded-4 border border-light-subtle mb-4 overflow-hidden" data-aos="fade-up" data-aos-delay="300">
-                <div class="p-4 border-bottom border-light-subtle bg-light bg-opacity-50">
-                    <h3 class="mb-0 fw-bold h4">Nội dung khóa học</h3>
+            <!-- Description -->
+            <div class="mb-5" data-aos="fade-up" data-aos-delay="200">
+                <h3 class="fw-bold mb-3 h4">📖 Mô tả khóa học</h3>
+                <div class="card border-0 rounded-4 shadow-sm p-4" style="background: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(249,250,252,1) 100%);">
+                    <div class="course-description text-secondary lh-lg">
+                        @Html.Raw(Model.Course.Description)
+                    </div>
                 </div>
-                <div class="card-body">
+            </div>
+
+            <!-- Course Content (Curriculum) -->
+            <div class="mb-5" data-aos="fade-up" data-aos-delay="300">
+                <h3 class="fw-bold mb-3 h4">📚 Nội dung khóa học</h3>
+                <div class="card border-0 rounded-4 shadow-sm overflow-hidden">
                     @if (Model.Course.Chapters.Any())
                     {
                         <div class="accordion" id="courseContent">
                             @foreach (var chapter in Model.Course.Chapters.OrderBy(c => c.Id))
                             {
-                                <div class="accordion-item">
+                                <div class="accordion-item border-0 border-bottom border-light">
                                     <h2 class="accordion-header" id="heading@chapter.Id">
-                                        <button class="accordion-button @(Model.Course.Chapters.First() != chapter ? "collapsed" : "")"
+                                        <button class="accordion-button @(Model.Course.Chapters.First() != chapter ? "collapsed" : "") fw-bold"
                                                 type="button" data-bs-toggle="collapse"
-                                                data-bs-target="#collapse@chapter.Id">
-                                            <div class="d-flex justify-content-between w-100 me-3">
-                                                <span><strong>@chapter.Name</strong></span>
-                                                <span class="text-muted">Đang cập nhật nội dung</span>
-                                            </div>
+                                                data-bs-target="#collapse@chapter.Id"
+                                                style="background-color: @(Model.Course.Chapters.First() == chapter ? "rgba(102, 126, 234, 0.05)" : "transparent");">
+                                            <i class="fas fa-folder-open me-2" style="color: #667eea;"></i>
+                                            <span>@chapter.Name</span>
+                                            <span class="text-muted ms-auto me-3">@(chapter.Lessons?.Count() ?? 0) bài học</span>
                                         </button>
                                     </h2>
                                     <div id="collapse@chapter.Id"
                                          class="accordion-collapse collapse @(Model.Course.Chapters.First() == chapter ? "show" : "")"
                                          data-bs-parent="#courseContent">
-                                        <div class="accordion-body">
+                                        <div class="accordion-body p-4" style="background: rgba(249, 250, 252, 1);">
                                             @if (chapter.Description != null)
                                             {
-                                                <p class="text-muted mb-3">@chapter.Description</p>
+                                                <p class="text-muted mb-3 border-bottom pb-3">@chapter.Description</p>
                                             }
 
                                             @if (chapter.Lessons != null && chapter.Lessons.Any())
                                             {
-                                                <ul class="list-group mb-3">
+                                                <div class="lesson-list">
                                                     @foreach (var lesson in chapter.Lessons.OrderBy(l => l.OrderIndex))
                                                     {
-                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                                                            <span>
-                                                                <i class="fas fa-@(lesson.Type == "Video" ? "play" : lesson.Type == "Quiz" ? "question-circle" : "file-alt") text-info me-2"></i>
-                                                                @lesson.Title
-                                                                <span class="badge bg-@(lesson.Status == "Active" ? "success" : "secondary") ms-2">@lesson.Status</span>
-                                                            </span>
-                                                            <a href="/Learning/Lesson/@lesson.Id" class="btn btn-sm btn-outline-primary">
-                                                                <i class="fas fa-eye"></i>
-                                                            </a>
-                                                        </li>
+                                                        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 mb-2" style="background: white; border-left: 3px solid #667eea; transition: all 0.3s;">
+                                                            <div class="d-flex align-items-center flex-grow-1">
+                                                                <i class="fas fa-@(lesson.Type == "Video" ? "play-circle" : lesson.Type == "Quiz" ? "question-circle" : "file-alt") fs-5 me-3" style="color: #667eea;"></i>
+                                                                <div>
+                                                                    <div class="fw-medium text-dark mb-1">@lesson.Title</div>
+                                                                    <small class="text-muted">Loại: @lesson.Type</small>
+                                                                </div>
+                                                            </div>
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <span class="badge bg-@(lesson.Status == "Active" ? "success" : "secondary") rounded-pill">@lesson.Status</span>
+                                                                <a href="/Learning/Lesson/@lesson.Id" class="btn btn-sm btn-outline-primary rounded-3">
+                                                                    <i class="fas fa-arrow-right"></i>
+                                                                </a>
+                                                            </div>
+                                                        </div>
                                                     }
-                                                </ul>
+                                                </div>
                                             }
                                             else
                                             {
-                                                <div class="text-center py-3">
+                                                <div class="text-center py-4">
                                                     <i class="fas fa-book-open fa-2x text-muted mb-2"></i>
                                                     <p class="text-muted">Nội dung bài học đang được cập nhật</p>
                                                 </div>
@@ -154,9 +222,9 @@
                     }
                     else
                     {
-                        <div class="text-center py-4">
-                            <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">Nội dung đang được cập nhật</h5>
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted fw-bold">Nội dung đang được cập nhật</h5>
                             <p class="text-muted">Khóa học này đang trong quá trình xây dựng nội dung.</p>
                         </div>
                     }
@@ -164,87 +232,78 @@
             </div>
 
             <!-- Comments Section -->
-            <div class="bg-white rounded-4 border border-light-subtle overflow-hidden" data-aos="fade-up" data-aos-delay="400">
-                <div class="p-4 border-bottom border-light-subtle bg-light bg-opacity-50">
-                    <h3 class="mb-0 fw-bold h4">
-                        <i class="fas fa-comments text-secondary me-2"></i>
-                        Bình luận và thảo luận
-                    </h3>
-                </div>
-                <div class="p-4">
-                    @if (User.Identity!.IsAuthenticated)
-                    {
-                        <!-- Comment Form -->
-                        <div class="comment-form mb-4 border border-light-subtle p-3 rounded-4 bg-light">
-                            <div class="d-flex">
-                                <div class="flex-grow-1">
-                                    <form id="commentForm">
-                                        <div class="mb-3">
-                                            <textarea id="commentContent" class="form-control border-light-subtle rounded-3 bg-white"
-                                                    placeholder="Viết bình luận của bạn..."
-                                                    rows="3" maxlength="2000"></textarea>
-                                            <div class="form-text small text-end mt-1">
-                                                <span id="charCount">0</span>/2000 ký tự
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <i class="fas fa-info-circle me-1"></i>
-                                                Hãy thảo luận một cách lịch sự
-                                            </small>
-                                            <button type="submit" class="btn btn-dark rounded-pill px-4" id="submitComment">
-                                                <i class="fas fa-paper-plane me-2"></i>Đăng bình luận
+            <div class="mb-5" data-aos="fade-up" data-aos-delay="400">
+                <h3 class="fw-bold mb-3 h4">💬 Thảo luận và bình luận</h3>
+                <div class="card border-0 rounded-4 shadow-sm overflow-hidden">
+                    <div class="p-4">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <div class="mb-4 pb-4 border-bottom">
+                                <form id="commentForm">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold mb-2">Viết bình luận của bạn</label>
+                                        <textarea id="commentContent" class="form-control border-light-subtle rounded-3"
+                                                placeholder="Chia sẻ ý kiến của bạn..."
+                                                rows="4" maxlength="2000" style="resize: vertical;"></textarea>
+                                        <div class="d-flex justify-content-between align-items-center mt-2">
+                                            <small class="text-muted"><span id="charCount">0</span>/2000</small>
+                                            <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium" id="submitComment">
+                                                <i class="fas fa-paper-plane me-2"></i>Bình luận
                                             </button>
                                         </div>
-                                        @Html.AntiForgeryToken()
-                                    </form>
-                                </div>
+                                    </div>
+                                    @Html.AntiForgeryToken()
+                                </form>
                             </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <!-- Login prompt -->
-                        <div class="text-center py-5 bg-light rounded-4 border border-light-subtle mb-4">
-                            <i class="fas fa-user-lock fa-2x text-muted mb-3"></i>
-                            <h5 class="fw-bold text-dark">Đăng nhập để tham gia thảo luận</h5>
-                            <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
-                               class="btn btn-dark rounded-pill px-4 mt-2">
-                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
-                            </a>
-                        </div>
-                    }
+                        }
+                        else
+                        {
+                            <div class="text-center py-5 rounded-4" style="background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);">
+                                <i class="fas fa-user-lock fa-2x text-muted mb-3"></i>
+                                <h5 class="fw-bold text-dark mb-2">Đăng nhập để tham gia thảo luận</h5>
+                                <p class="text-muted mb-3 small">Vui lòng đăng nhập để bình luận và tương tác với cộng đồng</p>
+                                <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
+                                   class="btn btn-primary rounded-pill px-4">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                                </a>
+                            </div>
+                        }
 
-                    <!-- Comments List -->
-                    <div id="commentsList" class="mt-4">
-                        <div class="text-center py-4" id="commentsLoading">
-                            <div class="spinner-border text-dark spinner-border-sm mb-2" role="status">
-                                <span class="visually-hidden">Đang tải...</span>
+                        <!-- Comments List -->
+                        <div id="commentsList" class="mt-4">
+                            <div class="text-center py-4" id="commentsLoading">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="text-muted small mt-2">Đang tải bình luận...</p>
                             </div>
-                            <p class="text-muted small">Đang tải bình luận...</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Sidebar -->
+        <!-- Right Sidebar: Purchase + Info -->
         <div class="col-lg-4">
-            <div class="sticky-top" style="top: 100px;">
-                <!-- Purchase Card -->
-                <div class="bg-white rounded-4 border border-light-subtle p-4 mb-4" data-aos="fade-left" style="box-shadow: 0 12px 24px rgba(0,0,0,0.04);">
-                    <div class="text-center">
+            <div class="position-sticky" style="top: 120px;">
+                <!-- Price & Purchase Card -->
+                <div class="card border-0 rounded-4 shadow-lg overflow-hidden mb-4" data-aos="fade-left" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <div class="card-body p-4 text-white text-center">
                         <img src="@Model.Course.Thumbnail" alt="@Model.Course.Title"
-                             class="img-fluid rounded-3 mb-4 object-fit-cover w-100" style="height: 200px;">
+                             class="img-fluid rounded-3 mb-4 shadow" style="object-fit: cover; height: 180px; width: 100%;">
 
                         <div class="mb-4">
                             @if (Model.Course.Price == 0)
                             {
-                                <h2 class="text-success fw-bold mb-0" style="letter-spacing: -1px;">Miễn phí</h2>
+                                <div class="fs-2 fw-bold mb-1">Miễn phí</div>
+                                <small class="text-white-50">Không yêu cầu thanh toán</small>
                             }
                             else
                             {
-                                <h2 class="text-dark fw-bold mb-0" style="letter-spacing: -1px;">@Model.Course.Price.ToString("N0") <span class="fs-4 text-muted">đ</span></h2>
+                                <div class="fs-1 fw-bold mb-1">@Model.Course.Price.ToString("N0") 
+                                    <span class="fs-5" style="opacity: 0.8;">đ</span>
+                                </div>
+                                <small class="text-white-50">Chỉ một lần</small>
                             }
                         </div>
 
@@ -253,118 +312,105 @@
                             @if (Model.IsEnrolled)
                             {
                                 <a href="@Url.Action("MyCourses", "User")"
-                                   class="btn btn-success btn-lg w-100 mb-3 rounded-3 fw-medium">
-                                    <i class="fas fa-play me-2"></i>Tiếp tục học
+                                   class="btn btn-light btn-lg w-100 mb-2 rounded-3 fw-bold" style="color: #667eea;">
+                                    <i class="fas fa-play me-2"></i>Tiếp tục học tập
                                 </a>
                                 <a href="@Url.Action("Dashboard", "User")"
-                                   class="btn btn-outline-dark w-100 rounded-3 fw-medium">
+                                   class="btn btn-outline-light w-100 rounded-3 fw-medium">
                                     <i class="fas fa-chart-line me-2"></i>Xem tiến độ
                                 </a>
                             }
                             else
                             {
-                                <div class="d-grid gap-2">
-                                    @if (Model.Course.Price == 0)
-                                    {
-                                        <button type="button" class="btn btn-success btn-lg w-100 rounded-3 fw-medium"
-                                                onclick="enrollCourse(@Model.Course.Id)">
-                                            Đăng ký miễn phí
-                                        </button>
-                                    }
-                                    else
-                                    {
-                                        <a href="@Url.Action("Checkout", "Enrollment", new { id = Model.Course.Id })"
-                                           class="btn btn-dark btn-lg w-100 mb-2 rounded-3 fw-medium">
-                                            Đăng ký học ngay
-                                        </a>
-                                        <small class="text-muted text-center d-block">
-                                            <i class="fas fa-shield-alt me-1 text-success"></i>Thanh toán an toàn 100%
-                                        </small>
-                                    }
-                                </div>
+                                @if (Model.Course.Price == 0)
+                                {
+                                    <button type="button" class="btn btn-light btn-lg w-100 rounded-3 fw-bold"
+                                            onclick="enrollCourse(@Model.Course.Id)" style="color: #667eea;">
+                                        <i class="fas fa-check-circle me-2"></i>Đăng ký miễn phí
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="@Url.Action("Checkout", "Enrollment", new { id = Model.Course.Id })"
+                                       class="btn btn-light btn-lg w-100 rounded-3 fw-bold mb-2" style="color: #667eea;">
+                                        <i class="fas fa-shopping-cart me-2"></i>Đăng ký ngay
+                                    </a>
+                                    <small class="text-white-50 d-block">
+                                        <i class="fas fa-lock-open me-1"></i>Thanh toán an toàn 100%
+                                    </small>
+                                }
                             }
                         }
                         else
                         {
-                            <div class="d-grid gap-3">
-                                <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
-                                   class="btn btn-dark btn-lg rounded-3 fw-medium">
-                                    Đăng nhập để học
-                                </a>
-                                <p class="mb-0 small text-muted text-center">Hoặc <a href="/Identity/Account/Register" class="text-dark fw-medium text-decoration-none border-bottom border-dark pb-1">Đăng ký tài khoản</a></p>
-                            </div>
+                            <a href="/Identity/Account/Login?returnUrl=@Url.Action("CourseDetail", "Home", new { id = Model.Course.Id })"
+                               class="btn btn-light btn-lg w-100 rounded-3 fw-bold mb-2" style="color: #667eea;">
+                                <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập để học
+                            </a>
+                            <p class="mb-0 small text-white-50 text-center">
+                                Hoặc <a href="/Identity/Account/Register" class="text-white text-decoration-none fw-bold border-bottom">tạo tài khoản mới</a>
+                            </p>
                         }
 
-                        <div class="mt-4 pt-3 border-top border-light-subtle">
-                            <small class="text-secondary fw-medium">
-                                <i class="fas fa-check-circle me-1 text-success"></i>Cam kết hoàn tiền trong 30 ngày
+                        <div class="mt-4 pt-3 border-top border-white border-opacity-20">
+                            <small class="text-white-50 d-block">
+                                <i class="fas fa-undo me-1"></i>Hoàn tiền trong 30 ngày nếu không hài lòng
                             </small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Course Info -->
-                <div class="bg-white rounded-4 border border-light-subtle mb-4" data-aos="fade-left" data-aos-delay="100">
-                    <div class="p-3 border-bottom border-light-subtle">
-                        <h5 class="mb-0 fw-bold">Thông tin khóa học</h5>
-                    </div>
+                <!-- Key Features -->
+                <div class="card border-0 rounded-4 shadow-sm mb-4" data-aos="fade-left" data-aos-delay="100">
                     <div class="card-body p-4">
-                        <div class="row text-center g-4">
-                            <div class="col-6">
-                                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-2" style="width: 48px; height: 48px;">
-                                    <i class="fas fa-book text-dark fs-5"></i>
-                                </div>
-                                <div><strong class="fs-5 text-dark">@Model.Course.Chapters.Count()</strong></div>
-                                <small class="text-secondary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Chương</small>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-2" style="width: 48px; height: 48px;">
-                                    <i class="fas fa-play text-dark fs-5"></i>
-                                </div>
-                                <div><strong class="fs-5 text-dark">N/A</strong></div>
-                                <small class="text-secondary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Bài học</small>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-2" style="width: 48px; height: 48px;">
-                                    <i class="fas fa-clock text-dark fs-5"></i>
-                                </div>
-                                <div><strong class="fs-5 text-dark">@(Model.Course.Duration?.ToString(@"hh\:mm") ?? "N/A")</strong></div>
-                                <small class="text-secondary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Thời lượng</small>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-inline-flex align-items-center justify-content-center bg-light rounded-circle mb-2" style="width: 48px; height: 48px;">
-                                    <i class="fas fa-certificate text-dark fs-5"></i>
-                                </div>
-                                <div><strong class="fs-5 text-dark">Có</strong></div>
-                                <small class="text-secondary text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Chứng chỉ</small>
-                            </div>
-                        </div>
+                        <h6 class="fw-bold mb-3 text-dark">✨ Bao gồm</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2 d-flex gap-2">
+                                <i class="fas fa-check text-success mt-1"></i>
+                                <span class="text-muted">Truy cập vĩnh viễn</span>
+                            </li>
+                            <li class="mb-2 d-flex gap-2">
+                                <i class="fas fa-check text-success mt-1"></i>
+                                <span class="text-muted">Tài liệu học tập đầy đủ</span>
+                            </li>
+                            <li class="mb-2 d-flex gap-2">
+                                <i class="fas fa-check text-success mt-1"></i>
+                                <span class="text-muted">Hỗ trợ từ cộng đồng</span>
+                            </li>
+                            <li class="mb-2 d-flex gap-2">
+                                <i class="fas fa-check text-success mt-1"></i>
+                                <span class="text-muted">Chứng chỉ hoàn thành</span>
+                            </li>
+                            <li class="mb-0 d-flex gap-2">
+                                <i class="fas fa-check text-success mt-1"></i>
+                                <span class="text-muted">Cập nhật nội dung thường xuyên</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
                 <!-- Related Courses -->
                 @if (Model.RelatedCourses.Any())
                 {
-                    <div class="bg-white rounded-4 border border-light-subtle" data-aos="fade-left" data-aos-delay="200">
-                        <div class="p-3 border-bottom border-light-subtle bg-light bg-opacity-50">
-                            <h5 class="mb-0 fw-bold">Khóa học liên quan</h5>
-                        </div>
-                        <div class="p-3">
+                    <div class="card border-0 rounded-4 shadow-sm" data-aos="fade-left" data-aos-delay="200">
+                        <div class="card-body p-4">
+                            <h6 class="fw-bold mb-3 text-dark">🎓 Khóa học liên quan</h6>
                             @foreach (var relatedCourse in Model.RelatedCourses.Where(c => c.Id != Model.Course.Id).Take(3))
                             {
-                                <div class="d-flex mb-3 align-items-center">
+                                <a href="@Url.Action("CourseDetail", "Home", new { id = relatedCourse.Id })" 
+                                   class="d-flex gap-3 mb-3 text-decoration-none related-course-item" style="transition: all 0.3s;">
                                     <img src="@relatedCourse.Thumbnail" alt="@relatedCourse.Title"
-                                         class="rounded-3 me-3 object-fit-cover border border-light-subtle" style="width: 70px; height: 50px;">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1 fw-bold lh-sm">
-                                            <a href="@Url.Action("CourseDetail", "Home", new { id = relatedCourse.Id })"
-                                               class="text-dark text-decoration-none text-hover-primary" style="font-size: 0.95rem;">@relatedCourse.Title</a>
-                                        </h6>
+                                         class="rounded-3 object-fit-cover flex-shrink-0"
+                                         style="width: 60px; height: 45px;">
+                                    <div class="flex-grow-1 min-width-0">
+                                        <div class="fw-bold text-dark mb-1" style="font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                                            @relatedCourse.Title
+                                        </div>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted" style="font-size: 0.8rem;"><i class="fas fa-users me-1"></i>@relatedCourse.Enrollments.Count()</small>
+                                            <small class="text-muted"><i class="fas fa-users me-1"></i>@relatedCourse.Enrollments.Count()</small>
                                             @if (relatedCourse.Price == 0)
                                             {
-                                                <span class="badge bg-success rounded-pill fw-normal">Miễn phí</span>
+                                                <span class="badge bg-success rounded-pill fw-normal" style="font-size: 0.75rem;">Miễn phí</span>
                                             }
                                             else
                                             {
@@ -372,7 +418,7 @@
                                             }
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                             }
                         </div>
                     </div>
@@ -383,26 +429,105 @@
 </div>
 
 <style>
+    /* Hero Section */
+    .course-detail-hero {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .course-detail-hero .breadcrumb-white {
+        --bs-breadcrumb-divider-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .course-detail-hero .breadcrumb-white .breadcrumb-item.active {
+        color: white;
+        font-weight: 500;
+    }
+
+    /* Course Description */
     .course-description {
         line-height: 1.8;
+        font-size: 1rem;
     }
 
     .course-description p {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
+        color: #495057;
     }
 
-    .review-item:last-child {
-        border-bottom: none !important;
+    .course-description h2,
+    .course-description h3,
+    .course-description h4 {
+        color: #212529;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
     }
 
-    .sticky-top {
-        z-index: 1020;
+    .course-description ul,
+    .course-description ol {
+        margin-bottom: 1.25rem;
+        margin-left: 1.5rem;
+    }
+
+    .course-description li {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Stats Grid */
+    .position-relative.overflow-hidden {
+        transition: all 0.3s ease;
+    }
+
+    /* Accordion Styles */
+    .accordion-button {
+        background-color: transparent;
+        color: #212529;
+        border: none;
+        font-weight: 500;
+        padding: 1.25rem 1.5rem;
+        transition: all 0.3s;
+    }
+
+    .accordion-button:not(.collapsed) {
+        background-color: rgba(102, 126, 234, 0.08);
+        color: #667eea;
+        box-shadow: none;
+    }
+
+    .accordion-button:hover {
+        background-color: rgba(102, 126, 234, 0.05);
+        color: #667eea;
+    }
+
+    .accordion-button:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+    }
+
+    .accordion-button::after {
+        filter: invert(0.8);
+    }
+
+    .accordion-button:not(.collapsed)::after {
+        filter: invert(0.3);
+    }
+
+    .lesson-list .d-flex:hover {
+        background: rgb(102, 126, 234) !important;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.05) 100%) !important;
+        transform: translateX(4px);
+    }
+
+    /* Sticky Sidebar */
+    .position-sticky {
+        z-index: 1000;
     }
 
     /* Comment Styles */
     .comment-item {
-        border-bottom: 1px solid rgba(0,0,0,0.05);
-        padding: 1.25rem 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding: 1.5rem 0;
     }
 
     .comment-item:last-child {
@@ -412,62 +537,149 @@
     .comment-content {
         background-color: #f8f9fa;
         border-radius: 12px;
-        padding: 1rem 1.25rem;
-        margin-bottom: 0.5rem;
-        border: 1px solid rgba(0,0,0,0.03);
+        padding: 1.25rem;
+        margin-bottom: 0.75rem;
+        border: 1px solid rgba(0, 0, 0, 0.03);
     }
 
     .comment-reply {
         margin-left: 3rem;
-        border-left: 2px solid rgba(0,0,0,0.1);
-        padding-left: 1.25rem;
-        margin-top: 1rem;
+        border-left: 3px solid #667eea;
+        padding-left: 1.5rem;
+        margin-top: 1.25rem;
     }
 
     .comment-actions {
         font-size: 0.85rem;
         font-weight: 500;
-        margin-left: 0.5rem;
+        margin-left: 0.75rem;
     }
 
     .comment-actions button {
         background: none;
         border: none;
         color: #6b7280;
-        padding: 0.25rem 0.5rem;
+        padding: 0.35rem 0.65rem;
         cursor: pointer;
-        transition: color 0.2s;
-        border-radius: 4px;
+        transition: all 0.2s;
+        border-radius: 6px;
+        font-size: 0.8rem;
     }
 
     .comment-actions button:hover {
-        color: #111827;
-        background-color: #f3f4f6;
+        color: #667eea;
+        background-color: rgba(102, 126, 234, 0.1);
     }
 
     .reply-form {
-        margin-top: 0.5rem;
-        padding: 0.75rem;
+        margin-top: 0.75rem;
+        padding: 1rem;
         background-color: #f8f9fa;
-        border-radius: 0.5rem;
+        border-radius: 0.75rem;
         display: none;
+        border-left: 3px solid #667eea;
     }
 
     .comment-form textarea:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.15);
     }
 
     .comment-time {
         font-size: 0.8rem;
-        color: #6c757d;
+        color: #999;
     }
 
     .no-comments {
         text-align: center;
-        padding: 2rem;
-        color: #6c757d;
+        padding: 2.5rem;
+        color: #999;
     }
+
+    /* Related Courses Hover */
+    .related-course-item:hover {
+        transform: translateX(4px);
+    }
+
+    .related-course-item:hover img {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12) !important;
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .course-detail-hero {
+            min-height: 280px;
+        }
+
+        .course-detail-hero .row {
+            gap: 2rem !important;
+        }
+
+        .course-detail-hero .col-lg-3,
+        .course-detail-hero .col-lg-auto {
+            flex: 0 0 100% !important;
+            max-width: 100%;
+        }
+
+        .position-sticky {
+            position: static !important;
+            margin-top: 2rem;
+        }
+
+        .accordion-button {
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .card-body {
+            padding: 1rem !important;
+        }
+    }
+
+    /* Smooth Transitions */
+    .card {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Text Utilities */
+    .text-hover-primary:hover {
+        color: #667eea !important;
+    }
+
+    .min-width-0 {
+        min-width: 0;
+    }
+
+    .z-2 {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Animations */
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .lesson-list > div {
+        animation: slideIn 0.3s ease-out forwards;
+    }
+
+    .lesson-list > div:nth-child(1) { animation-delay: 0s; }
+    .lesson-list > div:nth-child(2) { animation-delay: 0.05s; }
+    .lesson-list > div:nth-child(3) { animation-delay: 0.1s; }
+    .lesson-list > div:nth-child(4) { animation-delay: 0.15s; }
+    .lesson-list > div:nth-child(5) { animation-delay: 0.2s; }
 </style>
 
 <script>

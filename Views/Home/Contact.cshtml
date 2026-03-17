@@ -22,7 +22,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-1">Trụ sở chính</h6>
-                        <p class="text-light mb-0 small" style="opacity: 0.8;">123 Đường ABC, Quận XYZ<br>TP.HCM, Việt Nam</p>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">144 Xuân Thủy, Cầu Giấy, Hà Nội</p>
                     </div>
                 </div>
                 
@@ -32,7 +32,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-1">Điện thoại</h6>
-                        <p class="text-light mb-0 small" style="opacity: 0.8;">+84 123 456 789</p>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">+84 36 521 8839</p>
                     </div>
                 </div>
                 
@@ -42,7 +42,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-1">Email</h6>
-                        <p class="text-light mb-0 small" style="opacity: 0.8;">contact@elearning.com</p>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">lmsvju@gmail.com</p>
                     </div>
                 </div>
                 
@@ -52,7 +52,7 @@
                     </div>
                     <div>
                         <h6 class="fw-bold mb-1">Giờ làm việc</h6>
-                        <p class="text-light mb-0 small" style="opacity: 0.8;">Thứ 2 - Thứ 6: 8:00 - 17:00<br>Thứ 7: 8:00 - 12:00</p>
+                        <p class="text-light mb-0 small" style="opacity: 0.8;">Tất cả các ngày trong tuần</p>
                     </div>
                 </div>
             </div>
@@ -99,14 +99,15 @@
     <!-- Map Section -->
     <div class="row mt-5 pt-4" data-aos="fade-up">
         <div class="col-12">
-            <div class="bg-light rounded-5 overflow-hidden border border-light-subtle" style="height: 400px; display: flex; align-items: center; justify-content: center; position: relative;">
-                <div class="text-center text-muted z-1">
-                    <i class="fas fa-map-marker-alt fs-1 mb-3 text-secondary opacity-50"></i>
-                    <h5 class="fw-bold mb-1">Bản đồ đang được tải...</h5>
-                    <p class="small mb-0">Tích hợp Google Maps API</p>
-                </div>
-                <!-- Background placeholder giả lập bản đồ -->
-                <div class="position-absolute align-items-center w-100 h-100 bg-light opacity-50" style="background-image: radial-gradient(#d1d5db 1px, transparent 1px); background-size: 20px 20px;"></div>
+            <h4 class="fw-bold mb-4 text-dark" style="letter-spacing: -0.5px;">Vị trí của chúng tôi</h4>
+            <div class="map-container rounded-5 overflow-hidden border border-light-subtle shadow-sm"
+                 style="height: 480px; position: relative;">
+                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.2649851154854!2d105.77800711132073!3d21.034641880628903!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x313455555555555%3A0x3f3f3f3f3f3f3f3f!2s144%20Xu%C3%A2n%20Th%E1%BB%A7y%2C%20C%E1%BA%A7u%20Gi%E1%BA%A5y%2C%20Ha%20Noi!5e0!3m2!1svi!2s!4v1678000000000&iwloc=B"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        class="w-100 h-100"
+                        style="border: none;">
+                </iframe>
             </div>
         </div>
     </div>
@@ -115,5 +116,13 @@
 <style>
     .border-light-subtle {
         border-color: rgba(0,0,0,0.08) !important;
+    }
+    .map-container {
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.05);
+    }
+    @@media (max-width: 768px) {
+        .map-container {
+            height: 300px !important;
+        }
     }
 </style>
