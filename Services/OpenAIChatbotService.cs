@@ -6,6 +6,19 @@ using Microsoft.Extensions.Options;
 
 namespace ELearningWebsite.Services
 {
+    public class ChatbotProviderException : Exception
+    {
+        public int StatusCode { get; }
+        public string? ProviderBody { get; }
+
+        public ChatbotProviderException(int statusCode, string? providerBody)
+            : base("Chatbot provider request failed.")
+        {
+            StatusCode = statusCode;
+            ProviderBody = providerBody;
+        }
+    }
+
     public class OpenAIChatbotService : IChatbotService
     {
         private readonly HttpClient _httpClient;
@@ -140,7 +153,7 @@ namespace ELearningWebsite.Services
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogError("Chatbot provider error {StatusCode}: {Body}", (int)response.StatusCode, responseBody);
-                throw new InvalidOperationException("Chatbot provider request failed.");
+                throw new ChatbotProviderException((int)response.StatusCode, responseBody);
             }
 
             try

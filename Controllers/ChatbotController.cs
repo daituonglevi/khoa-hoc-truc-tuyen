@@ -91,6 +91,22 @@ namespace ELearningWebsite.Controllers
                     Timestamp = DateTime.UtcNow
                 });
             }
+            catch (ChatbotProviderException ex)
+            {
+                var providerMessage = string.IsNullOrWhiteSpace(ex.ProviderBody)
+                    ? "No provider response body."
+                    : ex.ProviderBody.Length > 500
+                        ? ex.ProviderBody.Substring(0, 500)
+                        : ex.ProviderBody;
+
+                _logger.LogError("Chatbot upstream failed with status {StatusCode}: {ProviderMessage}", ex.StatusCode, providerMessage);
+
+                return StatusCode(502, new
+                {
+                    error = $"Chatbot provider failed (HTTP {ex.StatusCode}).",
+                    details = providerMessage
+                });
+            }
             catch (InvalidOperationException ex)
             {
                 return BadRequest(new { error = ex.Message });
