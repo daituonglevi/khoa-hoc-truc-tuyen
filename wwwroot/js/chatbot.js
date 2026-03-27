@@ -120,7 +120,9 @@
 
         if (!res.ok) {
             const payload = await res.json().catch(() => ({ error: 'Có lỗi xảy ra' }));
-            throw new Error(payload.error || 'Có lỗi xảy ra');
+            const message = payload && payload.error ? payload.error : 'Có lỗi xảy ra';
+            const details = payload && payload.details ? payload.details : '';
+            throw new Error(details ? (message + '\n' + details) : message);
         }
 
         return res.json();
