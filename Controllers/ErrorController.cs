@@ -7,11 +7,14 @@ namespace ELearningWebsite.Controllers
         [Route("Error/{statusCode}")]
         public IActionResult HttpStatusCodeHandler(int statusCode)
         {
+            Response.StatusCode = statusCode;
+
             switch (statusCode)
             {
                 case 404:
-                    // Redirect to home page for 404 errors
-                    return RedirectToAction("Index", "Home");
+                    return View("Error");
+                case 403:
+                    return View("Error");
                 default:
                     return View("Error");
             }
