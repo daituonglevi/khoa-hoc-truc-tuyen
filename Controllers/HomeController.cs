@@ -34,7 +34,7 @@ namespace ELearningWebsite.Controllers
                 }
                 else if (User.IsInRole("Instructor"))
                 {
-                    return RedirectToAction("Dashboard", "User");
+                    return RedirectToAction("Index", "Courses", new { area = "Admin" });
                 }
                 // Student có th�f xem trang shop bình thường
             }

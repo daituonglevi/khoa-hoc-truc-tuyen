@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Instructor")]
     public class CoursesController : Controller
     {
         private readonly ApplicationDbContext _context;

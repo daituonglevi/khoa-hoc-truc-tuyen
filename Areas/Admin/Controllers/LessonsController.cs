@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Instructor")]
     public class LessonsController : Controller
     {
         private readonly ELearningWebsite.Data.ApplicationDbContext _context;

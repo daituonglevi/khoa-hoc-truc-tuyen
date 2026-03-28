@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Instructor")]
     public class CommentsController : Controller
     {
         private readonly ApplicationDbContext _context;
