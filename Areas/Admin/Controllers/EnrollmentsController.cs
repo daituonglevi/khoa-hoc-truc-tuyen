@@ -5,6 +5,7 @@ using ELearningWebsite.Models;
 using ELearningWebsite.Models.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -26,9 +27,20 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                var currentUserId = GetCurrentUserId();
                 var query = _context.Enrollments
                     .Include(e => e.Course)
                     .AsQueryable();
+
+                if (!IsAdmin())
+                {
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
+
+                    query = query.Where(e => e.Course.CreateBy == currentUserId.Value);
+                }
 
                 // Search filter
                 if (!string.IsNullOrEmpty(search))
@@ -73,6 +85,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageEnrollmentAsync(id))
+                {
+                    return Forbid();
+                }
+
                 var enrollment = await _context.Enrollments
                     .Include(e => e.Course)
                     .FirstOrDefaultAsync(e => e.Id == id);
@@ -99,6 +116,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageEnrollmentAsync(id))
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền cập nhật đăng ký này" });
+                }
+
                 var enrollment = await _context.Enrollments.FindAsync(id);
                 if (enrollment == null)
                 {
@@ -123,6 +145,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageEnrollmentAsync(id))
+                {
+                    TempData["ErrorMessage"] = "Bạn không có quyền xóa đăng ký này";
+                    return RedirectToAction(nameof(Index));
+                }
+
                 var enrollment = await _context.Enrollments.FindAsync(id);
                 if (enrollment == null)
                 {
@@ -148,12 +176,24 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
-                var totalEnrollments = await _context.Enrollments.CountAsync();
-                var activeEnrollments = await _context.Enrollments.CountAsync(e => e.Status == 1); // Active
-                var completedEnrollments = await _context.Enrollments.CountAsync(e => e.Status == 3); // Completed
-                var suspendedEnrollments = await _context.Enrollments.CountAsync(e => e.Status == 2); // Suspended
+                var currentUserId = GetCurrentUserId();
+                var query = _context.Enrollments.AsQueryable();
+                if (!IsAdmin())
+                {
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
 
-                var monthlyEnrollments = await _context.Enrollments
+                    query = query.Where(e => e.Course.CreateBy == currentUserId.Value);
+                }
+
+                var totalEnrollments = await query.CountAsync();
+                var activeEnrollments = await query.CountAsync(e => e.Status == 1); // Active
+                var completedEnrollments = await query.CountAsync(e => e.Status == 3); // Completed
+                var suspendedEnrollments = await query.CountAsync(e => e.Status == 2); // Suspended
+
+                var monthlyEnrollments = await query
                     .Where(e => e.EnrollmentDate >= DateTime.Now.AddMonths(-12))
                     .GroupBy(e => new { e.EnrollmentDate.Year, e.EnrollmentDate.Month })
                     .Select(g => new {
@@ -177,6 +217,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
                 return View();
             }
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private async Task<bool> CanManageEnrollmentAsync(int enrollmentId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return await _context.Enrollments
+                .AnyAsync(e => e.Id == enrollmentId && e.Course.CreateBy == currentUserId.Value);
         }
     }
 }

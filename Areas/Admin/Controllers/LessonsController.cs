@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ELearningWebsite.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -18,12 +19,29 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Lessons
         public IActionResult Index(int? courseId, int? chapterId, string? lessonKeyword)
         {
-            var courses = _context.Courses
+            var currentUserId = GetCurrentUserId();
+            if (!IsAdmin() && !currentUserId.HasValue)
+            {
+                return Forbid();
+            }
+
+            var coursesQuery = _context.Courses.AsQueryable();
+            if (!IsAdmin())
+            {
+                coursesQuery = coursesQuery.Where(c => c.CreateBy == currentUserId!.Value);
+            }
+
+            var courses = coursesQuery
                 .OrderBy(c => c.Title)
                 .Select(c => new { c.Id, Title = c.Title ?? string.Empty })
                 .ToList();
 
             var chaptersQuery = _context.Chapters.AsQueryable();
+            if (!IsAdmin())
+            {
+                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId!.Value);
+            }
+
             if (courseId.HasValue)
             {
                 chaptersQuery = chaptersQuery.Where(ch => ch.CourseId == courseId.Value);
@@ -39,6 +57,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     .ThenInclude(ch => ch!.Course)
                 .Include(l => l.Quiz)
                 .AsQueryable();
+
+            if (!IsAdmin())
+            {
+                lessonsQuery = lessonsQuery.Where(l => l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId!.Value);
+            }
 
             if (courseId.HasValue)
             {
@@ -73,6 +96,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Lessons/Details/5
         public IActionResult Details(int id)
         {
+            if (!CanManageLesson(id))
+            {
+                return Forbid();
+            }
+
             var lesson = _context.Lessons
                 .Include(l => l.Chapter)
                 .Include(l => l.Quiz)
@@ -89,7 +117,24 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Lessons/Create
         public IActionResult Create(int? chapterId)
         {
-            var chapters = _context.Set<Chapter>().ToList();
+            if (chapterId.HasValue && !CanManageChapter(chapterId.Value))
+            {
+                return Forbid();
+            }
+
+            var chaptersQuery = _context.Set<Chapter>().AsQueryable();
+            var currentUserId = GetCurrentUserId();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+            }
+
+            var chapters = chaptersQuery.ToList();
             ViewBag.Chapters = chapters;
             var lesson = new Lesson();
             if (chapterId.HasValue)
@@ -102,29 +147,58 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(Lesson lesson)
         {
+            if (!CanManageChapter(lesson.ChapterId))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 lesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
+                lesson.CreateBy = currentUserId.Value;
                 _context.Set<Lesson>().Add(lesson);
                 _context.SaveChanges();
                 // Sau khi tạo, chuy�fn về trang chi tiết chương
                 return RedirectToAction("Details", "Chapters", new { id = lesson.ChapterId });
             }
             // Nếu l�-i, truyền lại danh sách chương
-            ViewBag.Chapters = _context.Set<Chapter>().ToList();
+            var chaptersQuery = _context.Set<Chapter>().AsQueryable();
+            var currentUserId2 = GetCurrentUserId();
+            if (!IsAdmin() && currentUserId2.HasValue)
+            {
+                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId2.Value);
+            }
+            ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
         }
 
         // GET: Admin/Lessons/Edit/5
         public IActionResult Edit(int id)
         {
+            if (!CanManageLesson(id))
+            {
+                return Forbid();
+            }
+
             var lesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
             if (lesson == null)
             {
                 return NotFound();
             }
 
-            ViewBag.Chapters = _context.Set<Chapter>().ToList();
+            var chaptersQuery = _context.Set<Chapter>().AsQueryable();
+            var currentUserId = GetCurrentUserId();
+            if (!IsAdmin() && currentUserId.HasValue)
+            {
+                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+            }
+            ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
         }
 
@@ -136,6 +210,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (id != lesson.Id)
             {
                 return NotFound();
+            }
+
+            if (!CanManageLesson(id) || !CanManageChapter(lesson.ChapterId))
+            {
+                return Forbid();
             }
 
             var existingLesson = _context.Lessons.FirstOrDefault(l => l.Id == id);
@@ -156,12 +235,23 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 existingLesson.Type = lesson.Type;
                 existingLesson.Status = lesson.Status;
                 existingLesson.UpdatedAt = DateTime.Now;
+                var currentUserId = GetCurrentUserId();
+                if (currentUserId.HasValue)
+                {
+                    existingLesson.UpdateBy = currentUserId.Value;
+                }
 
                 _context.SaveChanges();
                 return RedirectToAction("Details", "Chapters", new { id = existingLesson.ChapterId });
             }
 
-            ViewBag.Chapters = _context.Set<Chapter>().ToList();
+            var chaptersQuery = _context.Set<Chapter>().AsQueryable();
+            var currentUserId2 = GetCurrentUserId();
+            if (!IsAdmin() && currentUserId2.HasValue)
+            {
+                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId2.Value);
+            }
+            ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
         }
 
@@ -204,6 +294,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Lessons/Quiz?lessonId=1
         public IActionResult Quiz(int lessonId)
         {
+            if (!CanManageLesson(lessonId))
+            {
+                return Forbid();
+            }
+
             var lesson = _context.Lessons
                 .Include(l => l.Chapter)
                 .FirstOrDefault(l => l.Id == lessonId);
@@ -226,6 +321,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult CreateQuiz(int lessonId, string title, int passPercent = 80)
         {
+            if (!CanManageLesson(lessonId))
+            {
+                return Forbid();
+            }
+
             var lesson = _context.Lessons.Find(lessonId);
             if (lesson == null)
             {
@@ -267,6 +367,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!CanManageLesson(quiz.LessonId))
+            {
+                return Forbid();
+            }
+
             if (string.IsNullOrWhiteSpace(content))
             {
                 TempData["ErrorMessage"] = "Nội dung câu hỏi không được để trống.";
@@ -297,6 +402,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (question == null || question.Quiz == null)
             {
                 return NotFound();
+            }
+
+            if (!CanManageLesson(question.Quiz.LessonId))
+            {
+                return Forbid();
             }
 
             if (string.IsNullOrWhiteSpace(answerText))
@@ -340,6 +450,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!CanManageLesson(question.Quiz.LessonId))
+            {
+                return Forbid();
+            }
+
             _context.QuizQuestions.Remove(question);
             _context.SaveChanges();
             TempData["SuccessMessage"] = "Đã xóa câu hỏi.";
@@ -357,6 +472,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (answer?.Question?.Quiz == null)
             {
                 return NotFound();
+            }
+
+            if (!CanManageLesson(answer.Question.Quiz.LessonId))
+            {
+                return Forbid();
             }
 
             _context.QuizAnswers.Remove(answer);
@@ -379,6 +499,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!CanManageLesson(answer.Question.Quiz.LessonId))
+            {
+                return Forbid();
+            }
+
             var allAnswers = _context.QuizAnswers
                 .Where(a => a.QuestionId == answer.QuestionId)
                 .ToList();
@@ -391,6 +516,65 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             _context.SaveChanges();
             TempData["SuccessMessage"] = "Đã cập nhật đáp án đúng.";
             return RedirectToAction(nameof(Quiz), new { lessonId = answer.Question.Quiz.LessonId });
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private bool CanManageCourse(int courseId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return _context.Courses.Any(c => c.Id == courseId && c.CreateBy == currentUserId.Value);
+        }
+
+        private bool CanManageChapter(int chapterId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return _context.Chapters.Any(ch => ch.Id == chapterId && ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+        }
+
+        private bool CanManageLesson(int lessonId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return _context.Lessons.Any(l => l.Id == lessonId && l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId.Value);
         }
 
     }

@@ -4,6 +4,7 @@ using ELearningWebsite.Data;
 using ELearningWebsite.Models;
 using ELearningWebsite.Areas.Admin.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -33,6 +34,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var query = _context.Chapters
                 .Include(c => c.Course)
                 .AsQueryable();
+
+            var currentUserId = GetCurrentUserId();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                query = query.Where(c => c.Course != null && c.Course.CreateBy == currentUserId.Value);
+            }
 
             // Apply search filter
             if (!string.IsNullOrEmpty(searchTerm))
@@ -103,6 +115,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            if (!await CanManageChapterAsync(id))
+            {
+                return Forbid();
+            }
+
             // Lấy danh sách bài học thu�Tc chương
             var lessons = await _context.Lessons
                 .Where(l => l.ChapterId == chapter.Id)
@@ -157,6 +174,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             {
                 try
                 {
+                    var currentUserId = GetCurrentUserId();
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
+
                     // Check if course exists
                     var course = await _context.Courses.FindAsync(model.CourseId);
                     if (course == null)
@@ -166,6 +189,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         return View(model);
                     }
 
+                    if (!IsAdmin() && course.CreateBy != currentUserId.Value)
+                    {
+                        return Forbid();
+                    }
+
                     var chapter = new Chapter
                     {
                         CourseId = model.CourseId,
@@ -173,7 +201,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         Description = model.Description,
                         Status = model.Status,
                         CreatedAt = DateTime.Now,
-                        CreateBy = 1 // Simplified - should get from current user
+                        CreateBy = currentUserId.Value
                     };
 
                     _context.Chapters.Add(chapter);
@@ -205,6 +233,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            if (!await CanManageChapterAsync(id))
+            {
+                return Forbid();
+            }
+
             var viewModel = new ChapterEditViewModel
             {
                 Id = chapter.Id,
@@ -232,10 +265,21 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!await CanManageChapterAsync(id))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var currentUserId = GetCurrentUserId();
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
+
                     var chapter = await _context.Chapters.FindAsync(id);
                     if (chapter == null)
                     {
@@ -252,12 +296,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         return View(model);
                     }
 
+                    if (!IsAdmin() && course.CreateBy != currentUserId.Value)
+                    {
+                        return Forbid();
+                    }
+
                     chapter.CourseId = model.CourseId;
                     chapter.Name = model.Name;
                     chapter.Description = model.Description;
                     chapter.Status = model.Status;
                     chapter.UpdatedAt = DateTime.Now;
-                    chapter.UpdateBy = 1; // Simplified - should get from current user
+                    chapter.UpdateBy = currentUserId.Value;
 
                     await _context.SaveChangesAsync();
 
@@ -300,6 +349,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            if (!await CanManageChapterAsync(id))
+            {
+                return Forbid();
+            }
+
             var viewModel = new ChapterDeleteViewModel
             {
                 Id = chapter.Id,
@@ -322,6 +376,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageChapterAsync(id))
+                {
+                    return Forbid();
+                }
+
                 var chapter = await _context.Chapters.FindAsync(id);
                 if (chapter == null)
                 {
@@ -345,7 +404,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         private async Task LoadFilterOptions(ChapterIndexViewModel viewModel)
         {
             // Load available courses
+            var currentUserId = GetCurrentUserId();
             var courses = await _context.Courses
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value))
                 .OrderBy(c => c.Title)
                 .Select(c => new ChapterCourseOption
                 {
@@ -362,7 +423,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         private async Task LoadCourseOptions(ChapterCreateViewModel viewModel)
         {
+            var currentUserId = GetCurrentUserId();
             var courses = await _context.Courses
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value))
                 .Where(c => c.Status == "Published" || c.Status == "Draft")
                 .OrderBy(c => c.Title)
                 .Select(c => new ChapterCourseOption
@@ -380,7 +443,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         private async Task LoadCourseOptions(ChapterEditViewModel viewModel)
         {
+            var currentUserId = GetCurrentUserId();
             var courses = await _context.Courses
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value))
                 .Where(c => c.Status == "Published" || c.Status == "Draft")
                 .OrderBy(c => c.Title)
                 .Select(c => new ChapterCourseOption
@@ -399,18 +464,30 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Chapters/Statistics
         public async Task<IActionResult> Statistics()
         {
+            var currentUserId = GetCurrentUserId();
+            var chapterQuery = _context.Chapters.AsQueryable();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                chapterQuery = chapterQuery.Where(c => c.Course != null && c.Course.CreateBy == currentUserId.Value);
+            }
+
             var now = DateTime.Now;
             var thisMonth = new DateTime(now.Year, now.Month, 1);
             var thisYear = new DateTime(now.Year, 1, 1);
 
             var stats = new ChapterStatisticsViewModel
             {
-                TotalChapters = await _context.Chapters.CountAsync(),
-                ActiveChapters = await _context.Chapters.CountAsync(c => c.Status == "Active"),
-                InactiveChapters = await _context.Chapters.CountAsync(c => c.Status != "Active"),
-                ChaptersThisMonth = await _context.Chapters
+                TotalChapters = await chapterQuery.CountAsync(),
+                ActiveChapters = await chapterQuery.CountAsync(c => c.Status == "Active"),
+                InactiveChapters = await chapterQuery.CountAsync(c => c.Status != "Active"),
+                ChaptersThisMonth = await chapterQuery
                     .CountAsync(c => c.CreatedAt >= thisMonth),
-                ChaptersThisYear = await _context.Chapters
+                ChaptersThisYear = await chapterQuery
                     .CountAsync(c => c.CreatedAt >= thisYear),
                 TotalLessons = 0 // Simplified since we don't have Lessons table
             };
@@ -425,6 +502,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             {
                 var date = DateTime.Now.Date.AddDays(-i);
                 var count = await _context.Chapters
+                    .Where(c => IsAdmin() || (currentUserId.HasValue && c.Course != null && c.Course.CreateBy == currentUserId.Value))
                     .CountAsync(c => c.CreatedAt.Date == date);
                 trendData.Add(new ChapterTrendData { Date = date, Count = count });
             }
@@ -433,6 +511,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             // Get top courses by chapter count
             var topCourses = await _context.Chapters
                 .Include(c => c.Course)
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.Course != null && c.Course.CreateBy == currentUserId.Value))
                 .GroupBy(c => new { c.CourseId, c.Course.Title, c.Course.Price })
                 .Select(g => new TopCourseChapterData
                 {
@@ -451,6 +530,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             // Get recent chapters
             var recentChapters = await _context.Chapters
                 .Include(c => c.Course)
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.Course != null && c.Course.CreateBy == currentUserId.Value))
                 .OrderByDescending(c => c.CreatedAt)
                 .Take(10)
                 .Select(c => new RecentChapterData
@@ -468,6 +548,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             // Get status distribution
             var statusDistribution = await _context.Chapters
+                .Where(c => IsAdmin() || (currentUserId.HasValue && c.Course != null && c.Course.CreateBy == currentUserId.Value))
                 .GroupBy(c => c.Status)
                 .Select(g => new ChapterStatusData
                 {
@@ -488,6 +569,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageChapterAsync(id))
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền cập nhật chương này" });
+                }
+
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Json(new { success = false, message = "Không xác định được người dùng" });
+                }
+
                 var chapter = await _context.Chapters.FindAsync(id);
                 if (chapter == null)
                 {
@@ -496,7 +588,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
                 chapter.Status = chapter.Status == "Active" ? "Inactive" : "Active";
                 chapter.UpdatedAt = DateTime.Now;
-                chapter.UpdateBy = 1; // Simplified - should get from current user
+                chapter.UpdateBy = currentUserId.Value;
 
                 await _context.SaveChangesAsync();
 
@@ -510,6 +602,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             {
                 return Json(new { success = false, message = "Có l�-i xảy ra: " + ex.Message });
             }
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private async Task<bool> CanManageChapterAsync(int chapterId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return await _context.Chapters
+                .AnyAsync(c => c.Id == chapterId && c.Course != null && c.Course.CreateBy == currentUserId.Value);
         }
     }
 }
