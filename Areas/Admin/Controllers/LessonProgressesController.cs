@@ -5,6 +5,7 @@ using ELearningWebsite.Models;
 using ELearningWebsite.Areas.Admin.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -39,7 +40,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             try
             {
                 // Build base query
-                var query = _context.LessonProgresses
+                var query = GetScopedLessonProgressQuery()
                     .Include(lp => lp.User)
                     .Include(lp => lp.Lesson)
                         .ThenInclude(l => l.Chapter)
@@ -154,6 +155,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/LessonProgresses/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            if (!await CanManageLessonProgressAsync(id))
+            {
+                return Forbid();
+            }
+
             var progress = await _context.LessonProgresses
                 .Include(lp => lp.User)
                 .FirstOrDefaultAsync(lp => lp.Id == id);
@@ -221,6 +227,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             if (ModelState.IsValid)
             {
+                if (!await CanManageLessonAsync(model.LessonId))
+                {
+                    return Forbid();
+                }
+
                 var progress = new LessonProgress
                     {
                         LessonId = model.LessonId,
@@ -247,6 +258,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/LessonProgresses/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
+            if (!await CanManageLessonProgressAsync(id))
+            {
+                return Forbid();
+            }
+
             var progress = await _context.LessonProgresses
                 .Include(lp => lp.User)
                 .FirstOrDefaultAsync(lp => lp.Id == id);
@@ -284,6 +300,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             {
                 TempData["ErrorMessage"] = "ID không hợp l�?";
                 return RedirectToAction(nameof(Index));
+            }
+
+            if (!await CanManageLessonProgressAsync(id) || !await CanManageLessonAsync(model.LessonId))
+            {
+                return Forbid();
             }
 
             if (ModelState.IsValid)
@@ -333,6 +354,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/LessonProgresses/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
+            if (!await CanManageLessonProgressAsync(id))
+            {
+                return Forbid();
+            }
+
             var progress = await _context.LessonProgresses
                 .Include(lp => lp.User)
                 .FirstOrDefaultAsync(lp => lp.Id == id);
@@ -366,6 +392,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
+            if (!await CanManageLessonProgressAsync(id))
+            {
+                return Forbid();
+            }
+
             var progress = await _context.LessonProgresses.FindAsync(id);
             if (progress != null)
             {
@@ -385,11 +416,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             try
             {
                 // First check if we have any lessons
-                var lessonCount = await _context.Lessons.CountAsync();
+                var lessonsQuery = GetScopedLessonsQuery();
+                var lessonCount = await lessonsQuery.CountAsync();
                 Console.WriteLine($"Total lessons in database: {lessonCount}");
 
                 // Load available lessons with titles
-                var lessons = await _context.Lessons.ToListAsync();
+                var lessons = await lessonsQuery.ToListAsync();
                 var availableLessons = lessons.Select(l => new LessonOption 
                 { 
                     Id = l.Id, 
@@ -428,7 +460,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         private async Task LoadCreateEditOptions(LessonProgressCreateViewModel viewModel)
         {
             // Load available lessons
-            var lessons = await _context.Lessons
+            var lessons = await GetScopedLessonsQuery()
                 .Select(l => new LessonOption
                 {
                     Id = l.Id,
@@ -455,7 +487,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         private async Task LoadCreateEditOptions(LessonProgressEditViewModel viewModel)
         {
             // Load available lessons
-            var lessons = await _context.Lessons
+            var lessons = await GetScopedLessonsQuery()
                 .Select(l => new LessonOption
                 {
                     Id = l.Id,
@@ -481,7 +513,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         private async Task<bool> LessonProgressExists(int id)
         {
-            return await _context.LessonProgresses.AnyAsync(e => e.Id == id);
+            return await GetScopedLessonProgressQuery().AnyAsync(e => e.Id == id);
         }
 
         // GET: Admin/LessonProgresses/Statistics
@@ -490,13 +522,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var viewModel = new LessonProgressStatisticsViewModel();
 
             // Get basic statistics
-            viewModel.TotalProgresses = await _context.LessonProgresses.CountAsync();
-            viewModel.CompletedProgresses = await _context.LessonProgresses.CountAsync(lp => lp.ProgressPercentage >= 100);
-            viewModel.NotStartedProgresses = await _context.LessonProgresses.CountAsync(lp => lp.ProgressPercentage == 0);
-            viewModel.InProgressProgresses = await _context.LessonProgresses.CountAsync(lp => lp.ProgressPercentage > 0 && lp.ProgressPercentage < 100);
+            var scopedProgresses = GetScopedLessonProgressQuery();
+            viewModel.TotalProgresses = await scopedProgresses.CountAsync();
+            viewModel.CompletedProgresses = await scopedProgresses.CountAsync(lp => lp.ProgressPercentage >= 100);
+            viewModel.NotStartedProgresses = await scopedProgresses.CountAsync(lp => lp.ProgressPercentage == 0);
+            viewModel.InProgressProgresses = await scopedProgresses.CountAsync(lp => lp.ProgressPercentage > 0 && lp.ProgressPercentage < 100);
 
             // Calculate averages
-            var averages = await _context.LessonProgresses
+            var averages = await scopedProgresses
                 .GroupBy(x => 1)
                 .Select(g => new
                 {
@@ -509,19 +542,19 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             viewModel.AverageTimeSpent = averages?.AverageTimeSpent ?? 0;
 
             // Get learner statistics
-            viewModel.TotalLearners = await _context.LessonProgresses
+            viewModel.TotalLearners = await scopedProgresses
                 .Select(lp => lp.UserId)
                 .Distinct()
                 .CountAsync();
 
-            viewModel.ActiveLearners = await _context.LessonProgresses
+            viewModel.ActiveLearners = await scopedProgresses
                 .Where(lp => lp.UpdatedAt >= DateTime.Now.AddDays(-30))
                 .Select(lp => lp.UserId)
                 .Distinct()
                 .CountAsync();
 
             // Get top learners
-            var topLearners = await _context.LessonProgresses
+            var topLearners = await scopedProgresses
                 .GroupBy(lp => lp.UserId)
                 .Select(g => new TopLearnerData
                 {
@@ -554,7 +587,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             viewModel.TopLearners = topLearners;
 
             // Get top lessons
-            viewModel.TopLessons = await _context.LessonProgresses
+            viewModel.TopLessons = await scopedProgresses
                 .Include(lp => lp.Lesson)
                 .ThenInclude(l => l.Chapter)
                 .ThenInclude(c => c.Course)
@@ -578,7 +611,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 .ToListAsync();
 
             // Get recent progresses
-            viewModel.RecentProgresses = await _context.LessonProgresses
+            viewModel.RecentProgresses = await scopedProgresses
                 .Include(lp => lp.User)
                 .Include(lp => lp.Lesson)
                 .OrderByDescending(lp => lp.UpdatedAt ?? lp.CreatedAt)
@@ -596,7 +629,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 .ToListAsync();
 
             // Get progress distribution
-            var progressGroups = await _context.LessonProgresses
+            var progressGroups = await scopedProgresses
                 .Select(lp => lp.ProgressPercentage)
                 .ToListAsync();
 
@@ -613,7 +646,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             viewModel.ProgressDistribution = distribution;
 
             // Get course progress summaries
-            viewModel.CourseProgressSummaries = await _context.LessonProgresses
+            viewModel.CourseProgressSummaries = await scopedProgresses
                 .Include(lp => lp.Lesson)
                 .ThenInclude(l => l.Chapter)
                 .ThenInclude(c => c.Course)
@@ -640,6 +673,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateProgress(int id, [FromBody] UpdateProgressRequest request)
             {
+                if (!await CanManageLessonProgressAsync(id))
+                {
+                    return Forbid();
+                }
+
                 var progress = await _context.LessonProgresses.FindAsync(id);
                 if (progress == null)
                 {
@@ -688,9 +726,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             try
             {
-                var progresses = await _context.LessonProgresses
+                var progresses = await GetScopedLessonProgressQuery()
                     .Where(lp => request.Ids.Contains(lp.Id))
                     .ToListAsync();
+
+                if (progresses.Count != request.Ids.Count)
+                {
+                    return StatusCode(403, new { success = false, message = "Có dữ liệu không thuộc quyền thao tác" });
+                }
 
                 foreach (var progress in progresses)
                 {
@@ -721,6 +764,61 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (progress >= 50 && progress < 75) return "50-74%";
             if (progress >= 75 && progress < 100) return "75-99%";
             return "100%";
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private IQueryable<Lesson> GetScopedLessonsQuery()
+        {
+            var query = _context.Lessons.AsQueryable();
+            if (IsAdmin())
+            {
+                return query;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(l => l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId.Value);
+        }
+
+        private IQueryable<LessonProgress> GetScopedLessonProgressQuery()
+        {
+            var query = _context.LessonProgresses.AsQueryable();
+            if (IsAdmin())
+            {
+                return query;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(lp => lp.Lesson != null && lp.Lesson.Chapter != null && lp.Lesson.Chapter.Course != null && lp.Lesson.Chapter.Course.CreateBy == currentUserId.Value);
+        }
+
+        private async Task<bool> CanManageLessonAsync(int lessonId)
+        {
+            return await GetScopedLessonsQuery().AnyAsync(l => l.Id == lessonId);
+        }
+
+        private async Task<bool> CanManageLessonProgressAsync(int lessonProgressId)
+        {
+            return await GetScopedLessonProgressQuery().AnyAsync(lp => lp.Id == lessonProgressId);
         }
     }
 }

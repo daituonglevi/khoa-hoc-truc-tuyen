@@ -4,6 +4,7 @@ using ELearningWebsite.Data;
 using ELearningWebsite.Models;
 using ELearningWebsite.Areas.Admin.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -32,6 +33,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             // Build query
             var query = _context.Comments.AsQueryable();
+            var currentUserId = GetCurrentUserId();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                var managedLessonIds = GetManagedLessonIds(currentUserId.Value);
+                query = query.Where(c => managedLessonIds.Contains(c.LessonId));
+            }
 
             // Apply search filter
             if (!string.IsNullOrEmpty(searchTerm))
@@ -105,6 +117,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Comments/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            if (!await CanManageCommentAsync(id))
+            {
+                return Forbid();
+            }
+
             var comment = await _context.Comments
                 .Include(c => c.ParentComment)
                 .Include(c => c.Replies.Where(r => !r.IsDelete))
@@ -151,6 +168,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Comments/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
+            if (!await CanManageCommentAsync(id))
+            {
+                return Forbid();
+            }
+
             var comment = await _context.Comments
                 .Include(c => c.ParentComment)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -189,6 +211,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!await CanManageCommentAsync(id))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 try
@@ -224,6 +251,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Comments/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
+            if (!await CanManageCommentAsync(id))
+            {
+                return Forbid();
+            }
+
             var comment = await _context.Comments
                 .Include(c => c.Replies)
                 .FirstOrDefaultAsync(c => c.Id == id);
@@ -254,6 +286,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageCommentAsync(id))
+                {
+                    return Forbid();
+                }
+
                 var comment = await _context.Comments.FindAsync(id);
                 if (comment == null)
                 {
@@ -289,20 +326,35 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         private async Task LoadFilterOptions(CommentIndexViewModel viewModel)
         {
+            var currentUserId = GetCurrentUserId();
+            var commentsQuery = _context.Comments.AsQueryable();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    viewModel.AvailableLessons = new List<LessonOption>();
+                    viewModel.AvailableUsers = new List<UserOption>();
+                    return;
+                }
+
+                var managedLessonIds = GetManagedLessonIds(currentUserId.Value);
+                commentsQuery = commentsQuery.Where(c => managedLessonIds.Contains(c.LessonId));
+            }
+
             // Load available lessons (simplified)
-            viewModel.AvailableLessons = await _context.Comments
+            viewModel.AvailableLessons = await commentsQuery
                 .Select(c => new LessonOption
                 {
                     Id = c.LessonId,
                     Title = "Lesson " + c.LessonId,
-                    CommentCount = _context.Comments.Count(x => x.LessonId == c.LessonId)
+                    CommentCount = commentsQuery.Count(x => x.LessonId == c.LessonId)
                 })
                 .Distinct()
                 .OrderBy(l => l.Id)
                 .ToListAsync();
 
             // Load available users (simplified)
-            viewModel.AvailableUsers = await _context.Comments
+            viewModel.AvailableUsers = await commentsQuery
                 .Where(c => c.User.Id > 0)
                 .Select(c => new UserOption
                 {
@@ -318,6 +370,19 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Comments/Statistics
         public async Task<IActionResult> Statistics()
         {
+            var currentUserId = GetCurrentUserId();
+            var commentsQuery = _context.Comments.AsQueryable();
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                var managedLessonIds = GetManagedLessonIds(currentUserId.Value);
+                commentsQuery = commentsQuery.Where(c => managedLessonIds.Contains(c.LessonId));
+            }
+
             var now = DateTime.Now;
             var today = now.Date;
             var weekStart = today.AddDays(-(int)today.DayOfWeek);
@@ -325,13 +390,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             var stats = new CommentStatisticsViewModel
             {
-                TotalComments = await _context.Comments.CountAsync(),
-                ActiveComments = await _context.Comments.CountAsync(c => !c.IsDelete),
-                DeletedComments = await _context.Comments.CountAsync(c => c.IsDelete),
-                TotalReplies = await _context.Comments.CountAsync(c => c.ParentCommentId.HasValue && !c.IsDelete),
-                CommentsToday = await _context.Comments.CountAsync(c => c.CreatedAt.Date == today && !c.IsDelete),
-                CommentsThisWeek = await _context.Comments.CountAsync(c => c.CreatedAt.Date >= weekStart && !c.IsDelete),
-                CommentsThisMonth = await _context.Comments.CountAsync(c => c.CreatedAt.Date >= monthStart && !c.IsDelete)
+                TotalComments = await commentsQuery.CountAsync(),
+                ActiveComments = await commentsQuery.CountAsync(c => !c.IsDelete),
+                DeletedComments = await commentsQuery.CountAsync(c => c.IsDelete),
+                TotalReplies = await commentsQuery.CountAsync(c => c.ParentCommentId.HasValue && !c.IsDelete),
+                CommentsToday = await commentsQuery.CountAsync(c => c.CreatedAt.Date == today && !c.IsDelete),
+                CommentsThisWeek = await commentsQuery.CountAsync(c => c.CreatedAt.Date >= weekStart && !c.IsDelete),
+                CommentsThisMonth = await commentsQuery.CountAsync(c => c.CreatedAt.Date >= monthStart && !c.IsDelete)
             };
 
             // Get trend data for last 7 days
@@ -339,13 +404,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             for (int i = 6; i >= 0; i--)
             {
                 var date = today.AddDays(-i);
-                var count = await _context.Comments.CountAsync(c => c.CreatedAt.Date == date && !c.IsDelete);
+                var count = await commentsQuery.CountAsync(c => c.CreatedAt.Date == date && !c.IsDelete);
                 trendData.Add(new CommentTrendData { Date = date, Count = count });
             }
             stats.TrendData = trendData;
 
             // Get top commenters
-            var topCommenters = await _context.Comments
+            var topCommenters = await commentsQuery
                 .Where(c => !c.IsDelete && c.User.Id > 0)
                 .GroupBy(c => c.User.Id)
                 .Select(g => new TopCommenterData
@@ -364,7 +429,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             stats.TopCommenters = topCommenters;
 
             // Get top lessons by comments
-            var topLessons = await _context.Comments
+            var topLessons = await commentsQuery
                 .Where(c => !c.IsDelete)
                 .GroupBy(c => c.LessonId)
                 .Select(g => new TopCommentedLessonData
@@ -383,6 +448,41 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             stats.TopLessons = topLessons;
 
             return View(stats);
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private IQueryable<int> GetManagedLessonIds(int currentUserId)
+        {
+            return _context.Lessons
+                .Where(l => l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId)
+                .Select(l => l.Id);
+        }
+
+        private async Task<bool> CanManageCommentAsync(int commentId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            var managedLessonIds = GetManagedLessonIds(currentUserId.Value);
+            return await _context.Comments.AnyAsync(c => c.Id == commentId && managedLessonIds.Contains(c.LessonId));
         }
     }
 }
