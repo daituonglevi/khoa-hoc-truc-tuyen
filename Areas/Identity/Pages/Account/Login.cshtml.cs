@@ -90,11 +90,11 @@ namespace ELearningWebsite.Areas.Identity.Pages.Account
                             return LocalRedirect("/Admin");
                         }
 
-                        // Nếu là Instructor, chuy�fn hư�>ng đến Instructor Dashboard (nếu có)
+                        // Nếu là Instructor, tạm thời chuyển đến User Dashboard
                         if (roles.Contains("Instructor"))
                         {
-                            _logger.LogInformation("Instructor user logged in, redirecting to instructor dashboard.");
-                            return LocalRedirect("/Admin"); // Tạm thời cũng vào Admin area
+                            _logger.LogInformation("Instructor user logged in, redirecting to user dashboard.");
+                            return LocalRedirect("/User/Dashboard");
                         }
 
                         // Nếu là Student hoặc role khác, chuy�fn về User Dashboard
