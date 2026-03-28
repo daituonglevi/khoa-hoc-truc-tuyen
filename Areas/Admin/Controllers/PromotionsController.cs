@@ -4,11 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using ELearningWebsite.Data;
 using ELearningWebsite.Models;
 using ELearningWebsite.Areas.Admin.ViewModels;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin,Instructor")]
     public class PromotionsController : Controller
     {
         private readonly ApplicationDbContext _context;
@@ -32,6 +33,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var query = _context.Discounts
                 .Include(d => d.Course)
                 .AsQueryable();
+
+            if (!IsAdmin())
+            {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                query = query.Where(d => d.Course.CreateBy == currentUserId.Value);
+            }
 
             // Apply search filter
             if (!string.IsNullOrEmpty(search))
@@ -95,6 +107,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             // Get available courses for filter dropdown
             viewModel.AvailableCourses = await _context.Courses
+                .Where(c => IsAdmin() || c.CreateBy == GetCurrentUserId())
                 .Where(c => c.Status == "Published")
                 .OrderBy(c => c.Title)
                 .ToListAsync();
@@ -105,6 +118,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Promotions/Details/5
         public async Task<IActionResult> Details(int id)
         {
+            if (!await CanManagePromotionAsync(id))
+            {
+                return Forbid();
+            }
+
             var discount = await _context.Discounts
                 .Include(d => d.Course)
                 .FirstOrDefaultAsync(d => d.Id == id);
@@ -143,6 +161,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var viewModel = new PromotionCreateViewModel();
 
             viewModel.AvailableCourses = await _context.Courses
+                .Where(c => IsAdmin() || c.CreateBy == GetCurrentUserId())
                 .Where(c => c.Status == "Published")
                 .OrderBy(c => c.Title)
                 .ToListAsync();
@@ -159,6 +178,19 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             {
                 try
                 {
+                    var currentUserId = GetCurrentUserId();
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
+
+                    var canUseCourse = await _context.Courses
+                        .AnyAsync(c => c.Id == model.CourseId && (IsAdmin() || c.CreateBy == currentUserId.Value));
+                    if (!canUseCourse)
+                    {
+                        return Forbid();
+                    }
+
                     // Check if code already exists
                     var existingCode = await _context.Discounts
                         .AnyAsync(d => d.Code == model.Code);
@@ -177,7 +209,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                             StartDate = model.StartDate,
                             EndDate = model.EndDate,
                             CourseId = model.CourseId,
-                            CreateBy = 1, // TODO: Get current admin user ID
+                            CreateBy = currentUserId.Value,
                             CreatedAt = DateTime.Now
                         };
 
@@ -196,6 +228,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             // Reload courses if validation fails
             model.AvailableCourses = await _context.Courses
+                .Where(c => IsAdmin() || c.CreateBy == GetCurrentUserId())
                 .Where(c => c.Status == "Published")
                 .OrderBy(c => c.Title)
                 .ToListAsync();
@@ -206,6 +239,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Promotions/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
+            if (!await CanManagePromotionAsync(id))
+            {
+                return Forbid();
+            }
+
             var discount = await _context.Discounts
                 .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -231,6 +269,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             };
 
             viewModel.AvailableCourses = await _context.Courses
+                .Where(c => IsAdmin() || c.CreateBy == GetCurrentUserId())
                 .Where(c => c.Status == "Published")
                 .OrderBy(c => c.Title)
                 .ToListAsync();
@@ -248,10 +287,28 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!await CanManagePromotionAsync(id))
+            {
+                return Forbid();
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
+                    var currentUserId = GetCurrentUserId();
+                    if (!currentUserId.HasValue)
+                    {
+                        return Forbid();
+                    }
+
+                    var canUseCourse = await _context.Courses
+                        .AnyAsync(c => c.Id == model.CourseId && (IsAdmin() || c.CreateBy == currentUserId.Value));
+                    if (!canUseCourse)
+                    {
+                        return Forbid();
+                    }
+
                     var discount = await _context.Discounts.FindAsync(id);
                     if (discount == null)
                     {
@@ -275,7 +332,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         discount.StartDate = model.StartDate;
                         discount.EndDate = model.EndDate;
                         discount.CourseId = model.CourseId;
-                        discount.UpdateBy = 1; // TODO: Get current admin user ID
+                        discount.UpdateBy = currentUserId.Value;
                         discount.UpdatedAt = DateTime.Now;
 
                         await _context.SaveChangesAsync();
@@ -292,6 +349,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             // Reload courses if validation fails
             model.AvailableCourses = await _context.Courses
+                .Where(c => IsAdmin() || c.CreateBy == GetCurrentUserId())
                 .Where(c => c.Status == "Published")
                 .OrderBy(c => c.Title)
                 .ToListAsync();
@@ -302,6 +360,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // GET: Admin/Promotions/Delete/5
         public async Task<IActionResult> Delete(int id)
         {
+            if (!await CanManagePromotionAsync(id))
+            {
+                return Forbid();
+            }
+
             var discount = await _context.Discounts
                 .Include(d => d.Course)
                 .FirstOrDefaultAsync(d => d.Id == id);
@@ -331,6 +394,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManagePromotionAsync(id))
+                {
+                    return Forbid();
+                }
+
                 var discount = await _context.Discounts.FindAsync(id);
                 if (discount == null)
                 {
@@ -361,6 +429,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             try
             {
                 // Since we don't have IsActive column, we'll simulate toggle by updating UpdatedAt
+                if (!await CanManagePromotionAsync(id))
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền cập nhật coupon này" });
+                }
+
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Json(new { success = false, message = "Không xác định được người dùng" });
+                }
+
                 var discount = await _context.Discounts.FindAsync(id);
                 if (discount == null)
                 {
@@ -368,7 +447,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 }
 
                 discount.UpdatedAt = DateTime.Now;
-                discount.UpdateBy = 1; // TODO: Get current admin user ID
+                discount.UpdateBy = currentUserId.Value;
 
                 await _context.SaveChangesAsync();
 
@@ -389,17 +468,29 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             var now = DateTime.Now;
 
+            var query = _context.Discounts.AsQueryable();
+            if (!IsAdmin())
+            {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                query = query.Where(d => d.Course.CreateBy == currentUserId.Value);
+            }
+
             var stats = new
             {
-                TotalPromotions = await _context.Discounts.CountAsync(),
-                ActivePromotions = await _context.Discounts.CountAsync(d =>
+                TotalPromotions = await query.CountAsync(),
+                ActivePromotions = await query.CountAsync(d =>
                     (!d.StartDate.HasValue || d.StartDate <= now) &&
                     (!d.EndDate.HasValue || d.EndDate >= now)),
-                ExpiredPromotions = await _context.Discounts.CountAsync(d =>
+                ExpiredPromotions = await query.CountAsync(d =>
                     d.EndDate.HasValue && d.EndDate < now),
                 UsedUpPromotions = 0, // Default since we don't have CurrentUses column
                 TotalUsage = 0, // Default since we don't have CurrentUses column
-                TopPromotions = await _context.Discounts
+                TopPromotions = await query
                     .Include(d => d.Course)
                     .OrderByDescending(d => d.CreatedAt)
                     .Take(5)
@@ -413,6 +504,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             };
 
             return Json(stats);
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private async Task<bool> CanManagePromotionAsync(int discountId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return await _context.Discounts
+                .AnyAsync(d => d.Id == discountId && d.Course.CreateBy == currentUserId.Value);
         }
     }
 }
