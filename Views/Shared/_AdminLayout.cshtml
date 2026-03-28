@@ -1,9 +1,14 @@
+@{
+    var isAdmin = User.IsInRole("Admin");
+    var panelLabel = isAdmin ? "Admin" : "Instructor";
+}
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Panel</title>
+    <title>@ViewData["Title"] - LMS VJU @panelLabel</title>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,11 +25,11 @@
         <div class="p-3">
             <h4 class="text-white mb-4">
                 <i class="fas fa-graduation-cap me-2"></i>
-                Admin Panel
+                LMS VJU @panelLabel
             </h4>
             
             <ul class="nav flex-column">
-                @if (User.IsInRole("Admin"))
+                @if (isAdmin)
                 {
                     <li class="nav-item">
                         <a class="nav-link active" href="/Admin">
@@ -45,7 +50,7 @@
                         Đăng ký
                     </a>
                 </li>
-                @if (User.IsInRole("Admin"))
+                @if (isAdmin)
                 {
                     <li class="nav-item">
                         <a class="nav-link" href="/Admin/Categories">
@@ -84,7 +89,7 @@
                 <h1 class="h3 mb-0">@ViewData["Title"]</h1>
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0">
-                        <li class="breadcrumb-item"><a href="@(User.IsInRole("Admin") ? "/Admin" : "/Admin/Courses")">Admin</a></li>
+                        <li class="breadcrumb-item"><a href="@(isAdmin ? "/Admin" : "/Admin/Courses")">@panelLabel</a></li>
                         <li class="breadcrumb-item active">@ViewData["Title"]</li>
                     </ol>
                 </nav>
