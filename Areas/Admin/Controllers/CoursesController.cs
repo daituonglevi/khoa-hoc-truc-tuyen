@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using ELearningWebsite.Data;
 using ELearningWebsite.Models;
 using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -25,6 +26,18 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             ViewData["Title"] = "Quản lý Courses";
 
             var query = _context.Courses.Include(c => c.Category).AsQueryable();
+            var currentUserId = GetCurrentUserId();
+
+            // Instructor only sees courses they created.
+            if (!IsAdmin())
+            {
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                query = query.Where(c => c.CreateBy == currentUserId.Value);
+            }
 
             // Search filter
             if (!string.IsNullOrEmpty(search))
@@ -86,6 +99,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (course == null)
             {
                 return NotFound();
+            }
+
+            if (!await CanManageCourseAsync(id))
+            {
+                return Forbid();
             }
 
             // Get recent enrollments for this course (without CompletedDate)
@@ -155,6 +173,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!await CanManageCourseAsync(id))
+            {
+                return Forbid();
+            }
+
             ViewBag.Categories = await _context.Categories
                 .Where(c => c.Status == 1)
                 .ToListAsync();
@@ -174,6 +197,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(Title))
                 {
@@ -271,7 +300,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     command.Parameters.AddWithValue("@PreviewVideo", PreviewVideo.Trim());
                     command.Parameters.AddWithValue("@Status", "Draft");
                     command.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
-                    command.Parameters.AddWithValue("@CreateBy", 1);
+                    command.Parameters.AddWithValue("@CreateBy", currentUserId.Value);
 
                     var result = await command.ExecuteNonQueryAsync();
                     Console.WriteLine($"Database insert result: {result} rows affected");
@@ -304,6 +333,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (id != course.Id)
             {
                 return NotFound();
+            }
+
+            if (!await CanManageCourseAsync(id))
+            {
+                return Forbid();
             }
 
             try
@@ -388,6 +422,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                 }
 
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 // Sử dụng ADO.NET đ�f update
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
@@ -416,7 +456,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     command.Parameters.AddWithValue("@PreviewVideo", course.PreviewVideo.Trim());
                     command.Parameters.AddWithValue("@Status", course.Status);
                     command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
-                    command.Parameters.AddWithValue("@UpdateBy", 1);
+                    command.Parameters.AddWithValue("@UpdateBy", currentUserId.Value);
 
                     var result = await command.ExecuteNonQueryAsync();
                     Console.WriteLine($"Database update result: {result} rows affected");
@@ -448,6 +488,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageCourseAsync(courseId))
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền cập nhật khóa học này" });
+                }
+
                 Console.WriteLine($"=== UPDATE COURSE SIMPLE DEBUG START ===");
                 Console.WriteLine($"Course ID: {courseId}");
                 Console.WriteLine($"Title: {title}");
@@ -486,6 +531,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(Title))
                 {
@@ -518,7 +569,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     command.Parameters.AddWithValue("@PreviewVideo", "");
                     command.Parameters.AddWithValue("@Status", "Draft");
                     command.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
-                    command.Parameters.AddWithValue("@CreateBy", 1);
+                    command.Parameters.AddWithValue("@CreateBy", currentUserId.Value);
 
                     await command.ExecuteNonQueryAsync();
                 }
@@ -551,6 +602,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(Title))
                 {
@@ -579,7 +636,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     "",
                     "Draft",
                     DateTime.Now,
-                    1);
+                    currentUserId.Value);
 
                 TempData["SuccessMessage"] = "Thêm khóa học thành công!";
                 return RedirectToAction(nameof(Index));
@@ -613,6 +670,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            if (!await CanManageCourseAsync(id))
+            {
+                return Forbid();
+            }
+
             ViewBag.Categories = await _context.Categories
                 .Where(c => c.Status == 1)
                 .ToListAsync();
@@ -627,6 +689,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             if (id != course.Id)
             {
                 return NotFound();
+            }
+
+            if (!await CanManageCourseAsync(id))
+            {
+                return Forbid();
             }
 
             try
@@ -711,6 +778,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                 }
 
+                var currentUserId = GetCurrentUserId();
+                if (!currentUserId.HasValue)
+                {
+                    return Forbid();
+                }
+
                 // Sử dụng ADO.NET đ�f update
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
@@ -740,7 +813,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     command.Parameters.AddWithValue("@PreviewVideo", course.PreviewVideo.Trim());
                     command.Parameters.AddWithValue("@Status", course.Status);
                     command.Parameters.AddWithValue("@UpdatedAt", DateTime.Now);
-                    command.Parameters.AddWithValue("@UpdateBy", 1);
+                    command.Parameters.AddWithValue("@UpdateBy", currentUserId.Value);
                     command.Parameters.AddWithValue("@LimitDay", course.LimitDay.HasValue ? (object)course.LimitDay.Value : DBNull.Value);
 
                     var result = await command.ExecuteNonQueryAsync();
@@ -779,6 +852,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                if (!await CanManageCourseAsync(id))
+                {
+                    return Json(new { success = false, message = "Bạn không có quyền cập nhật trạng thái khóa học này" });
+                }
+
                 // Ki�fm tra course có tôn tại không
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
@@ -824,6 +902,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete([FromForm] int id)
         {
+            if (!await CanManageCourseAsync(id))
+            {
+                return Json(new { success = false, message = "Bạn không có quyền xóa khóa học này" });
+            }
+
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
             {
@@ -841,6 +924,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             await _context.SaveChangesAsync();
 
             return Json(new { success = true, message = "Đã xóa course thành công" });
+        }
+
+        private int? GetCurrentUserId()
+        {
+            var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            return int.TryParse(rawUserId, out var userId) ? userId : null;
+        }
+
+        private bool IsAdmin()
+        {
+            return User.IsInRole("Admin");
+        }
+
+        private async Task<bool> CanManageCourseAsync(int courseId)
+        {
+            if (IsAdmin())
+            {
+                return true;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return false;
+            }
+
+            return await _context.Courses
+                .AnyAsync(c => c.Id == courseId && c.CreateBy == currentUserId.Value);
         }
     }
 
