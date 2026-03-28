@@ -1,9 +1,15 @@
+@{
+    var isAdmin = User.IsInRole("Admin");
+    var isInstructor = User.IsInRole("Instructor");
+    var panelName = isAdmin ? "Admin" : (isInstructor ? "Instructure" : "Admin");
+}
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ELearning Admin</title>
+    <title>@ViewData["Title"] - LMS VJU @panelName</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
 
     <!-- Admin-specific CSS -->
@@ -198,25 +204,28 @@
             <div class="admin-brand">
                 <h3>
                     <i class="fas fa-graduation-cap"></i>
-                    LMS VJU Admin
+                    LMS VJU @panelName
                 </h3>
                 <small class="text-muted">Management System</small>
             </div>
 
             <nav class="admin-nav">
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link active" asp-area="Admin" asp-controller="Home" asp-action="Index">
-                        <i class="fas fa-tachometer-alt"></i>
-                        Dashboard
-                    </a>
-                </div>
+                @if (isAdmin)
+                {
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link active" asp-area="Admin" asp-controller="Home" asp-action="Index">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </div>
 
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index">
-                        <i class="fas fa-users"></i>
-                        Quản lý Users
-                    </a>
-                </div>
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Users" asp-action="Index">
+                            <i class="fas fa-users"></i>
+                            Quản lý Users
+                        </a>
+                    </div>
+                }
 
                 <div class="admin-nav-item">
                     <a class="admin-nav-link" asp-area="Admin" asp-controller="Courses" asp-action="Index">
@@ -247,30 +256,9 @@
                 </div>
 
                 <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Categories" asp-action="Index">
-                        <i class="fas fa-tags"></i>
-                        Categories
-                    </a>
-                </div>
-
-                <div class="admin-nav-item">
                     <a class="admin-nav-link" asp-area="Admin" asp-controller="Enrollments" asp-action="Index">
                         <i class="fas fa-user-graduate"></i>
                         Enrollments
-                    </a>
-                </div>
-
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Finances" asp-action="Index">
-                        <i class="fas fa-chart-line"></i>
-                        Finances
-                    </a>
-                </div>
-
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Promotions" asp-action="Index">
-                        <i class="fas fa-tags"></i>
-                        Khuyến mãi
                     </a>
                 </div>
 
@@ -281,26 +269,43 @@
                     </a>
                 </div>
 
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Certificates" asp-action="Index">
-                        <i class="fas fa-certificate"></i>
-                        Chứng chệ
-                    </a>
-                </div>
+                @if (isAdmin)
+                {
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Categories" asp-action="Index">
+                            <i class="fas fa-tags"></i>
+                            Categories
+                        </a>
+                    </div>
 
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Reports" asp-action="Index">
-                        <i class="fas fa-chart-bar"></i>
-                        Reports
-                    </a>
-                </div>
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Finances" asp-action="Index">
+                            <i class="fas fa-chart-line"></i>
+                            Finances
+                        </a>
+                    </div>
 
-                <div class="admin-nav-item">
-                    <a class="admin-nav-link" asp-area="Admin" asp-controller="Settings" asp-action="Index">
-                        <i class="fas fa-cogs"></i>
-                        Settings
-                    </a>
-                </div>
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Promotions" asp-action="Index">
+                            <i class="fas fa-tags"></i>
+                            Khuyến mãi
+                        </a>
+                    </div>
+
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Certificates" asp-action="Index">
+                            <i class="fas fa-certificate"></i>
+                            Chứng chệ
+                        </a>
+                    </div>
+
+                    <div class="admin-nav-item">
+                        <a class="admin-nav-link" asp-area="Admin" asp-controller="Reports" asp-action="Index">
+                            <i class="fas fa-chart-bar"></i>
+                            Reports
+                        </a>
+                    </div>
+                }
 
                 <hr style="border-color: rgba(255,255,255,0.1); margin: 20px 15px;">
 
@@ -332,8 +337,8 @@
                         <nav class="admin-breadcrumb">
                             <ol class="breadcrumb">
                                 <li class="breadcrumb-item">
-                                    <a asp-area="Admin" asp-controller="Home" asp-action="Index">
-                                        <i class="fas fa-home"></i> Admin
+                                    <a asp-area="Admin" asp-controller="@(isAdmin ? "Home" : "Courses")" asp-action="Index">
+                                        <i class="fas fa-home"></i> @panelName
                                     </a>
                                 </li>
                                 <li class="breadcrumb-item active">@ViewData["Title"]</li>
