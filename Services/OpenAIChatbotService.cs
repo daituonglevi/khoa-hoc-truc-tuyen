@@ -147,6 +147,27 @@ namespace ELearningWebsite.Services
             };
             httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _settings.ApiKey);
 
+            // OpenRouter recommends sending site metadata for routing and policy checks.
+            var siteUrl = _settings.SiteUrl;
+            if (string.IsNullOrWhiteSpace(siteUrl))
+            {
+                var hostName = Environment.GetEnvironmentVariable("WEBSITE_HOSTNAME");
+                if (!string.IsNullOrWhiteSpace(hostName))
+                {
+                    siteUrl = $"https://{hostName}";
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(siteUrl))
+            {
+                httpRequest.Headers.TryAddWithoutValidation("HTTP-Referer", siteUrl);
+            }
+
+            if (!string.IsNullOrWhiteSpace(_settings.SiteName))
+            {
+                httpRequest.Headers.TryAddWithoutValidation("X-Title", _settings.SiteName);
+            }
+
             using var response = await _httpClient.SendAsync(httpRequest, cancellationToken);
             var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

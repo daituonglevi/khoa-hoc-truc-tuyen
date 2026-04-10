@@ -1,0 +1,393 @@
+@model ELearningWebsite.Areas.Admin.ViewModels.MediaLibraryIndexViewModel
+@using System
+@{
+    ViewData["Title"] = "Media Library";
+    var blobConfigured = (bool?)ViewData["BlobConfigured"] == true;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Media Library (Drive Mode)</h2>
+        <span class="badge bg-primary">@Model.Files.Count file(s)</span>
+    </div>
+
+    <div class="mb-3">
+        @for (var i = 0; i < Model.Breadcrumbs.Count; i++)
+        {
+            var crumb = Model.Breadcrumbs[i];
+            if (i > 0)
+            {
+                <span class="mx-2 text-muted">/</span>
+            }
+
+            if (crumb.Id.HasValue)
+            {
+                <a asp-action="Index" asp-route-folderId="@crumb.Id" asp-route-courseId="@Model.SelectedCourseId" asp-route-search="@Model.Search">@crumb.Name</a>
+            }
+            else
+            {
+                <a asp-action="Index" asp-route-courseId="@Model.SelectedCourseId" asp-route-search="@Model.Search">@crumb.Name</a>
+            }
+        }
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    @if (!blobConfigured)
+    {
+        <div class="alert alert-warning">
+            Blob chưa được cấu hình nên chưa thể upload. Hãy cấu hình BlobStorage:ConnectionString trong user secrets hoặc biến môi trường.
+        </div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <strong>Thư mục hiện tại:</strong> @Model.CurrentFolderName
+                </div>
+                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                    <i class="fas fa-folder-plus me-1"></i>Tạo thư mục
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="createFolderModal" tabindex="-1" aria-labelledby="createFolderModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form asp-action="CreateFolder" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="parentFolderId" value="@Model.SelectedFolderId" />
+                    <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+                    <div class="modal-header border-0 pb-0">
+                        <h4 class="modal-title" id="createFolderModalLabel">Thư mục mới</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body pt-2">
+                        <label class="form-label">Tên thư mục</label>
+                        <input type="text" id="folderNameInput" name="folderName" class="form-control form-control-lg" required maxlength="120" />
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary">Tạo</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.SelectedFolderId.HasValue)
+    {
+        var hasItemsInFolder = Model.Folders.Any() || Model.Files.Any();
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" id="dropUploadForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="folderId" value="@Model.SelectedFolderId" />
+            <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+            <input type="file" name="file" id="dropFileInput" class="d-none" accept="video/*" required />
+        </form>
+
+        <div class="mb-3 d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Loại</button>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Người</button>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Lần sửa đổi gần đây nhất</button>
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Nguồn</button>
+        </div>
+
+        @if (!hasItemsInFolder)
+        {
+            <div id="videoDropZone" class="rounded-4 d-flex flex-column justify-content-center align-items-center text-center" style="min-height:420px; background:#f6f7f9; cursor:pointer; border:2px dashed #d6dbe1;">
+                <i class="fas fa-images" style="font-size:84px; color:#6c757d;"></i>
+                <h3 class="mt-4 mb-2">Hãy thả tệp ở đây</h3>
+                <div class="text-muted">hoặc sử dụng nút "Mới".</div>
+                <div class="mt-3 text-primary small" id="selectedVideoName">Chưa chọn file video</div>
+                <button type="button" class="btn btn-primary mt-3" id="btnUploadVideo" @(blobConfigured ? "disabled" : "disabled title=\"Thiếu cấu hình BlobStorage:ConnectionString\"")>Upload video</button>
+            </div>
+        }
+        else
+        {
+            var hasContent = Model.Folders.Any() || Model.Files.Any();
+
+            @if (hasContent)
+            {
+                <div class="mb-3">
+                    @if (Model.Folders.Any())
+                    {
+                        <div class="row g-2 mb-3">
+                            @foreach (var folder in Model.Folders)
+                            {
+                                <div class="col-md-4 col-lg-3">
+                                    <a class="text-decoration-none" asp-action="Index" asp-route-folderId="@folder.Id" asp-route-courseId="@Model.SelectedCourseId">
+                                        <div class="border rounded p-3 h-100 bg-light" style="cursor: pointer; transition: all 0.2s;">
+                                            <div class="fw-semibold text-dark">
+                                                <i class="fas fa-folder text-warning me-2"></i>@folder.Name
+                                            </div>
+                                            <small class="text-muted">@folder.FileCount file(s)</small>
+                                        </div>
+                                    </a>
+                                </div>
+                            }
+                        </div>
+
+                        @if (Model.Files.Any())
+                        {
+                            <hr />
+                        }
+                    }
+
+                    @if (Model.Files.Any())
+                    {
+                        <div class="row g-3">
+                            @foreach (var item in Model.Files)
+                            {
+                                <div class="col-md-4 col-lg-3">
+                                    <div class="card h-100 media-file-card" style="cursor: pointer; transition: all 0.2s; position: relative;">
+                                        <a asp-action="Open" asp-route-id="@item.Id" class="text-decoration-none text-dark" target="_blank">
+                                            <div class="position-relative overflow-hidden" style="height: 200px; background: #f0f0f0; border-bottom: 1px solid #e0e0e0;">
+                                                @if (item.ContentType?.StartsWith("video/") == true)
+                                                {
+                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-film" style="font-size: 64px; color: #6c757d;"></i>
+                                                            <div class="text-muted small mt-2">Video file</div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                else if (item.ContentType?.StartsWith("image/") == true)
+                                                {
+                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center" style="background-image: url('@Url.Action("Open", new { id = item.Id })'); background-size: cover; background-position: center;">
+                                                        <div style="width: 100%; height: 100%;"></div>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-file" style="font-size: 64px; color: #6c757d;"></i>
+                                                            <div class="text-muted small mt-2">File</div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <div class="fw-semibold text-truncate" title="@item.OriginalFileName" style="font-size: 14px;">
+                                                    @item.OriginalFileName
+                                                </div>
+                                                <small class="text-muted d-block">
+                                                    @(Math.Round(item.SizeBytes / 1024.0 / 1024.0, 2)) MB
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    @item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")
+                                                </small>
+                                            </div>
+                                        </a>
+                                        <div class="position-absolute top-0 end-0 m-2" style="display: none;" class="media-actions">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Xóa file này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@item.Id" />
+                                                    <button type="submit" class="btn btn-sm btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!Model.Folders.Any())
+                        {
+                            <div class="text-center py-5 text-muted">
+                                <i class="fas fa-inbox" style="font-size: 48px; opacity: 0.5;"></i>
+                                <p class="mt-3">Thư mục này trống</p>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <div class="card mb-3">
+            <div class="card-body">
+                <form asp-action="Index" method="get" class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label">Tìm theo tên file</label>
+                        <input type="text" name="search" value="@Model.Search" class="form-control" placeholder="vd: bai-giang-01.mp4" />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Lọc theo khóa học</label>
+                        <select name="courseId" class="form-select">
+                            <option value="">-- Tất cả --</option>
+                            @foreach (var course in Model.AvailableCourses)
+                            {
+                                if (Model.SelectedCourseId == course.Id)
+                                {
+                                    <option selected value="@course.Id">@course.Title</option>
+                                }
+                                else
+                                {
+                                    <option value="@course.Id">@course.Title</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-grid">
+                        <button type="submit" class="btn btn-outline-secondary">Lọc dữ liệu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Thư mục con trong @Model.CurrentFolderName</strong>
+            </div>
+            <div class="card-body">
+                @if (Model.Folders.Any())
+                {
+                    <div class="row g-2">
+                        @foreach (var folder in Model.Folders)
+                        {
+                            <div class="col-md-4 col-lg-3">
+                                <a class="text-decoration-none" asp-action="Index" asp-route-folderId="@folder.Id" asp-route-courseId="@Model.SelectedCourseId">
+                                    <div class="border rounded p-3 h-100">
+                                        <div class="fw-semibold text-dark">
+                                            <i class="fas fa-folder text-warning me-2"></i>@folder.Name
+                                        </div>
+                                        <small class="text-muted">@folder.FileCount file(s)</small>
+                                    </div>
+                                </a>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">Chưa có thư mục con.</div>
+                }
+            </div>
+        </div>
+    }
+
+    <style>
+        .media-file-card {
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e8e8e8;
+        }
+
+        .media-file-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .media-file-card:hover .media-actions {
+            display: block !important;
+        }
+
+        .media-file-card a {
+            text-decoration: none;
+        }
+
+        .object-fit-cover {
+            object-fit: cover;
+        }
+    </style>
+
+    <script>
+        (function () {
+            const createFolderModal = document.getElementById('createFolderModal');
+            if (createFolderModal) {
+                createFolderModal.addEventListener('shown.bs.modal', function () {
+                    const input = document.getElementById('folderNameInput');
+                    if (input) {
+                        input.focus();
+                        input.select();
+                    }
+                });
+            }
+
+            const dropZone = document.getElementById('videoDropZone');
+            const fileInput = document.getElementById('dropFileInput');
+            const selectedVideoName = document.getElementById('selectedVideoName');
+            const uploadButton = document.getElementById('btnUploadVideo');
+
+            if (!dropZone || !fileInput || !selectedVideoName || !uploadButton) {
+                return;
+            }
+
+            const blobConfigured = @(blobConfigured ? "true" : "false");
+
+            const setSelectedFile = function (file) {
+                if (!file) {
+                    selectedVideoName.textContent = 'Chưa chọn file video';
+                    uploadButton.disabled = true;
+                    return;
+                }
+
+                if (!blobConfigured) {
+                    selectedVideoName.textContent = 'Thiếu cấu hình BlobStorage:ConnectionString';
+                    uploadButton.disabled = true;
+                    return;
+                }
+
+                const transfer = new DataTransfer();
+                transfer.items.add(file);
+                fileInput.files = transfer.files;
+                selectedVideoName.textContent = 'Đã chọn: ' + file.name;
+                uploadButton.disabled = false;
+            };
+
+            uploadButton.addEventListener('click', function () {
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    return;
+                }
+                document.getElementById('dropUploadForm').submit();
+            });
+
+            dropZone.addEventListener('click', function () {
+                if (!blobConfigured) {
+                    return;
+                }
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', function () {
+                setSelectedFile(fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null);
+            });
+
+            dropZone.addEventListener('dragover', function (e) {
+                e.preventDefault();
+                dropZone.classList.add('border-primary');
+            });
+
+            dropZone.addEventListener('dragleave', function () {
+                dropZone.classList.remove('border-primary');
+            });
+
+            dropZone.addEventListener('drop', function (e) {
+                e.preventDefault();
+                dropZone.classList.remove('border-primary');
+
+                const files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : null;
+                if (!files || files.length === 0) {
+                    return;
+                }
+
+                setSelectedFile(files[0]);
+            });
+        })();
+    </script>
+</div>

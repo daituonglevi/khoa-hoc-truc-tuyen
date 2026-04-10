@@ -6,6 +6,8 @@ namespace ELearningWebsite.Models
         public string BaseUrl { get; set; } = "https://api.openai.com/v1";
         public string ApiKey { get; set; } = string.Empty;
         public string Model { get; set; } = "gpt-4o-mini";
+        public string? SiteUrl { get; set; }
+        public string SiteName { get; set; } = "LMS VJU";
         public double Temperature { get; set; } = 0.3;
         public int MaxTokens { get; set; } = 700;
         public string SystemPrompt { get; set; } =

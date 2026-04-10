@@ -28,6 +28,8 @@ namespace ELearningWebsite.Data
         public DbSet<QuizAnswer> QuizAnswers { get; set; }
         public DbSet<QuizAttempt> QuizAttempts { get; set; }
         public DbSet<QuizAttemptAnswer> QuizAttemptAnswers { get; set; }
+        public DbSet<MediaFile> MediaFiles { get; set; }
+        public DbSet<MediaFolder> MediaFolders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -156,6 +158,58 @@ namespace ELearningWebsite.Data
             builder.Entity<Discount>()
                 .HasIndex(d => d.Code)
                 .IsUnique();
+
+            builder.Entity<MediaFile>()
+                .HasOne(m => m.OwnerUser)
+                .WithMany()
+                .HasForeignKey(m => m.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<MediaFile>()
+                .HasOne(m => m.Course)
+                .WithMany()
+                .HasForeignKey(m => m.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<MediaFile>()
+                .HasOne(m => m.Folder)
+                .WithMany(f => f.Files)
+                .HasForeignKey(m => m.FolderId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<MediaFile>()
+                .HasIndex(m => m.BlobName)
+                .IsUnique();
+
+            builder.Entity<MediaFile>()
+                .HasIndex(m => new { m.OwnerUserId, m.CreatedAt });
+
+            builder.Entity<MediaFile>()
+                .HasIndex(m => m.CourseId);
+
+            builder.Entity<MediaFile>()
+                .HasIndex(m => m.FolderId);
+
+            builder.Entity<MediaFolder>()
+                .HasOne(f => f.ParentFolder)
+                .WithMany(f => f.Children)
+                .HasForeignKey(f => f.ParentFolderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<MediaFolder>()
+                .HasOne(f => f.OwnerUser)
+                .WithMany()
+                .HasForeignKey(f => f.OwnerUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<MediaFolder>()
+                .HasOne(f => f.Course)
+                .WithMany()
+                .HasForeignKey(f => f.CourseId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<MediaFolder>()
+                .HasIndex(f => new { f.OwnerUserId, f.ParentFolderId, f.Name });
 
         }
 

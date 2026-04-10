@@ -61,6 +61,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddScoped<IReportExportService, ReportExportService>();
 builder.Services.Configure<ChatbotSettings>(builder.Configuration.GetSection("Chatbot"));
 builder.Services.AddHttpClient<IChatbotService, OpenAIChatbotService>();
+builder.Services.Configure<BlobStorageSettings>(builder.Configuration.GetSection("BlobStorage"));
+builder.Services.AddScoped<IPrivateBlobStorageService, AzureBlobPrivateStorageService>();
 
 // Configure Email Settings
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
@@ -105,6 +107,7 @@ using (var scope = app.Services.CreateScope())
     {
         var dbContext = services.GetRequiredService<ApplicationDbContext>();
         await dbContext.Database.EnsureCreatedAsync();
+        await SchemaInitializer.EnsureMediaFilesTableAsync(dbContext);
         await SeedData.Initialize(services);
     }
     catch (Exception ex)

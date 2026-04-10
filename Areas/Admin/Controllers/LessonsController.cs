@@ -255,7 +255,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             return View(lesson);
         }
 
-        private static string? NormalizeVideoUrlForStorage(string? videoUrl)
+        private string? NormalizeVideoUrlForStorage(string? videoUrl)
         {
             if (string.IsNullOrWhiteSpace(videoUrl))
             {
@@ -275,6 +275,31 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 ? iframeSrcMatch.Groups["src"].Value.Trim()
                 : decodedValue;
 
+            var mediaOpenMatch = System.Text.RegularExpressions.Regex.Match(
+                sourceUrl,
+                @"(?:/Admin/MediaLibrary/Open\?id=|/Media/Open\?id=)(\d+)",
+                System.Text.RegularExpressions.RegexOptions.IgnoreCase
+            );
+
+            if (mediaOpenMatch.Success && int.TryParse(mediaOpenMatch.Groups[1].Value, out var mediaIdFromUrl))
+            {
+                return Url.Action("Open", "Media", new { area = "", id = mediaIdFromUrl }) ?? sourceUrl;
+            }
+
+            if (sourceUrl.Contains(".blob.core.windows.net", StringComparison.OrdinalIgnoreCase)
+                && sourceUrl.Contains("/private-media/", StringComparison.OrdinalIgnoreCase))
+            {
+                var blobName = ExtractBlobNameFromUrl(sourceUrl);
+                if (!string.IsNullOrWhiteSpace(blobName))
+                {
+                    var media = _context.MediaFiles.FirstOrDefault(m => m.Status == "Active" && m.BlobName == blobName);
+                    if (media != null)
+                    {
+                        return Url.Action("Open", "Media", new { area = "", id = media.Id }) ?? sourceUrl;
+                    }
+                }
+            }
+
             if (!sourceUrl.Contains("drive.google.com", StringComparison.OrdinalIgnoreCase))
             {
                 return sourceUrl;
@@ -289,6 +314,26 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var driveFileId = driveRegex.Groups[1].Value;
             var driveEmbedUrl = $"https://drive.google.com/file/d/{driveFileId}/preview";
             return $"<iframe src=\"{driveEmbedUrl}\" width=\"640\" height=\"480\"></iframe>";
+        }
+
+        private static string? ExtractBlobNameFromUrl(string url)
+        {
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                return null;
+            }
+
+            if (Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
+            {
+                var path = uri.AbsolutePath.Trim('/');
+                const string prefix = "private-media/";
+                if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return path.Substring(prefix.Length);
+                }
+            }
+
+            return null;
         }
 
         // GET: Admin/Lessons/Quiz?lessonId=1
