@@ -53,9 +53,17 @@
                 <div>
                     <strong>Thư mục hiện tại:</strong> @Model.CurrentFolderName
                 </div>
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
-                    <i class="fas fa-folder-plus me-1"></i>Tạo thư mục
-                </button>
+                <div class="d-flex gap-2 flex-wrap">
+                    @if (Model.SelectedFolderId.HasValue)
+                    {
+                        <button type="button" class="btn btn-primary" id="btnPickVideoFile" @(blobConfigured ? "" : "disabled title=\"Thiếu cấu hình BlobStorage:ConnectionString\"")>
+                            <i class="fas fa-upload me-1"></i>Upload video
+                        </button>
+                    }
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#createFolderModal">
+                        <i class="fas fa-folder-plus me-1"></i>Tạo thư mục
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -94,11 +102,12 @@
             <input type="file" name="file" id="dropFileInput" class="d-none" accept="video/*" required />
         </form>
 
-        <div class="mb-3 d-flex gap-2 flex-wrap">
+        <div class="mb-3 d-flex gap-2 flex-wrap align-items-center">
             <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Loại</button>
             <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Người</button>
             <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Lần sửa đổi gần đây nhất</button>
             <button type="button" class="btn btn-outline-secondary rounded-pill px-3">Nguồn</button>
+            <span id="selectedVideoName" class="text-primary small ms-2">Chưa chọn file video</span>
         </div>
 
         @if (!hasItemsInFolder)
@@ -107,8 +116,7 @@
                 <i class="fas fa-images" style="font-size:84px; color:#6c757d;"></i>
                 <h3 class="mt-4 mb-2">Hãy thả tệp ở đây</h3>
                 <div class="text-muted">hoặc sử dụng nút "Mới".</div>
-                <div class="mt-3 text-primary small" id="selectedVideoName">Chưa chọn file video</div>
-                <button type="button" class="btn btn-primary mt-3" id="btnUploadVideo" @(blobConfigured ? "disabled" : "disabled title=\"Thiếu cấu hình BlobStorage:ConnectionString\"")>Upload video</button>
+                <button type="button" class="btn btn-primary mt-3" id="btnUploadVideoFromDropZone" @(blobConfigured ? "disabled" : "disabled title=\"Thiếu cấu hình BlobStorage:ConnectionString\"")>Upload video</button>
             </div>
         }
         else
@@ -153,12 +161,9 @@
                                             <div class="position-relative overflow-hidden" style="height: 200px; background: #f0f0f0; border-bottom: 1px solid #e0e0e0;">
                                                 @if (item.ContentType?.StartsWith("video/") == true)
                                                 {
-                                                    <div class="w-100 h-100 d-flex align-items-center justify-content-center">
-                                                        <div class="text-center">
-                                                            <i class="fas fa-film" style="font-size: 64px; color: #6c757d;"></i>
-                                                            <div class="text-muted small mt-2">Video file</div>
-                                                        </div>
-                                                    </div>
+                                                    <video class="w-100 h-100 object-fit-cover" preload="metadata" muted playsinline>
+                                                        <source src="@Url.Action("Open", new { id = item.Id })" type="@item.ContentType" />
+                                                    </video>
                                                 }
                                                 else if (item.ContentType?.StartsWith("image/") == true)
                                                 {
@@ -322,24 +327,33 @@
             const dropZone = document.getElementById('videoDropZone');
             const fileInput = document.getElementById('dropFileInput');
             const selectedVideoName = document.getElementById('selectedVideoName');
-            const uploadButton = document.getElementById('btnUploadVideo');
+            const uploadFromDropZoneButton = document.getElementById('btnUploadVideoFromDropZone');
+            const pickVideoFileButton = document.getElementById('btnPickVideoFile');
 
-            if (!dropZone || !fileInput || !selectedVideoName || !uploadButton) {
+            if (!fileInput) {
                 return;
             }
 
             const blobConfigured = @(blobConfigured ? "true" : "false");
 
             const setSelectedFile = function (file) {
+                if (!selectedVideoName) {
+                    return;
+                }
+
                 if (!file) {
                     selectedVideoName.textContent = 'Chưa chọn file video';
-                    uploadButton.disabled = true;
+                    if (uploadFromDropZoneButton) {
+                        uploadFromDropZoneButton.disabled = true;
+                    }
                     return;
                 }
 
                 if (!blobConfigured) {
                     selectedVideoName.textContent = 'Thiếu cấu hình BlobStorage:ConnectionString';
-                    uploadButton.disabled = true;
+                    if (uploadFromDropZoneButton) {
+                        uploadFromDropZoneButton.disabled = true;
+                    }
                     return;
                 }
 
@@ -347,25 +361,47 @@
                 transfer.items.add(file);
                 fileInput.files = transfer.files;
                 selectedVideoName.textContent = 'Đã chọn: ' + file.name;
-                uploadButton.disabled = false;
+                if (uploadFromDropZoneButton) {
+                    uploadFromDropZoneButton.disabled = false;
+                }
             };
 
-            uploadButton.addEventListener('click', function () {
-                if (!fileInput.files || fileInput.files.length === 0) {
-                    return;
+            if (uploadFromDropZoneButton) {
+                uploadFromDropZoneButton.addEventListener('click', function () {
+                    if (!fileInput.files || fileInput.files.length === 0) {
+                        return;
+                    }
+                    document.getElementById('dropUploadForm').submit();
+                });
+            }
+
+            if (pickVideoFileButton) {
+                pickVideoFileButton.addEventListener('click', function () {
+                    if (!blobConfigured) {
+                        return;
+                    }
+                    fileInput.click();
+                });
+            }
+
+            fileInput.addEventListener('change', function () {
+                const selectedFile = fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null;
+                setSelectedFile(selectedFile);
+
+                if (selectedFile) {
+                    document.getElementById('dropUploadForm').submit();
                 }
-                document.getElementById('dropUploadForm').submit();
             });
+
+            if (!dropZone) {
+                return;
+            }
 
             dropZone.addEventListener('click', function () {
                 if (!blobConfigured) {
                     return;
                 }
                 fileInput.click();
-            });
-
-            fileInput.addEventListener('change', function () {
-                setSelectedFile(fileInput.files && fileInput.files.length > 0 ? fileInput.files[0] : null);
             });
 
             dropZone.addEventListener('dragover', function (e) {
@@ -387,6 +423,10 @@
                 }
 
                 setSelectedFile(files[0]);
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    return;
+                }
+                document.getElementById('dropUploadForm').submit();
             });
         })();
     </script>
