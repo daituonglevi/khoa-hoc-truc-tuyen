@@ -47,6 +47,80 @@
         </div>
     }
 
+    @if (Model.SelectedCourseId.HasValue)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Phân quyền cộng tác khóa học</strong>
+                <span class="badge bg-secondary">@Model.Collaborators.Count cộng tác viên</span>
+            </div>
+            <div class="card-body">
+                @if (Model.CanManageCollaborators)
+                {
+                    <form asp-action="GrantCourseAccess" method="post" class="row g-2 mb-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+                        <input type="hidden" name="folderId" value="@Model.SelectedFolderId" />
+                        <div class="col-md-8">
+                            <input type="text" name="collaboratorLookup" class="form-control" placeholder="Nhập email hoặc username để cấp quyền" required />
+                        </div>
+                        <div class="col-md-4 d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-1"></i>Cấp quyền
+                            </button>
+                        </div>
+                    </form>
+                }
+
+                @if (Model.Collaborators.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Họ tên</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Ngày cấp</th>
+                                    <th class="text-end">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var collaborator in Model.Collaborators)
+                                {
+                                    <tr>
+                                        <td>@collaborator.FullName</td>
+                                        <td>@collaborator.UserName</td>
+                                        <td>@collaborator.Email</td>
+                                        <td>@collaborator.GrantedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td class="text-end">
+                                            @if (Model.CanManageCollaborators)
+                                            {
+                                                <form asp-action="RevokeCourseAccess" method="post" class="d-inline" onsubmit="return confirm('Thu hồi quyền của tài khoản này?');">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="courseId" value="@Model.SelectedCourseId" />
+                                                    <input type="hidden" name="collaboratorUserId" value="@collaborator.UserId" />
+                                                    <input type="hidden" name="folderId" value="@Model.SelectedFolderId" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-user-minus"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-muted">Chưa có cộng tác viên cho khóa học này.</div>
+                }
+            </div>
+        </div>
+    }
+
     <div class="card mb-3">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">

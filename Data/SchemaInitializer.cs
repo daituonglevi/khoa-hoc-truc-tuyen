@@ -39,6 +39,20 @@ BEGIN
         [UpdatedAt] DATETIME2 NULL,
         CONSTRAINT [PK_MediaFiles] PRIMARY KEY CLUSTERED ([Id] ASC)
     );
+END
+
+IF OBJECT_ID(N'dbo.CourseCollaborators', N'U') IS NULL
+BEGIN
+    CREATE TABLE [dbo].[CourseCollaborators](
+        [Id] INT IDENTITY(1,1) NOT NULL,
+        [CourseId] INT NOT NULL,
+        [UserId] INT NOT NULL,
+        [GrantedByUserId] INT NOT NULL,
+        [Status] NVARCHAR(30) NOT NULL DEFAULT(N'Active'),
+        [CreatedAt] DATETIME2 NOT NULL,
+        [UpdatedAt] DATETIME2 NULL,
+        CONSTRAINT [PK_CourseCollaborators] PRIMARY KEY CLUSTERED ([Id] ASC)
+    );
 END";
 
             await dbContext.Database.ExecuteSqlRawAsync(sql);
@@ -63,7 +77,13 @@ IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_MediaFolders_OwnerUse
     CREATE INDEX [IX_MediaFolders_OwnerUserId_ParentFolderId_Name] ON [dbo].[MediaFolders]([OwnerUserId], [ParentFolderId], [Name]);
 
 IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_MediaFolders_ParentFolderId' AND object_id = OBJECT_ID(N'dbo.MediaFolders'))
-    CREATE INDEX [IX_MediaFolders_ParentFolderId] ON [dbo].[MediaFolders]([ParentFolderId]);";
+    CREATE INDEX [IX_MediaFolders_ParentFolderId] ON [dbo].[MediaFolders]([ParentFolderId]);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CourseCollaborators_CourseId_UserId' AND object_id = OBJECT_ID(N'dbo.CourseCollaborators'))
+    CREATE UNIQUE INDEX [IX_CourseCollaborators_CourseId_UserId] ON [dbo].[CourseCollaborators]([CourseId], [UserId]);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = N'IX_CourseCollaborators_UserId_Status' AND object_id = OBJECT_ID(N'dbo.CourseCollaborators'))
+    CREATE INDEX [IX_CourseCollaborators_UserId_Status] ON [dbo].[CourseCollaborators]([UserId], [Status]);";
 
             await dbContext.Database.ExecuteSqlRawAsync(indexSql);
         }

@@ -8,10 +8,13 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         public List<MediaFolderItem> Folders { get; set; } = new();
         public List<MediaFolderBreadcrumbItem> Breadcrumbs { get; set; } = new();
         public List<Course> AvailableCourses { get; set; } = new();
+        public List<CourseCollaboratorItem> Collaborators { get; set; } = new();
         public int? SelectedCourseId { get; set; }
         public int? SelectedFolderId { get; set; }
         public string CurrentFolderName { get; set; } = "Root";
         public string Search { get; set; } = string.Empty;
+        public string CollaboratorLookup { get; set; } = string.Empty;
+        public bool CanManageCollaborators { get; set; }
         public long TotalBytes { get; set; }
     }
 
@@ -42,5 +45,14 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
     {
         public int? Id { get; set; }
         public string Name { get; set; } = string.Empty;
+    }
+
+    public class CourseCollaboratorItem
+    {
+        public int UserId { get; set; }
+        public string FullName { get; set; } = string.Empty;
+        public string UserName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime GrantedAt { get; set; }
     }
 }

@@ -36,6 +36,11 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return Forbid();
             }
 
+            if (courseId.HasValue && !await CanManageCourseAsync(courseId.Value, currentUserId.Value))
+            {
+                return Forbid();
+            }
+
             if (folderId.HasValue && !await CanAccessFolderAsync(folderId.Value, currentUserId.Value))
             {
                 return Forbid();
@@ -49,7 +54,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (!IsAdmin())
             {
-                query = query.Where(x => x.OwnerUserId == currentUserId.Value);
+                if (courseId.HasValue)
+                {
+                    query = query.Where(x => x.CourseId == courseId.Value);
+                }
+                else
+                {
+                    query = query.Where(x => x.OwnerUserId == currentUserId.Value);
+                }
             }
 
             if (courseId.HasValue)
@@ -94,7 +106,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (!IsAdmin())
             {
-                foldersQuery = foldersQuery.Where(f => f.OwnerUserId == currentUserId.Value);
+                if (courseId.HasValue)
+                {
+                    foldersQuery = foldersQuery.Where(f => f.CourseId == courseId.Value);
+                }
+                else
+                {
+                    foldersQuery = foldersQuery.Where(f => f.OwnerUserId == currentUserId.Value);
+                }
             }
 
             if (courseId.HasValue)
@@ -119,7 +138,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var coursesQuery = _context.Courses.AsQueryable();
             if (!IsAdmin())
             {
-                coursesQuery = coursesQuery.Where(c => c.CreateBy == currentUserId.Value);
+                coursesQuery = coursesQuery.Where(c =>
+                    c.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == c.Id
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active"));
             }
 
             var vm = new MediaLibraryIndexViewModel
@@ -135,11 +159,140 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     .ToListAsync()
             };
 
+            if (courseId.HasValue)
+            {
+                vm.CanManageCollaborators = await CanManageCollaboratorsAsync(courseId.Value, currentUserId.Value);
+                vm.Collaborators = await _context.CourseCollaborators
+                    .Where(cc => cc.CourseId == courseId.Value && cc.Status == "Active")
+                    .Include(cc => cc.User)
+                    .OrderBy(cc => cc.User.FullName)
+                    .Select(cc => new CourseCollaboratorItem
+                    {
+                        UserId = cc.UserId,
+                        FullName = cc.User.FullName,
+                        UserName = cc.User.UserName ?? string.Empty,
+                        Email = cc.User.Email ?? string.Empty,
+                        GrantedAt = cc.CreatedAt
+                    })
+                    .ToListAsync();
+            }
+
             vm.Breadcrumbs = await BuildBreadcrumbsAsync(folderId, currentUserId.Value);
             vm.CurrentFolderName = vm.Breadcrumbs.LastOrDefault()?.Name ?? "Root";
             ViewData["BlobConfigured"] = IsBlobConfigured();
 
             return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GrantCourseAccess(int courseId, string collaboratorLookup, int? folderId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return Forbid();
+            }
+
+            if (!await CanManageCollaboratorsAsync(courseId, currentUserId.Value))
+            {
+                return Forbid();
+            }
+
+            if (string.IsNullOrWhiteSpace(collaboratorLookup))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập email hoặc username tài khoản cần cấp quyền.";
+                return RedirectToAction(nameof(Index), new { courseId, folderId });
+            }
+
+            var lookup = collaboratorLookup.Trim();
+            var normalizedLookup = lookup.ToUpperInvariant();
+
+            var targetUser = await _context.Users.FirstOrDefaultAsync(u =>
+                u.NormalizedUserName == normalizedLookup
+                || u.NormalizedEmail == normalizedLookup
+                || u.UserName == lookup
+                || u.Email == lookup);
+
+            if (targetUser == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần cấp quyền.";
+                return RedirectToAction(nameof(Index), new { courseId, folderId });
+            }
+
+            var courseOwnerId = await _context.Courses
+                .Where(c => c.Id == courseId)
+                .Select(c => c.CreateBy)
+                .FirstOrDefaultAsync();
+
+            if (courseOwnerId == 0)
+            {
+                TempData["ErrorMessage"] = "Khóa học không tồn tại.";
+                return RedirectToAction(nameof(Index), new { courseId, folderId });
+            }
+
+            if (targetUser.Id == courseOwnerId)
+            {
+                TempData["ErrorMessage"] = "Chủ sở hữu khóa học đã có toàn quyền, không cần cấp thêm.";
+                return RedirectToAction(nameof(Index), new { courseId, folderId });
+            }
+
+            var existing = await _context.CourseCollaborators
+                .FirstOrDefaultAsync(cc => cc.CourseId == courseId && cc.UserId == targetUser.Id);
+
+            if (existing == null)
+            {
+                _context.CourseCollaborators.Add(new CourseCollaborator
+                {
+                    CourseId = courseId,
+                    UserId = targetUser.Id,
+                    GrantedByUserId = currentUserId.Value,
+                    Status = "Active",
+                    CreatedAt = DateTime.UtcNow
+                });
+            }
+            else
+            {
+                existing.Status = "Active";
+                existing.GrantedByUserId = currentUserId.Value;
+                existing.UpdatedAt = DateTime.UtcNow;
+            }
+
+            await _context.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Đã cấp quyền cộng tác khóa học và truy cập Media Library.";
+            return RedirectToAction(nameof(Index), new { courseId, folderId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RevokeCourseAccess(int courseId, int collaboratorUserId, int? folderId)
+        {
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return Forbid();
+            }
+
+            if (!await CanManageCollaboratorsAsync(courseId, currentUserId.Value))
+            {
+                return Forbid();
+            }
+
+            var collaborator = await _context.CourseCollaborators
+                .FirstOrDefaultAsync(cc => cc.CourseId == courseId && cc.UserId == collaboratorUserId && cc.Status == "Active");
+
+            if (collaborator == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy quyền cộng tác để thu hồi.";
+                return RedirectToAction(nameof(Index), new { courseId, folderId });
+            }
+
+            collaborator.Status = "Revoked";
+            collaborator.UpdatedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Đã thu hồi quyền truy cập của tài khoản cộng tác.";
+            return RedirectToAction(nameof(Index), new { courseId, folderId });
         }
 
         [HttpPost]
@@ -165,8 +318,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (courseId.HasValue)
             {
-                var canUseCourse = await _context.Courses
-                    .AnyAsync(c => c.Id == courseId.Value && (IsAdmin() || c.CreateBy == currentUserId.Value));
+                var canUseCourse = await CanManageCourseAsync(courseId.Value, currentUserId.Value);
                 if (!canUseCourse)
                 {
                     return Forbid();
@@ -176,7 +328,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var normalizedName = folderName.Trim();
             var exists = await _context.MediaFolders.AnyAsync(f =>
                 f.Status == "Active"
-                && f.OwnerUserId == currentUserId.Value
+                && f.CourseId == courseId
                 && f.ParentFolderId == parentFolderId
                 && f.Name == normalizedName);
 
@@ -230,8 +382,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (courseId.HasValue)
             {
-                var canUseCourse = await _context.Courses
-                    .AnyAsync(c => c.Id == courseId.Value && (IsAdmin() || c.CreateBy == currentUserId.Value));
+                var canUseCourse = await CanManageCourseAsync(courseId.Value, currentUserId.Value);
 
                 if (!canUseCourse)
                 {
@@ -361,8 +512,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (mediaFile.CourseId.HasValue)
             {
-                return await _context.Courses
-                    .AnyAsync(c => c.Id == mediaFile.CourseId.Value && c.CreateBy == currentUserId.Value);
+                return await CanManageCourseAsync(mediaFile.CourseId.Value, currentUserId.Value);
             }
 
             return false;
@@ -375,10 +525,27 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return await _context.MediaFolders.AnyAsync(f => f.Id == folderId && f.Status == "Active");
             }
 
-            return await _context.MediaFolders.AnyAsync(f =>
-                f.Id == folderId
-                && f.Status == "Active"
-                && f.OwnerUserId == currentUserId);
+            var folder = await _context.MediaFolders
+                .Where(f => f.Id == folderId && f.Status == "Active")
+                .Select(f => new { f.OwnerUserId, f.CourseId })
+                .FirstOrDefaultAsync();
+
+            if (folder == null)
+            {
+                return false;
+            }
+
+            if (folder.OwnerUserId == currentUserId)
+            {
+                return true;
+            }
+
+            if (folder.CourseId.HasValue)
+            {
+                return await CanManageCourseAsync(folder.CourseId.Value, currentUserId);
+            }
+
+            return false;
         }
 
         private async Task<List<MediaFolderBreadcrumbItem>> BuildBreadcrumbsAsync(int? folderId, int currentUserId)
@@ -401,7 +568,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     break;
                 }
 
-                if (!IsAdmin() && folder.OwnerUserId != currentUserId)
+                if (!IsAdmin() && !await CanAccessFolderAsync(folder.Id, currentUserId))
                 {
                     break;
                 }
@@ -440,7 +607,19 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (!IsAdmin())
             {
-                foldersQuery = foldersQuery.Where(f => f.OwnerUserId == currentUserId.Value);
+                if (courseId.HasValue)
+                {
+                    if (!await CanManageCourseAsync(courseId.Value, currentUserId.Value))
+                    {
+                        return Forbid();
+                    }
+
+                    foldersQuery = foldersQuery.Where(f => f.CourseId == courseId.Value);
+                }
+                else
+                {
+                    foldersQuery = foldersQuery.Where(f => f.OwnerUserId == currentUserId.Value);
+                }
             }
 
             if (courseId.HasValue)
@@ -464,7 +643,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (!IsAdmin())
             {
-                query = query.Where(x => x.OwnerUserId == currentUserId.Value);
+                if (courseId.HasValue)
+                {
+                    query = query.Where(x => x.CourseId == courseId.Value);
+                }
+                else
+                {
+                    query = query.Where(x => x.OwnerUserId == currentUserId.Value);
+                }
             }
 
             if (courseId.HasValue)
@@ -508,6 +694,31 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         private bool IsBlobConfigured()
         {
             return !string.IsNullOrWhiteSpace(_blobSettings.ConnectionString);
+        }
+
+        private async Task<bool> CanManageCourseAsync(int courseId, int userId)
+        {
+            if (IsAdmin())
+            {
+                return await _context.Courses.AnyAsync(c => c.Id == courseId);
+            }
+
+            return await _context.Courses.AnyAsync(c => c.Id == courseId && (
+                c.CreateBy == userId
+                || _context.CourseCollaborators.Any(cc =>
+                    cc.CourseId == c.Id
+                    && cc.UserId == userId
+                    && cc.Status == "Active")));
+        }
+
+        private async Task<bool> CanManageCollaboratorsAsync(int courseId, int userId)
+        {
+            if (IsAdmin())
+            {
+                return await _context.Courses.AnyAsync(c => c.Id == courseId);
+            }
+
+            return await _context.Courses.AnyAsync(c => c.Id == courseId && c.CreateBy == userId);
         }
     }
 }

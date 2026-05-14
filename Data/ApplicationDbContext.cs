@@ -30,6 +30,7 @@ namespace ELearningWebsite.Data
         public DbSet<QuizAttemptAnswer> QuizAttemptAnswers { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<MediaFolder> MediaFolders { get; set; }
+        public DbSet<CourseCollaborator> CourseCollaborators { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -210,6 +211,31 @@ namespace ELearningWebsite.Data
 
             builder.Entity<MediaFolder>()
                 .HasIndex(f => new { f.OwnerUserId, f.ParentFolderId, f.Name });
+
+            builder.Entity<CourseCollaborator>()
+                .HasOne(cc => cc.Course)
+                .WithMany()
+                .HasForeignKey(cc => cc.CourseId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<CourseCollaborator>()
+                .HasOne(cc => cc.User)
+                .WithMany()
+                .HasForeignKey(cc => cc.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CourseCollaborator>()
+                .HasOne(cc => cc.GrantedByUser)
+                .WithMany()
+                .HasForeignKey(cc => cc.GrantedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<CourseCollaborator>()
+                .HasIndex(cc => new { cc.CourseId, cc.UserId })
+                .IsUnique();
+
+            builder.Entity<CourseCollaborator>()
+                .HasIndex(cc => new { cc.UserId, cc.Status });
 
         }
 

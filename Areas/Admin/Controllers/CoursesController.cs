@@ -36,7 +36,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     return Forbid();
                 }
 
-                query = query.Where(c => c.CreateBy == currentUserId.Value);
+                query = query.Where(c =>
+                    c.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == c.Id
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active"));
             }
 
             // Search filter
@@ -951,7 +956,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
 
             return await _context.Courses
-                .AnyAsync(c => c.Id == courseId && c.CreateBy == currentUserId.Value);
+                .AnyAsync(c => c.Id == courseId && (
+                    c.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == c.Id
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active")));
         }
     }
 

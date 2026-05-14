@@ -28,7 +28,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var coursesQuery = _context.Courses.AsQueryable();
             if (!IsAdmin())
             {
-                coursesQuery = coursesQuery.Where(c => c.CreateBy == currentUserId!.Value);
+                coursesQuery = coursesQuery.Where(c =>
+                    c.CreateBy == currentUserId!.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == c.Id
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active"));
             }
 
             var courses = coursesQuery
@@ -39,7 +44,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var chaptersQuery = _context.Chapters.AsQueryable();
             if (!IsAdmin())
             {
-                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId!.Value);
+                chaptersQuery = chaptersQuery.Where(ch =>
+                    ch.Course != null && (
+                        ch.Course.CreateBy == currentUserId!.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == ch.CourseId
+                            && cc.UserId == currentUserId.Value
+                            && cc.Status == "Active")));
             }
 
             if (courseId.HasValue)
@@ -60,7 +71,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
             if (!IsAdmin())
             {
-                lessonsQuery = lessonsQuery.Where(l => l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId!.Value);
+                lessonsQuery = lessonsQuery.Where(l =>
+                    l.Chapter != null && l.Chapter.Course != null && (
+                        l.Chapter.Course.CreateBy == currentUserId!.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == l.Chapter.CourseId
+                            && cc.UserId == currentUserId.Value
+                            && cc.Status == "Active")));
             }
 
             if (courseId.HasValue)
@@ -131,7 +148,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     return Forbid();
                 }
 
-                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+                chaptersQuery = chaptersQuery.Where(ch =>
+                    ch.Course != null && (
+                        ch.Course.CreateBy == currentUserId.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == ch.CourseId
+                            && cc.UserId == currentUserId.Value
+                            && cc.Status == "Active")));
             }
 
             var chapters = chaptersQuery.ToList();
@@ -172,7 +195,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var currentUserId2 = GetCurrentUserId();
             if (!IsAdmin() && currentUserId2.HasValue)
             {
-                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId2.Value);
+                chaptersQuery = chaptersQuery.Where(ch =>
+                    ch.Course != null && (
+                        ch.Course.CreateBy == currentUserId2.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == ch.CourseId
+                            && cc.UserId == currentUserId2.Value
+                            && cc.Status == "Active")));
             }
             ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
@@ -196,7 +225,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var currentUserId = GetCurrentUserId();
             if (!IsAdmin() && currentUserId.HasValue)
             {
-                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+                chaptersQuery = chaptersQuery.Where(ch =>
+                    ch.Course != null && (
+                        ch.Course.CreateBy == currentUserId.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == ch.CourseId
+                            && cc.UserId == currentUserId.Value
+                            && cc.Status == "Active")));
             }
             ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
@@ -249,7 +284,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             var currentUserId2 = GetCurrentUserId();
             if (!IsAdmin() && currentUserId2.HasValue)
             {
-                chaptersQuery = chaptersQuery.Where(ch => ch.Course != null && ch.Course.CreateBy == currentUserId2.Value);
+                chaptersQuery = chaptersQuery.Where(ch =>
+                    ch.Course != null && (
+                        ch.Course.CreateBy == currentUserId2.Value
+                        || _context.CourseCollaborators.Any(cc =>
+                            cc.CourseId == ch.CourseId
+                            && cc.UserId == currentUserId2.Value
+                            && cc.Status == "Active")));
             }
             ViewBag.Chapters = chaptersQuery.ToList();
             return View(lesson);
@@ -587,7 +628,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return false;
             }
 
-            return _context.Courses.Any(c => c.Id == courseId && c.CreateBy == currentUserId.Value);
+            return _context.Courses.Any(c =>
+                c.Id == courseId
+                && (c.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == c.Id
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active")));
         }
 
         private bool CanManageChapter(int chapterId)
@@ -603,7 +650,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return false;
             }
 
-            return _context.Chapters.Any(ch => ch.Id == chapterId && ch.Course != null && ch.Course.CreateBy == currentUserId.Value);
+            return _context.Chapters.Any(ch =>
+                ch.Id == chapterId
+                && ch.Course != null
+                && (ch.Course.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == ch.CourseId
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active")));
         }
 
         private bool CanManageLesson(int lessonId)
@@ -619,7 +673,15 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return false;
             }
 
-            return _context.Lessons.Any(l => l.Id == lessonId && l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId.Value);
+            return _context.Lessons.Any(l =>
+                l.Id == lessonId
+                && l.Chapter != null
+                && l.Chapter.Course != null
+                && (l.Chapter.Course.CreateBy == currentUserId.Value
+                    || _context.CourseCollaborators.Any(cc =>
+                        cc.CourseId == l.Chapter.CourseId
+                        && cc.UserId == currentUserId.Value
+                        && cc.Status == "Active")));
         }
 
     }
