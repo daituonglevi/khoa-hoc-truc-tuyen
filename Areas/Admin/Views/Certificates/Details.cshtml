@@ -8,21 +8,21 @@
         <div>
             <h1 class="admin-page-title">
                 <i class="fas fa-certificate text-warning"></i>
-                Chi tiết Chứng chệ
+                Chi tiết Chứng chỉ
             </h1>
-            <p class="admin-page-subtitle">Thông tin chi tiết chứng chệ #@Model.CertificateNumber</p>
+            <p class="admin-page-subtitle">Thông tin chi tiết chứng chỉ #@Model.CertificateNumber</p>
         </div>
         <div class="admin-actions">
             <a asp-action="Index" class="btn btn-outline-secondary">
                 <i class="fas fa-arrow-left"></i> Quay lại
             </a>
             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                <i class="fas fa-edit"></i> Chệnh sửa
+                <i class="fas fa-edit"></i> Chỉnh sửa
             </a>
             @if (Model.HasCertificateFile)
             {
                 <a href="@Model.CertificateUrl" target="_blank" class="btn btn-success">
-                    <i class="fas fa-file-pdf"></i> Xem chứng chệ
+                    <i class="fas fa-file-pdf"></i> Xem chứng chỉ
                 </a>
             }
             <button type="button" class="btn btn-warning" onclick="regenerateCertificate(@Model.Id)">
@@ -39,20 +39,20 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-certificate text-warning"></i>
-                    Thông tin Chứng chệ
+                    Thông tin Chứng chỉ
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="detail-item">
-                            <label>ID Chứng chệ:</label>
+                            <label>ID Chứng chỉ:</label>
                             <span class="detail-value">#@Model.Id</span>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="detail-item">
-                            <label>Sđ chứng chệ:</label>
+                            <label>Số chứng chỉ:</label>
                             <span class="detail-value text-primary">@Model.CertificateNumber</span>
                         </div>
                     </div>
@@ -79,7 +79,7 @@
                     {
                         <div class="col-12">
                             <div class="detail-item">
-                                <label>File chứng chệ:</label>
+                                <label>File chứng chỉ:</label>
                                 <div class="d-flex align-items-center gap-2">
                                     <span class="detail-value">@Model.CertificateFileName</span>
                                     <a href="@Model.CertificateUrl" target="_blank" class="btn btn-sm btn-outline-primary">
@@ -123,7 +123,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="detail-item">
-                            <label>Sđ điện thoại:</label>
+                            <label>Số điện thoại:</label>
                             <span class="detail-value">@Model.UserPhone</span>
                         </div>
                     </div>
