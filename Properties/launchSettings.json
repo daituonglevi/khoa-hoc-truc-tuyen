@@ -4,7 +4,8 @@
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionStrings__DefaultConnection": "Server=localhost\\SQLEXPRESS01;Database=ECourseWeb;Integrated Security=true;TrustServerCertificate=true;"
       },
       "applicationUrl": "https://localhost:56212;http://localhost:56213"
     }

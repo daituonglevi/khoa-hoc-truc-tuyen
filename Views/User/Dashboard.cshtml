@@ -14,7 +14,7 @@
                 </div>
                 <div>
                     <a href="@Url.Action("Courses", "Home")" class="btn btn-dark rounded-pill px-4 fw-medium">
-                        <i class="fas fa-plus me-2 small"></i>Tđm khóa học mới
+                        <i class="fas fa-plus me-2 small"></i>Thêm khóa học mới
                     </a>
                 </div>
             </div>
@@ -69,7 +69,7 @@
             <div class="bg-dark rounded-4 h-100 p-4 stat-card relative overflow-hidden" style="background-image: linear-gradient(135deg, #111827 0%, #374151 100%);">
                 <div class="d-flex justify-content-between align-items-start position-relative z-1 text-white">
                     <div>
-                        <p class="text-light fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px; opacity: 0.8;">Tiến độ trung bđnh</p>
+                        <p class="text-light fw-medium mb-1 small text-uppercase" style="letter-spacing: 0.5px; opacity: 0.8;">Tiến độ trung bình</p>
                         <h3 class="fw-bold mb-0 display-6">@Model.AverageProgress.ToString("F1")<span class="fs-5 text-light">%</span></h3>
                     </div>
                     <div class="d-inline-flex align-items-center justify-content-center bg-white bg-opacity-10 rounded-circle" style="width: 48px; height: 48px;">
@@ -85,7 +85,7 @@
         <div class="col-lg-8" data-aos="fade-right">
             <div class="bg-white rounded-4 border border-light-subtle h-100 overflow-hidden">
                 <div class="p-4 border-bottom border-light-subtle bg-light bg-opacity-50 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 fw-bold"><i class="fas fa-history text-secondary me-2"></i>Khóa học găn đây</h5>
+                    <h5 class="mb-0 fw-bold"><i class="fas fa-history text-secondary me-2"></i>Khóa học gần đây</h5>
                     <a href="@Url.Action("MyCourses", "User")" class="text-dark text-decoration-none fw-medium small border-bottom border-dark pb-1">
                         Xem tất cả
                     </a>
@@ -183,11 +183,11 @@
                         </a>
                         <a href="@Url.Action("Courses", "Home")" class="btn btn-light border border-light-subtle text-start d-flex align-items-center p-3 rounded-3 hover-lift text-dark fw-medium">
                             <div class="bg-white rounded p-2 border shadow-sm me-3 d-flex align-items-center"><i class="fas fa-search"></i></div>
-                            Tđm khóa học mới
+                            Thêm khóa học mới
                         </a>
                         <a href="/Identity/Account/Manage" class="btn btn-light border border-light-subtle text-start d-flex align-items-center p-3 rounded-3 hover-lift text-dark fw-medium">
                             <div class="bg-white rounded p-2 border shadow-sm me-3 d-flex align-items-center"><i class="fas fa-cog"></i></div>
-                            Cài đđt tài khoản
+                            Cài đặt tài khoản
                         </a>
                     </div>
                 </div>

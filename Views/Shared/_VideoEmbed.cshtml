@@ -14,9 +14,17 @@
 
     var isYoutube = mediaUrlLower.Contains("youtube.com") || mediaUrlLower.Contains("youtu.be");
     var isGoogleDrive = mediaUrlLower.Contains("drive.google.com");
+    var isPrivateAzureBlob = mediaUrlLower.Contains(".blob.core.windows.net/") && mediaUrlLower.Contains("/private-media/");
 
     var iframeIdAttr = string.IsNullOrWhiteSpace(Model.IframeId) ? null : Model.IframeId;
     var videoIdAttr = string.IsNullOrWhiteSpace(Model.VideoId) ? null : Model.VideoId;
+
+    if (isPrivateAzureBlob && !mediaUrlLower.Contains("sig="))
+    {
+        var encodedBlobUrl = Uri.EscapeDataString(mediaUrl);
+        mediaUrl = $"/Media/OpenByBlob?blobUrl={encodedBlobUrl}";
+        mediaUrlLower = mediaUrl.ToLowerInvariant();
+    }
 }
 
 @if (string.IsNullOrWhiteSpace(mediaUrl))
