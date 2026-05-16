@@ -1,16 +1,16 @@
 @model ELearningWebsite.Models.Quiz
 @{
     var lesson = ViewBag.Lesson as ELearningWebsite.Models.Lesson;
-    ViewData["Title"] = "Quan ly bai tap trac nghiem";
+    ViewData["Title"] = "Quản lý bài tập trắc nghiệm- " + (lesson?.Title ?? "");
 }
-
+    
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="admin-title">
             <i class="fas fa-list-check me-2"></i>
-            Quan ly bai tap - @(lesson?.Title ?? "")
+            Quản lý bài tập - @(lesson?.Title ?? "")
         </h2>
-        <a href="/Admin/Lessons" class="btn btn-secondary">Quay lai danh sach bai hoc</a>
+        <a href="/Admin/Lessons" class="btn btn-secondary">Quay lại danh sách bài học</a>
     </div>
 
     @if (TempData["SuccessMessage"] != null)
@@ -48,7 +48,7 @@
     @if (Model != null)
     {
         <div class="card mb-4">
-            <div class="card-header"><strong>Them cau hoi</strong></div>
+            <div class="card-header"><strong>Thêm câu hỏi</strong></div>
             <div class="card-body">
                 <form method="post" action="/Admin/Lessons/AddQuestion">
                     @Html.AntiForgeryToken()
@@ -72,7 +72,7 @@
         {
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <div><strong>Cau @question.OrderIndex:</strong> @question.Content</div>
+                    <div><strong>Câu @question.OrderIndex:</strong> @question.Content</div>
                     <form method="post" action="/Admin/Lessons/DeleteQuestion" onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu hỏi này?');">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="questionId" value="@question.Id" />
