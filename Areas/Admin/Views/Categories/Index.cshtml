@@ -207,7 +207,7 @@
 function updateStatus(id, status) {
     const statusText = status === 1 ? 'kích hoạt' : 'vô hiệu hóa';
 
-    if (confirm(`Bạn có chắc chắn muđn ${statusText} danh mục này?`)) {
+    if (confirm(`Bạn có chắc chắn muốn ${statusText} danh mục này?`)) {
         const token = $('input[name="__RequestVerificationToken"]').val();
 
         $.ajax({
@@ -233,7 +233,7 @@ function updateStatus(id, status) {
 }
 
 function deleteCategory(id) {
-    if (confirm('Bạn có chắc chắn muđn xóa danh mục này? Hành động này không thă hoàn tác!')) {
+    if (confirm('Bạn có chắc chắn muốn xóa danh mục này? Hành động này không thể hoàn tác!')) {
         const token = $('input[name="__RequestVerificationToken"]').val();
 
         $.ajax({

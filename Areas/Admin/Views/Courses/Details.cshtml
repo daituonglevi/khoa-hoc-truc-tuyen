@@ -136,7 +136,7 @@
             <div class="card-header bg-transparent border-0 py-3">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-chart-bar me-2"></i>
-                    Thđng kê
+                    Thống kê
                 </h5>
             </div>
             <div class="card-body">
@@ -271,7 +271,7 @@
 @section Scripts {
     <script>
         function updateCourseStatus(courseId, status) {
-            if (confirm(`Bạn có chắc chắn muđn thay đổi trạng thái course?`)) {
+            if (confirm(`Bạn có chắc chắn muốn thay đổi trạng thái course?`)) {
                 const formData = new FormData();
                 formData.append('id', courseId);
                 formData.append('status', status);
@@ -298,7 +298,7 @@
         }
 
         function deleteCourse(courseId) {
-            if (confirm('Bạn có chắc chắn muđn xóa course này? Hành động này không thă hoàn tác!')) {
+            if (confirm('Bạn có chắc chắn muốn xóa course này? Hành động này không thể hoàn tác!')) {
                 const formData = new FormData();
                 formData.append('id', courseId);
                 formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');

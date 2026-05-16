@@ -51,10 +51,10 @@ namespace ELearningWebsite.Controllers
                     <p>Nếu bạn nhận được email này, nghĩa là cấu hình email đã hoạt đ�Tng đúng.</p>
                     <p><strong>Thời gian gửi:</strong> " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + @"</p>
                     <hr>
-                    <p style='color: #666; font-size: 12px;'>Email này được gửi từ h�? thđng test ELearning CNTT</p>
+                    <p style='color: #666; font-size: 12px;'>Email này được gửi từ hệ thống test ELearning</p>
                     ");
 
-                ViewBag.Success = $"Email test đã được gửi thành công đến {testEmail}. Vui lòng ki�fm tra h�Tp thư (bao gôm cả spam).";
+                ViewBag.Success = $"Email test đã được gửi thành công đến {testEmail}. Vui lòng kifm tra hTp thư (bao gôm cả spam).";
                 _logger.LogInformation("Test email sent successfully to: {Email}", testEmail);
             }
             catch (Exception ex)

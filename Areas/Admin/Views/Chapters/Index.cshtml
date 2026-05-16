@@ -283,7 +283,7 @@
 function toggleStatus(chapterId, currentStatus) {
     const action = currentStatus === 'Active' ? 'vô hiệu hóa' : 'kích hoạt';
     
-    if (confirm(`Bạn có chắc chắn muđn ${action} chương này?`)) {
+    if (confirm(`Bạn có chắc chắn muốn ${action} chương này?`)) {
         fetch(`/Admin/Chapters/ToggleStatus/${chapterId}`, {
             method: 'POST',
             headers: {

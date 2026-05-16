@@ -23,22 +23,22 @@
     }
 
     <div class="card mb-4">
-        <div class="card-header"><strong>Thong tin bai tap</strong></div>
+        <div class="card-header"><strong>Thông tin bài tập</strong></div>
         <div class="card-body">
             <form method="post" action="/Admin/Lessons/CreateQuiz">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="lessonId" value="@lesson?.Id" />
                 <div class="row g-3">
                     <div class="col-md-7">
-                        <label class="form-label">Tieu de bai tap</label>
+                        <label class="form-label">Tiêu đề bài tập</label>
                         <input name="title" class="form-control" value="@(Model?.Title ?? $"Quiz - {lesson?.Title}")" required />
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">Nguong dat (%)</label>
+                        <label class="form-label">Ngưỡng đạt (%)</label>
                         <input name="passPercent" class="form-control" type="number" min="1" max="100" value="@(Model?.PassPercent ?? 80)" required />
                     </div>
                     <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100">Luu quiz</button>
+                        <button type="submit" class="btn btn-primary w-100">Lưu quiz</button>
                     </div>
                 </div>
             </form>
@@ -55,13 +55,13 @@
                     <input type="hidden" name="quizId" value="@Model.Id" />
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <input name="content" class="form-control" placeholder="Nhap noi dung cau hoi" required />
+                            <input name="content" class="form-control" placeholder="Nhập nội dung câu hỏi" required />
                         </div>
                         <div class="col-md-2">
                             <input name="orderIndex" class="form-control" type="number" min="1" value="1" />
                         </div>
                         <div class="col-md-2">
-                            <button type="submit" class="btn btn-success w-100">Them cau hoi</button>
+                            <button type="submit" class="btn btn-success w-100">Thêm câu hỏi</button>
                         </div>
                     </div>
                 </form>
@@ -73,10 +73,10 @@
             <div class="card mb-3">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <div><strong>Cau @question.OrderIndex:</strong> @question.Content</div>
-                    <form method="post" action="/Admin/Lessons/DeleteQuestion" onsubmit="return confirm('Xoa cau hoi nay?');">
+                    <form method="post" action="/Admin/Lessons/DeleteQuestion" onsubmit="return confirm('Bạn có chắc chắn muốn xóa câu hỏi này?');">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="questionId" value="@question.Id" />
-                        <button class="btn btn-sm btn-danger" type="submit">Xoa cau hoi</button>
+                        <button class="btn btn-sm btn-danger" type="submit">Xóa câu hỏi</button>
                     </form>
                 </div>
                 <div class="card-body">
@@ -84,11 +84,11 @@
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
-                                    <th style="width: 60px;">Thu tu</th>
-                                    <th>Dap an</th>
-                                    <th style="width: 100px;">Dung</th>
-                                    <th style="width: 140px;">Chon dap an dung</th>
-                                    <th style="width: 100px;">Xoa</th>
+                                    <th style="width: 60px;">Thứ tự</th>
+                                    <th>Đáp án</th>
+                                    <th style="width: 100px;">Đúng</th>
+                                    <th style="width: 140px;">Chọn đáp án đúng</th>
+                                    <th style="width: 100px;">Xóa</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -100,7 +100,7 @@
                                         <td>
                                             @if (ans.IsCorrect)
                                             {
-                                                <span class="badge bg-success">Dung</span>
+                                                <span class="badge bg-success">Đúng</span>
                                             }
                                             else
                                             {
@@ -112,15 +112,15 @@
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="answerId" value="@ans.Id" />
                                                 <button class="btn btn-sm btn-outline-success" type="submit" @(ans.IsCorrect ? "disabled" : null)>
-                                                    Chon dung
+                                                    Chọn đúng
                                                 </button>
                                             </form>
                                         </td>
                                         <td>
-                                            <form method="post" action="/Admin/Lessons/DeleteAnswer" onsubmit="return confirm('Xoa dap an nay?');">
+                                            <form method="post" action="/Admin/Lessons/DeleteAnswer" onsubmit="return confirm('Bạn có chắc chắn muốn xóa đáp án này?');">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="answerId" value="@ans.Id" />
-                                                <button class="btn btn-sm btn-outline-danger" type="submit">Xoa</button>
+                                                <button class="btn btn-sm btn-outline-danger" type="submit">Xóa</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -130,7 +130,7 @@
                     </div>
 
                     <button class="btn btn-outline-primary btn-sm mb-2" type="button" data-bs-toggle="collapse" data-bs-target="#addAnswer_@question.Id" aria-expanded="false">
-                        <i class="fas fa-plus me-1"></i>Them dap an cho cau hoi
+                        <i class="fas fa-plus me-1"></i>Thêm đáp án cho câu hỏi
                     </button>
                     <div class="collapse" id="addAnswer_@question.Id">
                         <form method="post" action="/Admin/Lessons/AddAnswer">
@@ -138,20 +138,20 @@
                             <input type="hidden" name="questionId" value="@question.Id" />
                             <div class="row g-2 align-items-center">
                                 <div class="col-md-7">
-                                    <input name="answerText" class="form-control" placeholder="Nhap dap an" required />
+                                    <input name="answerText" class="form-control" placeholder="Nhập đáp án" required />
                                 </div>
                                 <div class="col-md-2">
                                     <input name="orderIndex" class="form-control" type="number" min="1" value="1" />
                                 </div>
                                 <div class="col-md-2 form-check mt-2">
                                     <input name="isCorrect" class="form-check-input" type="checkbox" value="true" id="correct_@question.Id" />
-                                    <label class="form-check-label" for="correct_@question.Id">Dap an dung</label>
+                                    <label class="form-check-label" for="correct_@question.Id">Đáp án đúng</label>
                                 </div>
                                 <div class="col-md-1">
-                                    <button type="submit" class="btn btn-primary w-100">Them</button>
+                                    <button type="submit" class="btn btn-primary w-100">Thêm</button>
                                 </div>
                             </div>
-                            <div class="form-text">Co the them dap an thuong, sau do bam "Chon dung" de dat dap an dung.</div>
+                            <div class="form-text">Có thể thêm đáp án thường, sau đó bấm "Chọn đúng" để đặt đáp án đúng.</div>
                         </form>
                     </div>
                 </div>

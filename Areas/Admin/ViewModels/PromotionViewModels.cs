@@ -148,7 +148,7 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         public int CurrentUses { get; set; }
         public bool CanDelete => CurrentUses == 0;
         public string DeleteWarning => CurrentUses > 0
-            ? $"Không th�f xóa vì đã có {CurrentUses} lần sử dụng"
-            : "Bạn có chắc chắn muđn xóa khuyến mãi này?";
+            ? $"Không thể xóa vì đã có {CurrentUses} lần sử dụng"
+            : "Bạn có chắc chắn muốn xóa khuyến mãi này?";
     }
 }

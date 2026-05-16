@@ -201,7 +201,7 @@
         function toggleUserStatus(userId, currentStatus) {
             const action = currentStatus ? 'vô hiệu hóa' : 'kích hoạt';
 
-            if (confirm(`Bạn có chắc chắn muđn ${action} user này?`)) {
+            if (confirm(`Bạn có chắc chắn muốn ${action} user này?`)) {
                 const formData = new FormData();
                 formData.append('id', userId);
                 formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');
@@ -227,7 +227,7 @@
         }
 
         function changeUserRole(userId, roleName) {
-            if (confirm(`Bạn có chắc chắn muđn thay đổi quyền thành ${roleName}?`)) {
+            if (confirm(`Bạn có chắc chắn muốn thay đổi quyền thành ${roleName}?`)) {
                 const formData = new FormData();
                 formData.append('userId', userId);
                 formData.append('roleName', roleName);
@@ -254,7 +254,7 @@
         }
 
         function exportUsers() {
-            showAdminNotification('Tính năng xuất Excel đang được phát triăn', 'info');
+            showAdminNotification('Tính năng xuất Excel đang được phát triển', 'info');
         }
     </script>
 }

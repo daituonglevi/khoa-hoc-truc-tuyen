@@ -140,7 +140,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         public async Task<IActionResult> Create()
         {
-            ViewData["Title"] = "Thêm Course m�>i";
+            ViewData["Title"] = "Thêm Course mới";
             ViewBag.Categories = await _context.Categories
                 .Where(c => c.Status == 1)
                 .ToListAsync();
@@ -150,7 +150,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         public async Task<IActionResult> CreateNew()
         {
-            ViewData["Title"] = "Thêm Course m�>i";
+            ViewData["Title"] = "Thêm Course mới";
             ViewBag.Categories = await _context.Categories
                 .Where(c => c.Status == 1)
                 .ToListAsync();
@@ -170,7 +170,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         public async Task<IActionResult> EditTest(int id)
         {
-            ViewData["Title"] = "Test Ch�?nh sửa Course";
+            ViewData["Title"] = "Test Chỉnh sửa Course";
 
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
@@ -211,7 +211,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(Title))
                 {
-                    TempData["ErrorMessage"] = "Tên khóa học là bắt bu�Tc";
+                    TempData["ErrorMessage"] = "Tên khóa học là bắt buộc";
                     ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                     return View("CreateTest");
                 }
@@ -274,7 +274,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                     catch (Exception uploadEx)
                     {
-                        TempData["ErrorMessage"] = "L�-i upload file: " + uploadEx.Message;
+                        TempData["ErrorMessage"] = "Lỗi upload file: " + uploadEx.Message;
                         ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                         return View("CreateTest");
                     }
@@ -316,7 +316,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
 
                 if (ex.InnerException != null)
                 {
@@ -361,7 +361,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(course.Title))
                 {
-                    TempData["ErrorMessage"] = "Tên khóa học là bắt bu�Tc";
+                    TempData["ErrorMessage"] = "Tên khóa học là bắt buộc";
                     ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                     return View("EditTest", course);
                 }
@@ -382,7 +382,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         var allowedTypes = new[] { "image/jpeg", "image/jpg", "image/png", "image/gif" };
                         if (!allowedTypes.Contains(ThumbnailFile.ContentType.ToLower()))
                         {
-                            TempData["ErrorMessage"] = "Ch�? chấp nhận file hình ảnh (JPG, PNG, GIF)";
+                            TempData["ErrorMessage"] = "Chỉ chấp nhận file hình ảnh (JPG, PNG, GIF)";
                             ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                             return View("EditTest", course);
                         }
@@ -421,7 +421,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                     catch (Exception uploadEx)
                     {
-                        TempData["ErrorMessage"] = "L�-i upload file: " + uploadEx.Message;
+                        TempData["ErrorMessage"] = "Lỗi upload file: " + uploadEx.Message;
                         ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                         return View("EditTest", course);
                     }
@@ -433,7 +433,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     return Forbid();
                 }
 
-                // Sử dụng ADO.NET đ�f update
+                // Sử dụng ADO.NET để update
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
                 {
@@ -503,7 +503,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 Console.WriteLine($"Title: {title}");
                 Console.WriteLine($"Thumbnail: {thumbnail}");
 
-                // Sử dụng ADO.NET đ�f update ch�? thumbnail
+                // Sử dụng ADO.NET để update thumbnail
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
                 {
@@ -526,7 +526,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error: {ex.Message}");
-                return Json(new { success = false, message = "Có l�-i xảy ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
 
@@ -545,7 +545,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 // Validate required fields
                 if (string.IsNullOrWhiteSpace(Title))
                 {
-                    TempData["ErrorMessage"] = "Tên khóa học là bắt bu�Tc";
+                    TempData["ErrorMessage"] = "Tên khóa học là bắt buộc";
                     ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                     return View("Create", new Course());
                 }
@@ -584,9 +584,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
 
-                // Log chi tiết l�-i đ�f debug
+                // Log chi tiết lỗi để debug
                 if (ex.InnerException != null)
                 {
                     TempData["ErrorMessage"] += " Chi tiết: " + ex.InnerException.Message;
@@ -648,9 +648,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
 
-                // Log chi tiết l�-i đ�f debug
+                // Log chi tiết lỗi để debug
                 if (ex.InnerException != null)
                 {
                     TempData["ErrorMessage"] += " Chi tiết: " + ex.InnerException.Message;
@@ -667,7 +667,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         public async Task<IActionResult> Edit(int id)
         {
-            ViewData["Title"] = "Ch�?nh sửa Course";
+            ViewData["Title"] = "Chỉnh sửa Course";
 
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
@@ -777,7 +777,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                     catch (Exception uploadEx)
                     {
-                        TempData["ErrorMessage"] = "L�-i upload file: " + uploadEx.Message;
+                        TempData["ErrorMessage"] = "Lỗi upload file: " + uploadEx.Message;
                         ViewBag.Categories = await _context.Categories.Where(c => c.Status == 1).ToListAsync();
                         return View(course);
                     }
@@ -830,7 +830,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
 
                 if (ex.InnerException != null)
                 {

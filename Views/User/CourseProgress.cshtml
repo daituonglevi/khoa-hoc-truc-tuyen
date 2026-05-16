@@ -25,7 +25,7 @@
                         </div>
                         <div class="col-md-4 text-end">
                             <div class="mb-2">
-                                <small class="text-muted">Tiến độ tổng thă</small>
+                                <small class="text-muted">Tiến độ tổng thể</small>
                                 <h4 class="mb-0 text-primary">@Model.Enrollment.Progress.ToString("F1")%</h4>
                             </div>
                             <div class="progress" style="height: 10px;">
@@ -135,7 +135,7 @@
                 <div class="card-header">
                     <h6 class="mb-0">
                         <i class="fas fa-chart-line me-2"></i>
-                        Thđng kê học tập
+                        Thống kê học tập
                     </h6>
                 </div>
                 <div class="card-body">
@@ -158,7 +158,7 @@
                         </div>
                         <div class="col-6">
                             <h4 class="text-info mb-1">
-                                @(Model.Enrollment.ExpiredDate?.ToString("dd/MM") ?? "�^z")
+                                @(Model.Enrollment.ExpiredDate?.ToString("dd/MM") ?? "Không giới hạn")
                             </h4>
                             <small class="text-muted">Hạn học</small>
                         </div>
@@ -212,7 +212,7 @@
                         {
                             <a href="@Url.Action("Certificate", "User", new { enrollmentId = Model.Enrollment.Id })"
                                class="btn btn-success">
-                                <i class="fas fa-certificate me-2"></i>Xem chứng chệ
+                                <i class="fas fa-certificate me-2"></i>Xem chứng chỉ
                             </a>
                         }
 

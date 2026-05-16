@@ -222,7 +222,7 @@
                                     </div>
 
                                     <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display: inline;"
-                                          onsubmit="return confirm('Bạn có chắc chắn muđn xóa đăng ký này? Hành động này không thă hoàn tác!')">
+                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa đăng ký này? Hành động này không thể hoàn tác!')">
                                         @Html.AntiForgeryToken()
                                         <button type="submit" class="btn btn-danger ms-3">
                                             <i class="fas fa-trash"></i> Xóa đăng ký
@@ -240,7 +240,7 @@
 
 <script>
     function updateStatus(enrollmentId, status) {
-        if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái?')) {
+        if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái?')) {
             const formData = new FormData();
             formData.append('id', enrollmentId);
             formData.append('status', status);

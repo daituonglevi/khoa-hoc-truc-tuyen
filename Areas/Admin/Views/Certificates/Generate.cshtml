@@ -1,6 +1,6 @@
 @model ELearningWebsite.Areas.Admin.ViewModels.CertificateGenerateViewModel
 @{
-    ViewData["Title"] = "Tự động tạo Chứng chệ";
+    ViewData["Title"] = "Tự động tạo chứng chỉ";
 }
 
 <div class="admin-content-header">
@@ -8,9 +8,9 @@
         <div>
             <h1 class="admin-page-title">
                 <i class="fas fa-magic text-primary"></i>
-                Tự động tạo Chứng chệ
+                Tự động tạo Chứng chỉ
             </h1>
-            <p class="admin-page-subtitle">Tạo chứng chệ tự động cho các khóa học đã hoàn thành</p>
+            <p class="admin-page-subtitle">Tạo chứng chỉ tự động cho các khóa học đã hoàn thành</p>
         </div>
         <div class="admin-actions">
             <a asp-action="Index" class="btn btn-outline-secondary">
@@ -29,7 +29,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-robot text-primary"></i>
-                    Tạo chứng chệ tự động
+                    Tạo chứng chỉ tự động
                 </h5>
             </div>
             <div class="card-body">
@@ -39,7 +39,7 @@
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
                         <div class="form-group">
-                            <label asp-for="EnrollmentId" class="form-label required">Chọn đăng ký đă tạo chứng chệ</label>
+                            <label asp-for="EnrollmentId" class="form-label required">Chọn đăng ký đă tạo chứng chỉ</label>
                             <select asp-for="EnrollmentId" class="form-select" id="enrollmentSelect" onchange="updateEnrollmentInfo()">
                                 <option value="">-- Chọn đăng ký khóa học --</option>
                                 @foreach (var enrollment in Model.AvailableEnrollments)
@@ -56,7 +56,7 @@
                             </select>
                             <span asp-validation-for="EnrollmentId" class="text-danger"></span>
                             <small class="form-text text-muted">
-                                Chệ hiăn thị các đăng ký đã hoàn thành và chưa có chứng chệ
+                                Chế hiện thị các đăng ký đã hoàn thành và chưa có chứng chỉ
                             </small>
                         </div>
 
@@ -66,16 +66,16 @@
                                     <i class="fas fa-info-circle"></i> Thông tin tự động tạo:
                                 </h6>
                                 <ul class="mb-0">
-                                    <li><strong>Sđ chứng chệ:</strong> Sẽ được tạo tự động theo định dạng GUID</li>
-                                    <li><strong>Ngày cấp:</strong> Thời điăm hiện tại</li>
-                                    <li><strong>File chứng chệ:</strong> Sẽ được tạo sau (có thă cập nhật URL sau)</li>
+                                    <li><strong>Số chứng chỉ:</strong> Sẽ được tạo tự động theo định dạng GUID</li>
+                                    <li><strong>Ngày cấp:</strong> Thời gian hiện tại</li>
+                                    <li><strong>File chứng chỉ:</strong> Sẽ được tạo sau (có thể cập nhật URL sau)</li>
                                 </ul>
                             </div>
                         </div>
 
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary" id="generateButton" disabled>
-                                <i class="fas fa-magic"></i> Tạo chứng chệ tự động
+                                <i class="fas fa-magic"></i> Tạo chứng chỉ tự động
                             </button>
                             <a asp-action="Index" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> Hủy
@@ -89,11 +89,11 @@
                         <i class="fas fa-graduation-cap fa-4x text-muted mb-3"></i>
                         <h5 class="text-muted">Không có đăng ký nào đủ điều kiện</h5>
                         <p class="text-muted mb-4">
-                            Hiện tại không có đăng ký khóa học nào đã hoàn thành và chưa có chứng chệ.
+                            Hiện tại không có đăng ký khóa học nào đã hoàn thành và chưa có chứng chỉ.
                         </p>
                         <div class="empty-actions">
                             <a asp-action="Index" class="btn btn-outline-primary">
-                                <i class="fas fa-list"></i> Xem danh sách chứng chệ
+                                <i class="fas fa-list"></i> Xem danh sách chứng chỉ
                             </a>
                             <a asp-controller="Enrollments" asp-action="Index" class="btn btn-outline-info">
                                 <i class="fas fa-users"></i> Xem đăng ký khóa học
@@ -120,7 +120,7 @@
                             <i class="fas fa-exclamation-triangle"></i> Tính năng sắp có!
                         </h6>
                         <p class="mb-0">
-                            Tính năng tạo chứng chệ hàng loạt cho tất cả đăng ký đủ điều kiện sẽ được phát triăn trong phiên bản tiếp theo.
+                            Tính năng tạo chứng chỉ hàng loạt cho tất cả đăng ký đủ điều kiện sẽ được phát triển trong phiên bản tiếp theo.
                         </p>
                     </div>
                     
@@ -189,7 +189,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-chart-pie text-primary"></i>
-                    Thđng kê
+                    Thống kê
                 </h5>
             </div>
             <div class="card-body">
@@ -213,7 +213,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-question-circle text-primary"></i>
-                    Hương dẫn
+                    Hướng dẫn
                 </h5>
             </div>
             <div class="card-body">
@@ -221,22 +221,22 @@
                     <h6><i class="fas fa-magic text-primary"></i> Tự động tạo:</h6>
                     <ul class="help-list">
                         <li>Chọn đăng ký từ danh sách</li>
-                        <li>Hệ thđng tự động tạo sđ chứng chệ</li>
-                        <li>Ngày cấp là thời điăm hiện tại</li>
+                        <li>Hệ thống tự động tạo số chứng chỉ</li>
+                        <li>Ngày cấp là thời gian hiện tại</li>
                     </ul>
 
                     <h6><i class="fas fa-check-circle text-success"></i> Điều kiện:</h6>
                     <ul class="help-list">
                         <li>Tiến độ học tập 100%</li>
                         <li>Trạng thái "Hoàn thành"</li>
-                        <li>Chưa có chứng chệ</li>
+                        <li>Chưa có chứng chỉ</li>
                     </ul>
 
                     <h6><i class="fas fa-lightbulb text-warning"></i> Lưu ý:</h6>
                     <ul class="help-list">
-                        <li>Có thă cập nhật URL file sau</li>
-                        <li>Sđ chứng chệ là duy nhất</li>
-                        <li>Không thă hoàn tác sau khi tạo</li>
+                        <li>Có thể cập nhật URL file sau</li>
+                        <li>Số chứng chỉ là duy nhất</li>
+                        <li>Không thể hoàn tác sau khi tạo</li>
                     </ul>
                 </div>
             </div>

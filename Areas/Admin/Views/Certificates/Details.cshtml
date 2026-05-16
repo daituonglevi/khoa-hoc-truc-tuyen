@@ -1,6 +1,6 @@
 @model ELearningWebsite.Areas.Admin.ViewModels.CertificateDetailsViewModel
 @{
-    ViewData["Title"] = "Chi tiết Chứng chệ";
+    ViewData["Title"] = "Chi tiết Chứng chỉ";
 }
 
 <div class="admin-content-header">
@@ -236,7 +236,7 @@
                     <div class="timeline-item">
                         <div class="timeline-marker bg-warning"></div>
                         <div class="timeline-content">
-                            <h6>Cấp chứng chệ</h6>
+                            <h6>Cấp giấy chứng nhận</h6>
                             <p class="text-muted mb-0">@Model.IssueDate.ToString("dd/MM/yyyy HH:mm")</p>
                         </div>
                     </div>
@@ -255,19 +255,19 @@
             <div class="card-body">
                 <div class="d-grid gap-2">
                     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">
-                        <i class="fas fa-edit"></i> Chệnh sửa thông tin
+                        <i class="fas fa-edit"></i> Chỉnh sửa thông tin
                     </a>
                     @if (Model.HasCertificateFile)
                     {
                         <a href="@Model.CertificateUrl" target="_blank" class="btn btn-outline-success">
-                            <i class="fas fa-download"></i> Tải xuđng chứng chệ
+                            <i class="fas fa-download"></i> Tải xuống chứng chỉ
                         </a>
                     }
                     <button type="button" class="btn btn-outline-warning" onclick="regenerateCertificate(@Model.Id)">
-                        <i class="fas fa-sync"></i> Tạo lại chứng chệ
+                        <i class="fas fa-sync"></i> Tạo lại chứng chỉ
                     </button>
                     <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-outline-danger">
-                        <i class="fas fa-trash"></i> Xóa chứng chệ
+                        <i class="fas fa-trash"></i> Xóa chứng chỉ
                     </a>
                 </div>
             </div>
@@ -337,7 +337,7 @@
 
 <script>
 function regenerateCertificate(certificateId) {
-    if (confirm('Bạn có chắc chắn muđn tạo lại chứng chệ này? Sđ chứng chệ mơi sẽ được tạo.')) {
+    if (confirm('Bạn có chắc chắn muốn tạo lại chứng chỉ này? Số chứng chỉ mới sẽ được tạo.')) {
         fetch(`/Admin/Certificates/RegenerateCertificate/${certificateId}`, {
             method: 'POST',
             headers: {
@@ -357,7 +357,7 @@ function regenerateCertificate(certificateId) {
             }
         })
         .catch(error => {
-            toastr.error('Có lỗi xảy ra khi tạo lại chứng chệ');
+            toastr.error('Có lỗi xảy ra khi tạo lại chứng chỉ');
         });
     }
 }

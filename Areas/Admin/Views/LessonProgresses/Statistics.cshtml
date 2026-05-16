@@ -1,6 +1,6 @@
 @model ELearningWebsite.Areas.Admin.ViewModels.LessonProgressStatisticsViewModel
 @{
-    ViewData["Title"] = "Thđng kê Tiến độ Học tập";
+    ViewData["Title"] = "Thống kê Tiến độ Học tập";
 }
 
 <div class="admin-content-header">
@@ -8,7 +8,7 @@
         <div>
             <h1 class="admin-page-title">
                 <i class="fas fa-chart-bar text-info"></i>
-                Thđng kê Tiến độ Học tập
+                Thống kê Tiến độ Học tập
             </h1>
             <p class="admin-page-subtitle">Báo cáo và phân tích dữ liệu tiến độ học tập</p>
         </div>
@@ -17,7 +17,7 @@
                 <i class="fas fa-list"></i> Danh sách
             </a>
             <a asp-action="Create" class="btn btn-success">
-                <i class="fas fa-plus"></i> Tạo mơi
+                <i class="fas fa-plus"></i> Tạo mới
             </a>
             <button onclick="window.print()" class="btn btn-outline-primary">
                 <i class="fas fa-print"></i> In báo cáo
@@ -87,7 +87,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-chart-line text-primary"></i>
-                    Xu hương tiến độ (30 ngày qua)
+                    Xu hướng tiến độ (30 ngày qua)
                 </h5>
             </div>
             <div class="card-body">
@@ -102,7 +102,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-pie-chart text-success"></i>
-                    Phân bđ tiến độ
+                    Phân bố tiến độ
                 </h5>
             </div>
             <div class="card-body">

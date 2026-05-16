@@ -181,7 +181,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-chart-pie text-primary"></i>
-                    Thđng kê
+                    Thống kê
                 </h5>
             </div>
             <div class="card-body">
@@ -372,7 +372,7 @@
 function toggleStatus(chapterId, currentStatus) {
     const action = currentStatus === 'Active' ? 'vô hiệu hóa' : 'kích hoạt';
     
-    if (confirm(`Bạn có chắc chắn muđn ${action} chương này?`)) {
+    if (confirm(`Bạn có chắc chắn muốn ${action} chương này?`)) {
         fetch(`/Admin/Chapters/ToggleStatus/${chapterId}`, {
             method: 'POST',
             headers: {

@@ -1,6 +1,6 @@
 @model ELearningWebsite.Areas.Admin.ViewModels.CertificateDeleteViewModel
 @{
-    ViewData["Title"] = "Xóa Chứng chệ";
+    ViewData["Title"] = "Xóa Chứng chỉ";
 }
 
 <div class="admin-content-header">
@@ -8,9 +8,9 @@
         <div>
             <h1 class="admin-page-title">
                 <i class="fas fa-trash text-danger"></i>
-                Xóa Chứng chệ
+                Xóa Chứng chỉ
             </h1>
-            <p class="admin-page-subtitle">Xác nhận xóa chứng chệ #@Model.CertificateNumber</p>
+            <p class="admin-page-subtitle">Xác nhận xóa chứng chỉ #@Model.CertificateNumber</p>
         </div>
         <div class="admin-actions">
             <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
@@ -29,7 +29,7 @@
             <div class="card-header bg-danger text-white">
                 <h5 class="card-title mb-0">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Xác nhận xóa chứng chệ
+                    Xác nhận xóa chứng chỉ
                 </h5>
             </div>
             <div class="card-body">
@@ -38,8 +38,8 @@
                         <i class="fas fa-warning"></i> Cảnh báo!
                     </h6>
                     <p class="mb-0">
-                        Bạn đang thực hiện xóa chứng chệ. Hành động này <strong>không thă hoàn tác</strong>.
-                        Vui lòng kiăm tra kỹ thông tin trươc khi xác nhận.
+                        Bạn đang thực hiện xóa chứng chỉ. Hành động này <strong>không thể hoàn tác</strong>.
+                        Vui lòng kiểm tra kỹ thông tin trước khi xác nhận.
                     </p>
                 </div>
 
@@ -47,16 +47,16 @@
                 <div class="certificate-info">
                     <h6 class="section-title">
                         <i class="fas fa-certificate text-warning"></i>
-                        Thông tin chứng chệ sẽ bị xóa:
+                        Thông tin chứng chỉ sẽ bị xóa:
                     </h6>
                     
                     <div class="info-grid">
                         <div class="info-item">
-                            <label>ID Chứng chệ:</label>
+                            <label>ID Chứng chỉ:</label>
                             <span class="info-value">#@Model.Id</span>
                         </div>
                         <div class="info-item">
-                            <label>Sđ chứng chệ:</label>
+                            <label>Số chứng chỉ:</label>
                             <span class="info-value text-primary">@Model.CertificateNumber</span>
                         </div>
                         <div class="info-item">
@@ -89,7 +89,7 @@
                         <div class="file-info mt-3">
                             <h6 class="section-title">
                                 <i class="fas fa-file-pdf text-danger"></i>
-                                File chứng chệ:
+                                File chứng chỉ:
                             </h6>
                             <div class="d-flex align-items-center gap-2">
                                 <span class="file-url">@Model.CertificateUrl</span>
@@ -99,7 +99,7 @@
                             </div>
                             <small class="text-muted">
                                 <i class="fas fa-info-circle"></i>
-                                Lưu ý: File chứng chệ sẽ không bị xóa khỏi hệ thđng lưu trữ, chệ liên kết bị gỡ bỏ.
+                                Lưu ý: File chứng chỉ sẽ không bị xóa khỏi hệ thống lưu trữ, chỉ liên kết bị gỡ bỏ.
                             </small>
                         </div>
                     }
@@ -112,13 +112,13 @@
                         Hậu quả khi xóa:
                     </h6>
                     <ul class="consequence-list">
-                        <li>Chứng chệ sẽ bị xóa vĩnh viổn khỏi hệ thđng</li>
-                        <li>Học viên sẽ không thă truy cập chứng chệ này nữa</li>
-                        <li>Thông tin chứng chệ sẽ không xuất hiện trong báo cáo</li>
-                        <li>Không thă khôi phục dữ liệu sau khi xóa</li>
+                        <li>Chứng chỉ sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
+                        <li>Học viên sẽ không thể truy cập chứng chỉ này nữa</li>
+                        <li>Thông tin chứng chỉ sẽ không xuất hiện trong báo cáo</li>
+                        <li>Không thể khôi phục dữ liệu sau khi xóa</li>
                         @if (Model.HasCertificateFile)
                         {
-                            <li>File PDF chứng chệ vẫn tôn tại nhưng không thă truy cập qua hệ thđng</li>
+                            <li>File PDF chứng chỉ vẫn tồn tại nhưng không thể truy cập qua hệ thống</li>
                         }
                     </ul>
                 </div>
@@ -127,14 +127,14 @@
                 <div class="alternatives mt-4">
                     <h6 class="section-title">
                         <i class="fas fa-lightbulb text-info"></i>
-                        Thay vì xóa, bạn có thă:
+                        Thay vì xóa, bạn có thể chọn các hành động khác:
                     </h6>
                     <div class="alternative-actions">
                         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-edit"></i> Chệnh sửa thông tin
+                            <i class="fas fa-edit"></i> Chỉnh sửa thông tin
                         </a>
                         <button type="button" class="btn btn-outline-warning btn-sm" onclick="regenerateCertificate(@Model.Id)">
-                            <i class="fas fa-sync"></i> Tạo lại sđ chứng chệ
+                            <i class="fas fa-sync"></i> Tạo lại số chứng chỉ
                         </button>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="confirmDelete" required>
                             <label class="form-check-label" for="confirmDelete">
-                                Tôi hiău rằng hành động này không thă hoàn tác và xác nhận muđn xóa chứng chệ này
+                                Tôi hiểu rằng hành động này không thể hoàn tác và xác nhận muốn xóa chứng chỉ này
                             </label>
                         </div>
                     </div>
@@ -173,7 +173,7 @@ document.getElementById('confirmDelete').addEventListener('change', function() {
 });
 
 function regenerateCertificate(certificateId) {
-    if (confirm('Bạn có chắc chắn muđn tạo lại chứng chệ này thay vì xóa?')) {
+    if (confirm('Bạn có chắc chắn muốn tạo lại chứng chỉ này thay vì xóa?')) {
         fetch(`/Admin/Certificates/RegenerateCertificate/${certificateId}`, {
             method: 'POST',
             headers: {
@@ -193,7 +193,7 @@ function regenerateCertificate(certificateId) {
             }
         })
         .catch(error => {
-            toastr.error('Có lỗi xảy ra khi tạo lại chứng chệ');
+            toastr.error('Có lỗi xảy ra khi tạo lại chứng chỉ');
         });
     }
 }

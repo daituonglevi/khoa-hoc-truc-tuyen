@@ -30,7 +30,7 @@
                     {
                         <div class="alert alert-warning" role="alert">
                             <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Cảnh báo!</strong> Hành động này không thă hoàn tác. Khuyến mãi sẽ bị xóa vĩnh viổn khỏi hệ thđng.
+                            <strong>Cảnh báo!</strong> Hành động này không thể hoàn tác. Khuyến mãi sẽ bị xóa vĩnh viễn khỏi hệ thống.
                         </div>
 
                         <div class="promotion-info bg-light rounded p-4 mb-4">
@@ -124,7 +124,7 @@
                             <h4 class="text-danger">Khuyến mãi đã được sử dụng</h4>
                             <p class="text-muted">
                                 Đă bảo vệ tính toàn vẹn dữ liệu và lịch sử giao dịch, 
-                                hệ thđng không cho phép xóa khuyến mãi đã được sử dụng.
+                                hệ thống không cho phép xóa khuyến mãi đã được sử dụng.
                             </p>
                         </div>
 
@@ -175,7 +175,7 @@
 @section Scripts {
     <script>
         function confirmDelete() {
-            return confirm('Bạn có CHẮC CHẮN muđn xóa khuyến mãi "@Model.Code"?\n\nHành động này KHôNG TH�, HOệN TÁC!');
+            return confirm('Bạn có CHẮC CHẮN muốn xóa khuyến mãi "@Model.Code"?\n\nHành động này KHÔNG THỂ HOÀN TÁC!');
         }
 
         // Auto focus on cancel button for safety
@@ -185,7 +185,7 @@
 
         // Prevent accidental form submission
         $('form').on('submit', function(e) {
-            if (!confirm('Lần xác nhận cuđi cùng: Bạn có chắc chắn muđn XôA khuyến mãi này?')) {
+            if (!confirm('Lần xác nhận cuđi cùng: Bạn có chắc chắn muốn XÓA khuyến mãi này?')) {
                 e.preventDefault();
                 return false;
             }
