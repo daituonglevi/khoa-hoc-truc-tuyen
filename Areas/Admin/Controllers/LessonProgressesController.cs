@@ -925,15 +925,21 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             var query = _context.Courses.AsQueryable();
             
-            // If Admin, return all courses
+            // If Admin, return all courses (no status filter)
             if (IsAdmin())
             {
                 return query;
             }
 
-            // For Instructor role, return all courses (temporary - will add filtering later)
-            // This allows us to test the UI without getting stuck on course selection
-            return query;
+            // For Instructor role, return their courses (by CreateBy) - like Coupon does
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            // Return courses created by instructor
+            return query.Where(c => c.CreateBy == currentUserId.Value);
         }
 
         private IQueryable<LessonProgress> GetScopedLessonProgressQuery()
