@@ -927,7 +927,6 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             
             return coursesCreated;
         }
-        }
 
         private IQueryable<LessonProgress> GetScopedLessonProgressQuery()
         {
