@@ -426,8 +426,21 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                var currentUserId = GetCurrentUserId();
+                var isAdmin = IsAdmin();
+                var userRoles = User.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value).ToList();
+                
+                System.Diagnostics.Debug.WriteLine($"===== LoadFilterOptions DEBUG =====");
+                System.Diagnostics.Debug.WriteLine($"CurrentUserId: {currentUserId}");
+                System.Diagnostics.Debug.WriteLine($"IsAdmin: {isAdmin}");
+                System.Diagnostics.Debug.WriteLine($"User Roles: {string.Join(",", userRoles)}");
+                System.Diagnostics.Debug.WriteLine($"User Identity Name: {User.Identity?.Name}");
+
                 // Load available courses
                 var coursesQuery = GetScopedCoursesQuery();
+                var courseCount = await coursesQuery.CountAsync();
+                System.Diagnostics.Debug.WriteLine($"Total courses from GetScopedCoursesQuery: {courseCount}");
+
                 var courses = await coursesQuery
                     .Select(c => new LessonProgressCourseOption
                     {
@@ -436,6 +449,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     })
                     .OrderBy(c => c.Title)
                     .ToListAsync();
+                
+                System.Diagnostics.Debug.WriteLine($"Loaded courses count: {courses.Count}");
+                foreach (var c in courses)
+                {
+                    System.Diagnostics.Debug.WriteLine($"  - Course ID: {c.Id}, Title: {c.Title}");
+                }
+
                 viewModel.AvailableCourses = courses;
 
                 // Load available lessons - only if a course is selected
@@ -482,8 +502,8 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             catch (Exception ex)
             {
                 // Log the error
-                Console.WriteLine($"Error in LoadFilterOptions: {ex.Message}");
-                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                System.Diagnostics.Debug.WriteLine($"Error in LoadFilterOptions: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
                 viewModel.AvailableCourses = new List<LessonProgressCourseOption>();
                 viewModel.AvailableLessons = new List<LessonOption>();
                 viewModel.AvailableUsers = new List<UserOption>();
@@ -886,18 +906,27 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         private IQueryable<Course> GetScopedCoursesQuery()
         {
             var query = _context.Courses.AsQueryable();
+            
+            // If Admin, return all courses
             if (IsAdmin())
             {
                 return query;
             }
 
+            // For Instructor role, try to get courses they created or taught
             var currentUserId = GetCurrentUserId();
+            
+            // If no user ID found, return empty
             if (!currentUserId.HasValue)
             {
                 return query.Where(_ => false);
             }
 
-            return query.Where(c => c.CreateBy == currentUserId.Value);
+            // Get courses where CreateBy matches current user
+            var coursesCreated = query.Where(c => c.CreateBy == currentUserId.Value);
+            
+            return coursesCreated;
+        }
         }
 
         private IQueryable<LessonProgress> GetScopedLessonProgressQuery()
