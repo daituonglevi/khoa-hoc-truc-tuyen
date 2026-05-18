@@ -409,10 +409,8 @@ function editProgress(id, currentProgress) {
             $('#lessonSelect').html('<option value="">Tất cả bài học</option>');
             $('#userSelect').html('<option value="">Tất cả học viên</option>');
             
-            // Disable dropdowns if no course selected
+            // If no course selected, keep dropdowns enabled but empty
             if (!courseId) {
-                $('#lessonSelect').prop('disabled', true);
-                $('#userSelect').prop('disabled', true);
                 return;
             }
             
@@ -426,7 +424,6 @@ function editProgress(id, currentProgress) {
                         lessonsHtml += `<option value="${lesson.id}">${lesson.title}</option>`;
                     });
                     $('#lessonSelect').html(lessonsHtml);
-                    $('#lessonSelect').prop('disabled', false);
                 }
                 
                 // Load users enrolled in selected course
@@ -438,12 +435,9 @@ function editProgress(id, currentProgress) {
                         usersHtml += `<option value="${user.id}">${user.userName} (${user.email})</option>`;
                     });
                     $('#userSelect').html(usersHtml);
-                    $('#userSelect').prop('disabled', false);
                 }
             } catch (error) {
                 console.error('Lỗi khi tải dữ liệu:', error);
-                $('#lessonSelect').prop('disabled', true);
-                $('#userSelect').prop('disabled', true);
             }
         });
 
@@ -518,12 +512,8 @@ function editProgress(id, currentProgress) {
     $(document).ready(function() {
         const selectedCourseId = $('#courseSelect').val();
         
-        // Disable lesson and user selects if no course selected
-        if (!selectedCourseId) {
-            $('#lessonSelect').prop('disabled', true);
-            $('#userSelect').prop('disabled', true);
-        } else {
-            // Trigger change to load lessons and users
+        // If a course is selected, load its lessons and users
+        if (selectedCourseId) {
             $('#courseSelect').trigger('change');
         }
     });
