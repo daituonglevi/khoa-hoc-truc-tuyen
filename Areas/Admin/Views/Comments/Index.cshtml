@@ -16,7 +16,7 @@
         <div>
             <a href="@Url.Action("Statistics")" class="btn btn-info">
                 <i class="fas fa-chart-bar me-1"></i>
-                Thđng kê
+                Thống kê
             </a>
         </div>
     </div>
@@ -292,7 +292,7 @@
                 var commentId = $(this).data('id');
                 var button = $(this);
 
-                if (confirm('Bạn có chắc chắn muđn khôi phục bình luận này?')) {
+                if (confirm('Bạn có chắc chắn muốn khôi phục bình luận này?')) {
                     $.post('@Url.Action("Restore")', { id: commentId })
                         .done(function(response) {
                             if (response.success) {

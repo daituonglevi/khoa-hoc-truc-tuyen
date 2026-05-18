@@ -135,14 +135,14 @@
                         Hậu quả khi xóa:
                     </h6>
                     <ul class="consequence-list">
-                        <li>Chương sẽ bị xóa vĩnh viổn khỏi hệ thđng</li>
+                        <li>Chương sẽ bị xóa vĩnh viễn khỏi hệ thống</li>
                         @if (Model.HasLessons)
                         {
                             <li>Tất cả @Model.LessonsCount bài học trong chương sẽ bị xóa</li>
                             <li>Tiến độ học tập của học viên sẽ bị ảnh hưởng</li>
                         }
                         <li>Cấu trúc khóa học sẽ thay đổi</li>
-                        <li>Không thă khôi phục dữ liệu sau khi xóa</li>
+                        <li>Không thể khôi phục dữ liệu sau khi xóa</li>
                         <li>Thông tin chương sẽ không xuất hiện trong báo cáo</li>
                     </ul>
                 </div>
@@ -151,11 +151,11 @@
                 <div class="alternatives mt-4">
                     <h6 class="section-title">
                         <i class="fas fa-lightbulb text-info"></i>
-                        Thay vì xóa, bạn có thă:
+                        Thay vì xóa, bạn có thể:
                     </h6>
                     <div class="alternative-actions">
                         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-edit"></i> Chệnh sửa thông tin
+                            <i class="fas fa-edit"></i> Chỉnh sửa thông tin
                         </a>
                         <button type="button" class="btn btn-outline-warning btn-sm" onclick="toggleStatus(@Model.Id)">
                             <i class="fas fa-@(Model.Status == "Active" ? "pause" : "play")"></i> 
@@ -172,7 +172,7 @@
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="confirmDelete" required>
                             <label class="form-check-label" for="confirmDelete">
-                                Tôi hiău rằng hành động này không thă hoàn tác và xác nhận muđn xóa chương này
+                                Tôi hiău rằng hành động này không thă hoàn tác và xác nhận muốn xóa chương này
                                 @if (Model.HasLessons)
                                 {
                                     <strong>cùng vơi @Model.LessonsCount bài học</strong>
@@ -202,7 +202,7 @@ document.getElementById('confirmDelete').addEventListener('change', function() {
 });
 
 function toggleStatus(chapterId) {
-    if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái chương này thay vì xóa?')) {
+    if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái chương này thay vì xóa?')) {
         fetch(`/Admin/Chapters/ToggleStatus/${chapterId}`, {
             method: 'POST',
             headers: {

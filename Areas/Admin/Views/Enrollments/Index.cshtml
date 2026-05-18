@@ -12,7 +12,7 @@
                     <h3 class="card-title">Quản lý Đăng ký khóa học</h3>
                     <div class="card-tools">
                         <a asp-action="Statistics" class="btn btn-info btn-sm">
-                            <i class="fas fa-chart-bar"></i> Thđng kê
+                            <i class="fas fa-chart-bar"></i> Thống kê
                         </a>
                     </div>
                 </div>
@@ -149,7 +149,7 @@
                                                     </div>
 
                                                     <form asp-action="Delete" asp-route-id="@enrollment.Id" method="post" style="display: inline;"
-                                                          onsubmit="return confirm('Bạn có chắc chắn muđn xóa đăng ký này?')">
+                                                          onsubmit="return confirm('Bạn có chắc chắn muốn xóa đăng ký này?')">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-danger btn-sm">
                                                             <i class="fas fa-trash"></i>
@@ -213,7 +213,7 @@
 
 <script>
     function updateStatus(enrollmentId, status) {
-        if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái?')) {
+        if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái?')) {
             const formData = new FormData();
             formData.append('id', enrollmentId);
             formData.append('status', status);

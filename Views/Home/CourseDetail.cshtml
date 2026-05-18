@@ -1002,12 +1002,12 @@
         const content = replyTextarea.value.trim();
 
         if (!content) {
-            showToast('Vui lòng nhập nội dung phản hôi', 'error');
+            showToast('Vui lòng nhập nội dung phản hồi', 'error');
             return;
         }
 
         if (content.length > 2000) {
-            showToast('Nội dung phản hôi không được vượt quá 2000 ký tự', 'error');
+            showToast('Nội dung phản hồi không được vượt quá 2000 ký tự', 'error');
             return;
         }
 
@@ -1016,7 +1016,7 @@
     }
 
     function deleteComment(commentId) {
-        if (!confirm('Bạn có chắc chắn muđn xóa bình luận này?')) {
+        if (!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
             return;
         }
 

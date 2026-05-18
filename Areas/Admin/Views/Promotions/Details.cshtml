@@ -133,7 +133,7 @@
                 <div class="admin-card-header">
                     <h5 class="admin-card-title">
                         <i class="fas fa-chart-bar me-2"></i>
-                        Thđng kê sử dụng
+                        Thống kê sử dụng
                     </h5>
                 </div>
                 <div class="admin-card-body">
@@ -312,12 +312,12 @@
             navigator.clipboard.writeText(text).then(function() {
                 toastr.success('Đã sao chép mã khuyến mãi: ' + text);
             }, function() {
-                toastr.error('Không thă sao chép mã khuyến mãi');
+                toastr.error('Không thể sao chép mã khuyến mãi');
             });
         }
 
         function toggleStatus(id) {
-            if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái khuyến mãi này?')) {
+            if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái khuyến mãi này?')) {
                 $.post('@Url.Action("ToggleStatus", "Promotions")/' + id, function(response) {
                     if (response.success) {
                         toastr.success(response.message);

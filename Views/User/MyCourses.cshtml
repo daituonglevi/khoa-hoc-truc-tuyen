@@ -133,7 +133,7 @@
                                     <div class="d-grid gap-2">
                                         <a href="@Url.Action("Certificate", "User", new { enrollmentId = enrollment.Id })" 
                                            class="btn btn-success">
-                                            <i class="fas fa-certificate me-2"></i>Xem chứng chệ
+                                            <i class="fas fa-certificate me-2"></i>Xem chứng chỉ
                                         </a>
                                         <a href="@Url.Action("CourseProgress", "User", new { id = enrollment.Id })" 
                                            class="btn btn-outline-primary btn-sm">
@@ -159,7 +159,7 @@
                                         @if (enrollment.Progress > 0)
                                         {
                                             <small class="text-center text-muted">
-                                                Lần cuđi học: @(enrollment.Course.UpdatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                                                Lần cuối học: @(enrollment.Course.UpdatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
                                             </small>
                                         }
                                     </div>

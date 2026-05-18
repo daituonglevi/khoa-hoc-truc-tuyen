@@ -1,6 +1,6 @@
 @model ELearningWebsite.Areas.Admin.ViewModels.CertificateEditViewModel
 @{
-    ViewData["Title"] = "Chệnh sửa Chứng chệ";
+    ViewData["Title"] = "Chỉnh sửa Chứng chỉ";
 }
 
 <div class="admin-content-header">
@@ -8,9 +8,9 @@
         <div>
             <h1 class="admin-page-title">
                 <i class="fas fa-edit text-primary"></i>
-                Chệnh sửa Chứng chệ
+                Chỉnh sửa Chứng chỉ
             </h1>
-            <p class="admin-page-subtitle">Cập nhật thông tin chứng chệ #@Model.CertificateNumber</p>
+            <p class="admin-page-subtitle">Cập nhật thông tin chứng chỉ #@Model.CertificateNumber</p>
         </div>
         <div class="admin-actions">
             <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
@@ -29,7 +29,7 @@
             <div class="card-header">
                 <h5 class="card-title">
                     <i class="fas fa-certificate text-warning"></i>
-                    Thông tin Chứng chệ
+                    Thông tin Chứng chỉ
                 </h5>
             </div>
             <div class="card-body">
@@ -42,15 +42,15 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label asp-for="CertificateNumber" class="form-label required">Sđ chứng chệ</label>
+                                <label asp-for="CertificateNumber" class="form-label required">Số chứng chỉ</label>
                                 <div class="input-group">
-                                    <input asp-for="CertificateNumber" class="form-control" placeholder="Nhập sđ chứng chệ">
+                                    <input asp-for="CertificateNumber" class="form-control" placeholder="Nhập số chứng chỉ">
                                     <button type="button" class="btn btn-outline-secondary" onclick="generateCertificateNumber()">
                                         <i class="fas fa-magic"></i> Tạo mơi
                                     </button>
                                 </div>
                                 <span asp-validation-for="CertificateNumber" class="text-danger"></span>
-                                <small class="form-text text-muted">Sđ chứng chệ duy nhất đă xác thực</small>
+                                <small class="form-text text-muted">Số chứng chỉ duy nhất đã xác thực</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -65,7 +65,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-                                <label asp-for="CertificateUrl" class="form-label">URL File chứng chệ</label>
+                                <label asp-for="CertificateUrl" class="form-label">URL File Chứng chỉ</label>
                                 <div class="input-group">
                                     <input asp-for="CertificateUrl" class="form-control" placeholder="https://example.com/certificate.pdf">
                                     @if (!string.IsNullOrEmpty(Model.CertificateUrl))
@@ -76,7 +76,7 @@
                                     }
                                 </div>
                                 <span asp-validation-for="CertificateUrl" class="text-danger"></span>
-                                <small class="form-text text-muted">URL đến file PDF chứng chệ</small>
+                                <small class="form-text text-muted">URL đến file PDF chứng chỉ</small>
                             </div>
                         </div>
                     </div>
@@ -145,13 +145,13 @@
                 <div class="card-header">
                     <h5 class="card-title">
                         <i class="fas fa-file-pdf text-danger"></i>
-                        Xem trươc Chứng chệ
+                        Xem trước Chứng chỉ
                     </h5>
                 </div>
                 <div class="card-body text-center">
                     <div class="certificate-preview">
                         <i class="fas fa-file-pdf fa-4x text-danger mb-3"></i>
-                        <p class="mb-3">File chứng chệ hiện tại</p>
+                        <p class="mb-3">File chứng chỉ hiện tại</p>
                         <a href="@Model.CertificateUrl" target="_blank" class="btn btn-outline-primary">
                             <i class="fas fa-external-link-alt"></i> Mở file
                         </a>
@@ -170,23 +170,23 @@
             </div>
             <div class="card-body">
                 <div class="help-content">
-                    <h6><i class="fas fa-edit text-primary"></i> Chệnh sửa:</h6>
+                    <h6><i class="fas fa-edit text-primary"></i> Chỉnh sửa:</h6>
                     <ul class="help-list">
-                        <li>Có thă thay đổi sđ chứng chệ</li>
+                        <li>Có thể thay đổi số chứng chỉ</li>
                         <li>Cập nhật ngày cấp nếu cần</li>
                         <li>Thêm hoặc thay đổi URL file</li>
                     </ul>
 
                     <h6><i class="fas fa-exclamation-triangle text-warning"></i> Lưu ý:</h6>
                     <ul class="help-list">
-                        <li>Sđ chứng chệ phải là duy nhất</li>
+                        <li>Số chứng chỉ phải là duy nhất</li>
                         <li>URL phải là đường dẫn hợp lệ</li>
-                        <li>Không thă thay đổi đăng ký liên kết</li>
+                        <li>Không thể thay đổi đăng ký liên kết</li>
                     </ul>
 
                     <h6><i class="fas fa-tools text-secondary"></i> Thao tác:</h6>
                     <ul class="help-list">
-                        <li>Sử dụng "Tạo mơi" đă tạo sđ chứng chệ mơi</li>
+                        <li>Sử dụng "Tạo mơi" đă tạo sđ chứng chỉ mơi</li>
                         <li>Kiăm tra file trươc khi lưu URL</li>
                         <li>Xem chi tiết sau khi cập nhật</li>
                     </ul>
@@ -198,7 +198,7 @@
 
 <script>
 function generateCertificateNumber() {
-    if (confirm('Bạn có chắc chắn muđn tạo sđ chứng chệ mơi? Sđ hiện tại sẽ bị thay thế.')) {
+    if (confirm('Bạn có chắc chắn muốn tạo mới? Số chứng chỉ hiện tại sẽ bị thay thế.')) {
         // Generate a UUID-like certificate number
         const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
         let result = 'CERT-';
@@ -209,7 +209,7 @@ function generateCertificateNumber() {
         
         document.getElementById('CertificateNumber').value = result;
         
-        toastr.success('Đã tạo sđ chứng chệ mơi: ' + result);
+        toastr.success('Đã tạo số chứng chỉ mới: ' + result);
     }
 }
 

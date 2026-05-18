@@ -249,7 +249,7 @@
 
 <script>
 function deleteFinance(id) {
-    if (confirm('Bạn có chắc chắn muđn xóa bản ghi tài chính này? Hành động này không thă hoàn tác!')) {
+    if (confirm('Bạn có chắc chắn muốn xóa bản ghi tài chính này? Hành động này không thể hoàn tác!')) {
         const token = $('input[name="__RequestVerificationToken"]').val();
         
         $.ajax({

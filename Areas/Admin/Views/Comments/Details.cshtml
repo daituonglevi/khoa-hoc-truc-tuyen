@@ -171,7 +171,7 @@
                 <div class="card-header">
                     <h6 class="card-title mb-0">
                         <i class="fas fa-chart-bar me-2"></i>
-                        Thđng kê
+                        Thống kê
                     </h6>
                 </div>
                 <div class="card-body">
@@ -179,12 +179,12 @@
                         <div class="col-6">
                             <div class="border-end">
                                 <h4 class="text-primary mb-0">@Model.Replies.Count</h4>
-                                <small class="text-muted">Phản hôi</small>
+                                <small class="text-muted">Phản hồi</small>
                             </div>
                         </div>
                         <div class="col-6">
                             <h4 class="text-success mb-0">@Model.Replies.Count(r => !r.IsDelete)</h4>
-                            <small class="text-muted">Hiăn thị</small>
+                            <small class="text-muted">Hiển thị</small>
                         </div>
                     </div>
                 </div>
@@ -329,7 +329,7 @@
             $('.restore-btn').click(function() {
                 var commentId = $(this).data('id');
                 
-                if (confirm('Bạn có chắc chắn muđn khôi phục bình luận này?')) {
+                if (confirm('Bạn có chắc chắn muốn khôi phục bình luận này?')) {
                     $.post('@Url.Action("Restore")', { id: commentId })
                         .done(function(response) {
                             if (response.success) {

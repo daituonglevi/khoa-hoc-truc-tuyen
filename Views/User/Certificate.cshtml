@@ -1,6 +1,6 @@
 @model ELearningWebsite.Controllers.CertificateViewModel
 @{
-    ViewData["Title"] = "Chứng chệ hoàn thành khóa học";
+    ViewData["Title"] = "Chứng chỉ hoàn thành khóa học";
 }
 
 <div class="container my-5">
@@ -10,7 +10,7 @@
             <div class="text-center mb-4">
                 <h1 class="display-4 text-primary mb-3">
                     <i class="fas fa-certificate text-warning"></i>
-                    Chứng chệ hoàn thành
+                    Chứng chỉ hoàn thành
                 </h1>
                 <p class="lead text-muted">Chúc mừng bạn đã hoàn thành khóa học!</p>
             </div>
@@ -30,7 +30,7 @@
                         <!-- Certificate Number -->
                         <div class="mb-4">
                             <span class="badge bg-warning text-dark fs-6 px-3 py-2">
-                                Sđ chứng chệ: @Model.Certificate.CertificateNumber
+                                Số chứng chỉ: @Model.Certificate.CertificateNumber
                             </span>
                         </div>
 
@@ -54,7 +54,7 @@
                             <div class="col-md-6">
                                 <div class="info-box">
                                     <i class="fas fa-clock text-success"></i>
-                                    <strong>Ngày cấp chứng chệ:</strong>
+                                    <strong>Ngày cấp chứng chỉ:</strong>
                                     <span>@Model.Certificate.IssueDate.ToString("dd/MM/yyyy")</span>
                                 </div>
                             </div>
@@ -104,7 +104,7 @@
             <!-- Action Buttons -->
             <div class="text-center mt-4">
                 <a href="javascript:window.print()" class="btn btn-primary btn-lg me-3">
-                    <i class="fas fa-print"></i> In chứng chệ
+                    <i class="fas fa-print"></i> In chứng chỉ
                 </a>
                 <a asp-controller="User" asp-action="MyCourses" class="btn btn-outline-secondary btn-lg">
                     <i class="fas fa-arrow-left"></i> Quay lại khóa học của tôi
@@ -117,10 +117,10 @@
                     <div class="col-md-8">
                         <h6 class="alert-heading mb-1">
                             <i class="fas fa-info-circle"></i>
-                            Xác thực chứng chệ
+                            Xác thực chứng chỉ
                         </h6>
                         <p class="mb-0">
-                            Chứng chệ này có thă được xác thực bằng mã sđ: <strong>@Model.Certificate.CertificateNumber</strong>
+                            Chứng chỉ này có thể được xác thực bằng mã số: <strong>@Model.Certificate.CertificateNumber</strong>
                         </p>
                     </div>
                     <div class="col-md-4 text-end">

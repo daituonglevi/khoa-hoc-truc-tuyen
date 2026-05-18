@@ -41,7 +41,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
                 RecentEnrollments = new List<Enrollment>(), // Tạm thời đ�f trđng
 
-                // Thđng kê theo tháng
+                // Thống kê theo tháng
                 MonthlyStats = await GetMonthlyStats()
             };
 

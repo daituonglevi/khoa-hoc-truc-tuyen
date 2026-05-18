@@ -224,7 +224,7 @@
 
 <script>
     function updateCourseStatus(courseId, status) {
-        if (confirm(`Bạn có chắc chắn muđn thay đổi trạng thái course?`)) {
+        if (confirm(`Bạn có chắc chắn muốn thay đổi trạng thái course?`)) {
             const formData = new FormData();
             formData.append('id', courseId);
             formData.append('status', status);
@@ -251,7 +251,7 @@
     }
 
     function deleteCourse(courseId) {
-        if (confirm('Bạn có chắc chắn muđn xóa course này? Hành động này không thă hoàn tác!')) {
+        if (confirm('Bạn có chắc chắn muốn xóa course này? Hành động này không thể hoàn tác!')) {
             const formData = new FormData();
             formData.append('id', courseId);
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]')?.value || '');

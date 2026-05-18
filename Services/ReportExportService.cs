@@ -61,8 +61,8 @@ namespace ELearningWebsite.Services
             worksheet.Range("A1:D1").Merge();
             
             // Add statistics
-            worksheet.Cell("A3").Value = "Thđng kê";
-            worksheet.Cell("A4").Value = "T�.ng sđ người dùng";
+            worksheet.Cell("A3").Value = "Thống kê";
+            worksheet.Cell("A4").Value = "Tổng số người dùng";
             worksheet.Cell("B4").Value = data.TotalUsers;
             worksheet.Cell("A5").Value = "Đã xác thực";
             worksheet.Cell("B5").Value = data.VerifiedUsers;
@@ -72,9 +72,9 @@ namespace ELearningWebsite.Services
             // Add registration trend
             if (data.RegistrationTrend?.Any() == true)
             {
-                worksheet.Cell("A8").Value = "Xu hư�>ng đ�fng ký";
+                worksheet.Cell("A8").Value = "Xu hướng đăng ký";
                 worksheet.Cell("A9").Value = "Tháng";
-                worksheet.Cell("B9").Value = "Người dùng m�>i";
+                worksheet.Cell("B9").Value = "Người dùng mới";
 
                 var row = 10;
                 foreach (var item in data.RegistrationTrend)
@@ -100,8 +100,8 @@ namespace ELearningWebsite.Services
             worksheet.Range("A1:D1").Merge();
             
             // Add statistics
-            worksheet.Cell("A3").Value = "Thđng kê";
-            worksheet.Cell("A4").Value = "T�.ng sđ khóa học";
+            worksheet.Cell("A3").Value = "Thống kê";
+            worksheet.Cell("A4").Value = "Tổng số khóa học";
             worksheet.Cell("B4").Value = data.TotalCourses;
             worksheet.Cell("A5").Value = "Đã xuất bản";
             worksheet.Cell("B5").Value = data.PublishedCourses;
@@ -116,9 +116,9 @@ namespace ELearningWebsite.Services
             {
                 worksheet.Cell("A9").Value = "Khóa học theo danh mục";
                 worksheet.Cell("A10").Value = "Danh mục";
-                worksheet.Cell("B10").Value = "T�.ng khóa học";
+                worksheet.Cell("B10").Value = "Tổng khóa học";
                 worksheet.Cell("C10").Value = "Đã xuất bản";
-                worksheet.Cell("D10").Value = "T�.ng ghi danh";
+                worksheet.Cell("D10").Value = "Tổng ghi danh";
 
                 var row = 11;
                 foreach (var category in data.CoursesByCategory)
@@ -146,14 +146,14 @@ namespace ELearningWebsite.Services
             worksheet.Range("A1:E1").Merge();
             
             // Add statistics
-            worksheet.Cell("A3").Value = "Thđng kê";
-            worksheet.Cell("A4").Value = "T�.ng doanh thu";
+            worksheet.Cell("A3").Value = "Thống kê";
+            worksheet.Cell("A4").Value = "Tổng doanh thu";
             worksheet.Cell("B4").Value = data.TotalRevenue;
-            worksheet.Cell("A5").Value = "T�.ng phí";
+            worksheet.Cell("A5").Value = "Tổng phí";
             worksheet.Cell("B5").Value = data.TotalFees;
             worksheet.Cell("A6").Value = "Doanh thu ròng";
             worksheet.Cell("B6").Value = data.NetRevenue;
-            worksheet.Cell("A7").Value = "T�.ng giao d�<ch";
+            worksheet.Cell("A7").Value = "Tổng giao dịch";
             worksheet.Cell("B7").Value = data.TotalTransactions;
 
             // Format currency cells
@@ -162,7 +162,7 @@ namespace ELearningWebsite.Services
             // Add revenue trend
             if (data.RevenueTrend?.Any() == true)
             {
-                worksheet.Cell("A9").Value = "Xu hư�>ng doanh thu";
+                worksheet.Cell("A9").Value = "Xu hướng doanh thu";
                 worksheet.Cell("A10").Value = "Tháng";
                 worksheet.Cell("B10").Value = "Doanh thu";
                 worksheet.Cell("C10").Value = "Phí";

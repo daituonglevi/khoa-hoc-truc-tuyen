@@ -295,7 +295,7 @@
         }
 
         function toggleStatus(id) {
-            if (confirm('Bạn có chắc chắn muđn thay đổi trạng thái khuyến mãi này?')) {
+            if (confirm('Bạn có chắc chắn muốn thay đổi trạng thái khuyến mãi này?')) {
                 $.post('@Url.Action("ToggleStatus")/' + id, function(response) {
                     if (response.success) {
                         toastr.success(response.message);
