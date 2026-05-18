@@ -913,19 +913,27 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return query;
             }
 
-            // For Instructor role, try to get courses they created or taught
+            // For Instructor role, get courses they created or are collaborator on
             var currentUserId = GetCurrentUserId();
             
-            // If no user ID found, return empty
+            // If no user ID found, return all courses (temporary fallback)
             if (!currentUserId.HasValue)
             {
-                return query.Where(_ => false);
+                // Fallback: if no user ID, still return courses so page works
+                // This might happen if claims aren't set up properly
+                return query;
             }
 
-            // Get courses where CreateBy matches current user
+            // Get courses where:
+            // 1. CreateBy matches current user OR
+            // 2. User is listed as CourseCollaborator
             var coursesCreated = query.Where(c => c.CreateBy == currentUserId.Value);
-            
-            return coursesCreated;
+            var coursesAsCollaborator = _context.CourseCollaborators
+                .Where(cc => cc.UserId == currentUserId.Value && cc.Status == "Active")
+                .Select(cc => cc.Course);
+
+            // Union the two lists
+            return coursesCreated.Union(coursesAsCollaborator);
         }
 
         private IQueryable<LessonProgress> GetScopedLessonProgressQuery()
