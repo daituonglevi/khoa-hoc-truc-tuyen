@@ -23,13 +23,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         }
 
         // GET: Admin/LessonProgresses
-        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", int? lessonId = null,
-            int? userId = null, string status = "", float? minProgress = null, float? maxProgress = null)
+        public async Task<IActionResult> Index(int page = 1, string searchTerm = "", int? courseId = null, 
+            int? lessonId = null, int? userId = null, string status = "", float? minProgress = null, float? maxProgress = null)
         {
             var viewModel = new LessonProgressIndexViewModel
             {
                 CurrentPage = page,
                 SearchTerm = searchTerm,
+                CourseId = courseId,
                 LessonId = lessonId,
                 UserId = userId,
                 Status = status,
@@ -46,6 +47,16 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         .ThenInclude(l => l.Chapter)
                             .ThenInclude(c => c.Course)
                     .AsNoTracking();
+
+                // Apply course filter
+                if (courseId.HasValue)
+                {
+                    query = query.Where(lp => 
+                        lp.Lesson != null && 
+                        lp.Lesson.Chapter != null && 
+                        lp.Lesson.Chapter.Course != null && 
+                        lp.Lesson.Chapter.CourseId == courseId.Value);
+                }
 
                 // Apply search filter
                 if (!string.IsNullOrEmpty(searchTerm))
@@ -415,36 +426,73 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
-                // First check if we have any lessons
-                var lessonsQuery = GetScopedLessonsQuery();
-                var lessonCount = await lessonsQuery.CountAsync();
-                Console.WriteLine($"Total lessons in database: {lessonCount}");
+                // Load available courses
+                var coursesQuery = GetScopedCoursesQuery();
+                var courses = await coursesQuery
+                    .Select(c => new LessonProgressCourseOption
+                    {
+                        Id = c.Id,
+                        Title = c.Title ?? $"Khóa học {c.Id}"
+                    })
+                    .OrderBy(c => c.Title)
+                    .ToListAsync();
+                viewModel.AvailableCourses = courses;
 
-                // Load available lessons with titles
-                var lessons = await lessonsQuery.ToListAsync();
-                var availableLessons = lessons.Select(l => new LessonOption 
-                { 
-                    Id = l.Id, 
-                    Title = l.Title ?? $"Bài học {l.Id}"
-                }).ToList();
-
-                Console.WriteLine($"Mapped {availableLessons.Count} lessons");
-                viewModel.AvailableLessons = availableLessons;
-
-                // Check if we have any users
-                var userCount = await _userManager.Users.CountAsync();
-                Console.WriteLine($"Total users in database: {userCount}");
-
-                // Load available users
-                var dbUsers = await _userManager.Users.ToListAsync();
-                var users = dbUsers.Select(u => new UserOption
+                // Load available lessons
+                IQueryable<Lesson> lessonsQuery = GetScopedLessonsQuery();
+                
+                // Filter lessons by selected course if specified
+                if (viewModel.CourseId.HasValue)
                 {
-                    Id = u.Id,
-                    UserName = u.UserName ?? "Unknown",
-                    Email = u.Email ?? "Unknown"
-                }).ToList();
+                    lessonsQuery = lessonsQuery.Where(l => 
+                        l.Chapter != null && 
+                        l.Chapter.CourseId == viewModel.CourseId.Value);
+                }
 
-                Console.WriteLine($"Mapped {users.Count} users");
+                var lessons = await lessonsQuery
+                    .Select(l => new LessonOption
+                    {
+                        Id = l.Id,
+                        Title = l.Title ?? $"Bài học {l.Id}"
+                    })
+                    .OrderBy(l => l.Title)
+                    .ToListAsync();
+                viewModel.AvailableLessons = lessons;
+
+                // Load available users (students enrolled in instructor's courses)
+                var enrolledUsersQuery = _context.Enrollments
+                    .Include(e => e.User)
+                    .Include(e => e.Course)
+                    .AsQueryable();
+
+                if (!IsAdmin())
+                {
+                    var currentUserId = GetCurrentUserId();
+                    if (currentUserId.HasValue)
+                    {
+                        enrolledUsersQuery = enrolledUsersQuery
+                            .Where(e => e.Course != null && e.Course.CreateBy == currentUserId.Value);
+                    }
+                }
+
+                // Filter by course if specified
+                if (viewModel.CourseId.HasValue)
+                {
+                    enrolledUsersQuery = enrolledUsersQuery
+                        .Where(e => e.CourseId == viewModel.CourseId.Value);
+                }
+
+                var users = await enrolledUsersQuery
+                    .Select(e => e.User)
+                    .Distinct()
+                    .Select(u => new UserOption
+                    {
+                        Id = u.Id,
+                        UserName = u.UserName ?? "Unknown",
+                        Email = u.Email ?? "Unknown"
+                    })
+                    .OrderBy(u => u.UserName)
+                    .ToListAsync();
                 viewModel.AvailableUsers = users;
             }
             catch (Exception ex)
@@ -452,6 +500,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 // Log the error
                 Console.WriteLine($"Error in LoadFilterOptions: {ex.Message}");
                 Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                viewModel.AvailableCourses = new List<LessonProgressCourseOption>();
                 viewModel.AvailableLessons = new List<LessonOption>();
                 viewModel.AvailableUsers = new List<UserOption>();
             }
@@ -766,6 +815,62 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             return "100%";
         }
 
+        // AJAX API Endpoints for quick search
+        [HttpGet]
+        public async Task<IActionResult> GetCoursesByInstructor()
+        {
+            var courses = await GetScopedCoursesQuery()
+                .Select(c => new { id = c.Id, title = c.Title ?? $"Khóa học {c.Id}" })
+                .OrderBy(c => c.title)
+                .ToListAsync();
+
+            return Json(courses);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLessonsByCourse(int courseId)
+        {
+            // Verify instructor owns this course
+            var courseExists = await GetScopedCoursesQuery()
+                .AnyAsync(c => c.Id == courseId);
+
+            if (!courseExists)
+            {
+                return Forbid();
+            }
+
+            var lessons = await _context.Lessons
+                .Where(l => l.Chapter != null && l.Chapter.CourseId == courseId)
+                .Select(l => new { id = l.Id, title = l.Title ?? $"Bài học {l.Id}" })
+                .OrderBy(l => l.title)
+                .ToListAsync();
+
+            return Json(lessons);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEnrolledUsersByCourse(int courseId)
+        {
+            // Verify instructor owns this course
+            var courseExists = await GetScopedCoursesQuery()
+                .AnyAsync(c => c.Id == courseId);
+
+            if (!courseExists)
+            {
+                return Forbid();
+            }
+
+            var users = await _context.Enrollments
+                .Where(e => e.CourseId == courseId)
+                .Select(e => e.User)
+                .Distinct()
+                .Select(u => new { id = u.Id, userName = u.UserName ?? "Unknown", email = u.Email ?? "Unknown" })
+                .OrderBy(u => u.userName)
+                .ToListAsync();
+
+            return Json(users);
+        }
+
         private int? GetCurrentUserId()
         {
             var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -792,6 +897,23 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
 
             return query.Where(l => l.Chapter != null && l.Chapter.Course != null && l.Chapter.Course.CreateBy == currentUserId.Value);
+        }
+
+        private IQueryable<Course> GetScopedCoursesQuery()
+        {
+            var query = _context.Courses.AsQueryable();
+            if (IsAdmin())
+            {
+                return query;
+            }
+
+            var currentUserId = GetCurrentUserId();
+            if (!currentUserId.HasValue)
+            {
+                return query.Where(_ => false);
+            }
+
+            return query.Where(c => c.CreateBy == currentUserId.Value);
         }
 
         private IQueryable<LessonProgress> GetScopedLessonProgressQuery()

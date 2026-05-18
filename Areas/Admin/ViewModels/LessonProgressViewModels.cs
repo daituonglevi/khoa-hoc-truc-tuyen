@@ -11,11 +11,13 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         public int TotalItems { get; set; }
         public int PageSize { get; set; } = 10;
         public string SearchTerm { get; set; } = string.Empty;
+        public int? CourseId { get; set; }
         public int? LessonId { get; set; }
         public int? UserId { get; set; }
         public string Status { get; set; } = string.Empty; // all, completed, in-progress, not-started
         public float? MinProgress { get; set; }
         public float? MaxProgress { get; set; }
+        public List<LessonProgressCourseOption> AvailableCourses { get; set; } = new();
         public List<LessonOption> AvailableLessons { get; set; } = new();
         public List<UserOption> AvailableUsers { get; set; } = new();
 
@@ -101,6 +103,7 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         [Range(0, 100, ErrorMessage = "Đi�fm cao nhất phải từ 0 đến 100")]
         public float? HighestMark { get; set; }
 
+        public List<LessonProgressCourseOption> AvailableCourses { get; set; } = new();
         public List<LessonOption> AvailableLessons { get; set; } = new();
         public List<UserOption> AvailableUsers { get; set; } = new();
     }
@@ -130,6 +133,7 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         [Range(0, 100, ErrorMessage = "Đi�fm cao nhất phải từ 0 đến 100")]
         public float? HighestMark { get; set; }
 
+        public List<LessonProgressCourseOption> AvailableCourses { get; set; } = new();
         public List<LessonOption> AvailableLessons { get; set; } = new();
         public List<UserOption> AvailableUsers { get; set; } = new();
 
@@ -252,4 +256,10 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
     }
-} 
+
+    public class LessonProgressCourseOption
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
+}

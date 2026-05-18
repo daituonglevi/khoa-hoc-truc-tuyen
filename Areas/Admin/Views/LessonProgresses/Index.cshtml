@@ -25,7 +25,7 @@
 
 <!-- Filters -->
 <div class="admin-filters-card">
-    <form method="get" class="admin-filters-form">
+    <form method="get" class="admin-filters-form" id="filterForm">
         <div class="row g-3">
             <div class="col-md-2">
                 <label class="form-label">Tìm kiếm</label>
@@ -33,8 +33,20 @@
                        placeholder="User ID, trạng thái...">
             </div>
             <div class="col-md-2">
+                <label class="form-label">Khóa học</label>
+                <select name="courseId" class="form-select" id="courseSelect">
+                    <option value="">Tất cả khóa học</option>
+                    @foreach (var course in Model.AvailableCourses)
+                    {
+                        <option value="@course.Id" selected="@(Model.CourseId == course.Id)">
+                            @course.Title
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
                 <label class="form-label">Bài học</label>
-                <select name="lessonId" class="form-select">
+                <select name="lessonId" class="form-select" id="lessonSelect">
                     <option value="">Tất cả bài học</option>
                     @foreach (var lesson in Model.AvailableLessons)
                     {
@@ -46,7 +58,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">Học viên</label>
-                <select name="userId" class="form-select">
+                <select name="userId" class="form-select" id="userSelect">
                     <option value="">Tất cả học viên</option>
                     @foreach (var user in Model.AvailableUsers)
                     {
@@ -296,7 +308,7 @@
             @if (Model.CurrentPage > 1)
             {
                 <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, searchTerm = Model.SearchTerm, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage - 1, searchTerm = Model.SearchTerm, courseId = Model.CourseId, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
                         <i class="fas fa-chevron-left"></i>
                     </a>
                 </li>
@@ -305,7 +317,7 @@
                 @for (int i = 1; i <= Model.TotalPages; i++)
             {
                 <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
-                        <a class="page-link" href="@Url.Action("Index", new { page = i, searchTerm = Model.SearchTerm, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
+                        <a class="page-link" href="@Url.Action("Index", new { page = i, searchTerm = Model.SearchTerm, courseId = Model.CourseId, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
                         @i
                     </a>
                 </li>
@@ -314,7 +326,7 @@
             @if (Model.CurrentPage < Model.TotalPages)
             {
                 <li class="page-item">
-                        <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, searchTerm = Model.SearchTerm, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
+                        <a class="page-link" href="@Url.Action("Index", new { page = Model.CurrentPage + 1, searchTerm = Model.SearchTerm, courseId = Model.CourseId, lessonId = Model.LessonId, userId = Model.UserId, status = Model.Status, minProgress = Model.MinProgress, maxProgress = Model.MaxProgress })">
                         <i class="fas fa-chevron-right"></i>
                     </a>
                 </li>
@@ -389,7 +401,52 @@ function editProgress(id, currentProgress) {
             new bootstrap.Modal('#editProgressModal').show();
         }
 
-        // Update progress
+        // Course selection handler
+        $('#courseSelect').change(async function () {
+            const courseId = $(this).val();
+            
+            // Reset lesson and user selects
+            $('#lessonSelect').html('<option value="">Tất cả bài học</option>');
+            $('#userSelect').html('<option value="">Tất cả học viên</option>');
+            
+            if (!courseId) {
+                return;
+            }
+            
+            try {
+                // Load lessons for selected course
+                const lessonsResponse = await fetch(`/Admin/LessonProgresses/GetLessonsByCourse?courseId=${courseId}`);
+                if (lessonsResponse.ok) {
+                    const lessons = await lessonsResponse.json();
+                    let lessonsHtml = '<option value="">Tất cả bài học</option>';
+                    lessons.forEach(lesson => {
+                        lessonsHtml += `<option value="${lesson.id}">${lesson.title}</option>`;
+                    });
+                    $('#lessonSelect').html(lessonsHtml);
+                }
+                
+                // Load users enrolled in selected course
+                const usersResponse = await fetch(`/Admin/LessonProgresses/GetEnrolledUsersByCourse?courseId=${courseId}`);
+                if (usersResponse.ok) {
+                    const users = await usersResponse.json();
+                    let usersHtml = '<option value="">Tất cả học viên</option>';
+                    users.forEach(user => {
+                        usersHtml += `<option value="${user.id}">${user.userName} (${user.email})</option>`;
+                    });
+                    $('#userSelect').html(usersHtml);
+                }
+            } catch (error) {
+                console.error('Lỗi khi tải dữ liệu:', error);
+            }
+        });
+
+        // Trigger course filter on page load if a course was selected
+        $(document).ready(function() {
+            const selectedCourseId = $('#courseSelect').val();
+            if (selectedCourseId) {
+                $('#courseSelect').trigger('change');
+            }
+        });
         async function updateProgress() {
             const id = $('#progressId').val();
             const progress = parseFloat($('#progressPercentage').val());
