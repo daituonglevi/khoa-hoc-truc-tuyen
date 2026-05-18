@@ -895,8 +895,31 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
         private int? GetCurrentUserId()
         {
+            // Try to get from ClaimTypes.NameIdentifier first
             var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            return int.TryParse(rawUserId, out var userId) ? userId : null;
+            if (int.TryParse(rawUserId, out var userId))
+            {
+                return userId;
+            }
+
+            // Fallback: Try to get from "sub" claim (sometimes used in identity)
+            rawUserId = User.FindFirstValue("sub");
+            if (int.TryParse(rawUserId, out userId))
+            {
+                return userId;
+            }
+
+            // Fallback: Try to get user by UserName from UserManager
+            if (_userManager != null && User.Identity?.Name != null)
+            {
+                var user = _userManager.FindByNameAsync(User.Identity.Name).Result;
+                if (user != null)
+                {
+                    return user.Id;
+                }
+            }
+
+            return null;
         }
 
         private bool IsAdmin()
