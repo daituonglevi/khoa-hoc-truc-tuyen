@@ -843,11 +843,13 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             });
         }
 
+        [HttpGet]
         public async Task<IActionResult> GetLessonsByCourse(int courseId)
         {
-            // Verify instructor owns this course
-            var courseExists = await GetScopedCoursesQuery()
-                .AnyAsync(c => c.Id == courseId);
+            // Verify instructor owns this course - like ChaptersController does
+            var currentUserId = GetCurrentUserId();
+            var courseExists = await _context.Courses
+                .AnyAsync(c => c.Id == courseId && (IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value)));
 
             if (!courseExists)
             {
@@ -866,9 +868,10 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         [HttpGet]
         public async Task<IActionResult> GetEnrolledUsersByCourse(int courseId)
         {
-            // Verify instructor owns this course
-            var courseExists = await GetScopedCoursesQuery()
-                .AnyAsync(c => c.Id == courseId);
+            // Verify instructor owns this course - like ChaptersController does
+            var currentUserId = GetCurrentUserId();
+            var courseExists = await _context.Courses
+                .AnyAsync(c => c.Id == courseId && (IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value)));
 
             if (!courseExists)
             {
