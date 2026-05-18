@@ -862,13 +862,19 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     return Json(new { success = false, message = "Bạn không có quyền cập nhật trạng thái khóa học này" });
                 }
 
-                // Ki�fm tra course có tôn tại không
+                // Kiểm tra giảng viên không được phép xuất bản course
+                if (!IsAdmin() && status == "Published")
+                {
+                    return Json(new { success = false, message = "Chỉ quản trị viên mới có quyền xuất bản khóa học" });
+                }
+
+                // Kiểm tra course có tôn tại không
                 var connectionString = _context.Database.GetConnectionString();
                 using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString))
                 {
                     await connection.OpenAsync();
 
-                    // Ki�fm tra course tôn tại
+                    // Kiểm tra course tôn tại
                     var checkCommand = new Microsoft.Data.SqlClient.SqlCommand(
                         "SELECT COUNT(*) FROM Courses WHERE Id = @Id", connection);
                     checkCommand.Parameters.AddWithValue("@Id", id);
@@ -899,7 +905,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có l�-i xảy ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
             }
         }
 

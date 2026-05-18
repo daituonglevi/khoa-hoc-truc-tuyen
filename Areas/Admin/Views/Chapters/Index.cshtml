@@ -72,56 +72,6 @@
     </div>
 </div>
 
-<!-- Results Summary -->
-<div class="admin-summary-cards">
-    <div class="row">
-        <div class="col-md-3">
-            <div class="admin-summary-card">
-                <div class="summary-icon bg-primary">
-                    <i class="fas fa-list-ol"></i>
-                </div>
-                <div class="summary-content">
-                    <h3>@Model.TotalItems</h3>
-                    <p>Tổng chương</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-summary-card">
-                <div class="summary-icon bg-success">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="summary-content">
-                    <h3>@Model.Chapters.Count(c => c.IsActive)</h3>
-                    <p>Đang hoạt động</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-summary-card">
-                <div class="summary-icon bg-warning">
-                    <i class="fas fa-pause-circle"></i>
-                </div>
-                <div class="summary-content">
-                    <h3>@Model.Chapters.Count(c => !c.IsActive)</h3>
-                    <p>Không hoạt động</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="admin-summary-card">
-                <div class="summary-icon bg-info">
-                    <i class="fas fa-book"></i>
-                </div>
-                <div class="summary-content">
-                    <h3>@Model.AvailableCourses.Count</h3>
-                    <p>Khóa học</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Chapters Table -->
 <div class="admin-table-card">
     <div class="table-responsive">

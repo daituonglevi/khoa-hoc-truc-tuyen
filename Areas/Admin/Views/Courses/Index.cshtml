@@ -12,7 +12,7 @@
             <i class="fas fa-graduation-cap me-2"></i>
             Quản lý Courses
         </h2>
-        <a href="/Admin/Courses/Create" class="admin-btn admin-btn-primary">
+        <a href="/Admin/Courses/Create" class="admin-btn admin-btn-primary" style="color: black;">
             <i class="fas fa-plus me-2"></i>
             Thêm Course mơi
         </a>
@@ -141,8 +141,11 @@
                                                 @(course.Status == "Published" ? "Đã xuất bản" : course.Status == "Draft" ? "Nháp" : "Lưu trữ")
                                             </button>
                                             <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Published')">
-                                                    <i class="fas fa-check-circle text-success me-2"></i>Xuất bản</a></li>
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Published')">
+                                                        <i class="fas fa-check-circle text-success me-2"></i>Xuất bản</a></li>
+                                                }
                                                 <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Draft')">
                                                     <i class="fas fa-edit text-warning me-2"></i>Chuyăn về nháp</a></li>
                                                 <li><a class="dropdown-item" href="#" onclick="updateCourseStatus(@course.Id, 'Archived')">
