@@ -262,4 +262,10 @@ namespace ELearningWebsite.Areas.Admin.ViewModels
         public int Id { get; set; }
         public string Title { get; set; } = string.Empty;
     }
+
+    public class LessonOption
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+    }
 }
