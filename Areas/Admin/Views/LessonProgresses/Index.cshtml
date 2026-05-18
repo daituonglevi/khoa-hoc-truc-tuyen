@@ -46,7 +46,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">Bài học</label>
-                <select name="lessonId" class="form-select" id="lessonSelect">
+                <select name="lessonId" class="form-select" id="lessonSelect" @(Model.AvailableLessons.Count == 0 ? "disabled" : "")>
                     <option value="">Tất cả bài học</option>
                     @foreach (var lesson in Model.AvailableLessons)
                     {
@@ -58,7 +58,7 @@
             </div>
             <div class="col-md-2">
                 <label class="form-label">Học viên</label>
-                <select name="userId" class="form-select" id="userSelect">
+                <select name="userId" class="form-select" id="userSelect" @(Model.AvailableUsers.Count == 0 ? "disabled" : "")>
                     <option value="">Tất cả học viên</option>
                     @foreach (var user in Model.AvailableUsers)
                     {
@@ -409,7 +409,10 @@ function editProgress(id, currentProgress) {
             $('#lessonSelect').html('<option value="">Tất cả bài học</option>');
             $('#userSelect').html('<option value="">Tất cả học viên</option>');
             
+            // Disable dropdowns if no course selected
             if (!courseId) {
+                $('#lessonSelect').prop('disabled', true);
+                $('#userSelect').prop('disabled', true);
                 return;
             }
             
@@ -423,6 +426,7 @@ function editProgress(id, currentProgress) {
                         lessonsHtml += `<option value="${lesson.id}">${lesson.title}</option>`;
                     });
                     $('#lessonSelect').html(lessonsHtml);
+                    $('#lessonSelect').prop('disabled', false);
                 }
                 
                 // Load users enrolled in selected course
@@ -434,9 +438,12 @@ function editProgress(id, currentProgress) {
                         usersHtml += `<option value="${user.id}">${user.userName} (${user.email})</option>`;
                     });
                     $('#userSelect').html(usersHtml);
+                    $('#userSelect').prop('disabled', false);
                 }
             } catch (error) {
                 console.error('Lỗi khi tải dữ liệu:', error);
+                $('#lessonSelect').prop('disabled', true);
+                $('#userSelect').prop('disabled', true);
             }
         });
 
@@ -506,6 +513,20 @@ function editProgress(id, currentProgress) {
                 alert('Có lỗi xảy ra khi cập nhật trạng thái');
     }
 }
+
+    // Initialize on page load
+    $(document).ready(function() {
+        const selectedCourseId = $('#courseSelect').val();
+        
+        // Disable lesson and user selects if no course selected
+        if (!selectedCourseId) {
+            $('#lessonSelect').prop('disabled', true);
+            $('#userSelect').prop('disabled', true);
+        } else {
+            // Trigger change to load lessons and users
+            $('#courseSelect').trigger('change');
+        }
+    });
 </script>
 }
 

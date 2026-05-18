@@ -438,61 +438,45 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     .ToListAsync();
                 viewModel.AvailableCourses = courses;
 
-                // Load available lessons
-                IQueryable<Lesson> lessonsQuery = GetScopedLessonsQuery();
-                
-                // Filter lessons by selected course if specified
+                // Load available lessons - only if a course is selected
+                List<LessonOption> lessons = new List<LessonOption>();
                 if (viewModel.CourseId.HasValue)
                 {
-                    lessonsQuery = lessonsQuery.Where(l => 
-                        l.Chapter != null && 
-                        l.Chapter.CourseId == viewModel.CourseId.Value);
-                }
+                    var lessonsQuery = GetScopedLessonsQuery()
+                        .Where(l => 
+                            l.Chapter != null && 
+                            l.Chapter.CourseId == viewModel.CourseId.Value);
 
-                var lessons = await lessonsQuery
-                    .Select(l => new LessonOption
-                    {
-                        Id = l.Id,
-                        Title = l.Title ?? $"Bài học {l.Id}"
-                    })
-                    .OrderBy(l => l.Title)
-                    .ToListAsync();
+                    lessons = await lessonsQuery
+                        .Select(l => new LessonOption
+                        {
+                            Id = l.Id,
+                            Title = l.Title ?? $"Bài học {l.Id}"
+                        })
+                        .OrderBy(l => l.Title)
+                        .ToListAsync();
+                }
                 viewModel.AvailableLessons = lessons;
 
-                // Load available users (students enrolled in instructor's courses)
-                var enrolledUsersQuery = _context.Enrollments
-                    .Include(e => e.User)
-                    .Include(e => e.Course)
-                    .AsQueryable();
-
-                if (!IsAdmin())
-                {
-                    var currentUserId = GetCurrentUserId();
-                    if (currentUserId.HasValue)
-                    {
-                        enrolledUsersQuery = enrolledUsersQuery
-                            .Where(e => e.Course != null && e.Course.CreateBy == currentUserId.Value);
-                    }
-                }
-
-                // Filter by course if specified
+                // Load available users - only for instructor's courses, and only if course selected
+                List<UserOption> users = new List<UserOption>();
                 if (viewModel.CourseId.HasValue)
                 {
-                    enrolledUsersQuery = enrolledUsersQuery
-                        .Where(e => e.CourseId == viewModel.CourseId.Value);
-                }
+                    var enrolledUsersQuery = _context.Enrollments
+                        .Where(e => e.CourseId == viewModel.CourseId.Value)
+                        .Select(e => e.User)
+                        .Distinct();
 
-                var users = await enrolledUsersQuery
-                    .Select(e => e.User)
-                    .Distinct()
-                    .Select(u => new UserOption
-                    {
-                        Id = u.Id,
-                        UserName = u.UserName ?? "Unknown",
-                        Email = u.Email ?? "Unknown"
-                    })
-                    .OrderBy(u => u.UserName)
-                    .ToListAsync();
+                    users = await enrolledUsersQuery
+                        .Select(u => new UserOption
+                        {
+                            Id = u.Id,
+                            UserName = u.UserName ?? "Unknown",
+                            Email = u.Email ?? "Unknown"
+                        })
+                        .OrderBy(u => u.UserName)
+                        .ToListAsync();
+                }
                 viewModel.AvailableUsers = users;
             }
             catch (Exception ex)
