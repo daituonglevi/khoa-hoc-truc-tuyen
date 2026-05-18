@@ -33,14 +33,23 @@
                        placeholder="User ID, trạng thái...">
             </div>
             <div class="col-md-2">
-                <label class="form-label">Khóa học</label>
+                <label class="form-label">Khóa học 
+                    <span class="badge bg-info">@Model.AvailableCourses?.Count ?? 0</span>
+                </label>
                 <select name="courseId" class="form-select" id="courseSelect">
                     <option value="">Tất cả khóa học</option>
-                    @foreach (var course in Model.AvailableCourses)
+                    @if (Model.AvailableCourses != null && Model.AvailableCourses.Any())
                     {
-                        <option value="@course.Id" selected="@(Model.CourseId == course.Id)">
-                            @course.Title
-                        </option>
+                        @foreach (var course in Model.AvailableCourses)
+                        {
+                            <option value="@course.Id" selected="@(Model.CourseId == course.Id)">
+                                @course.Title
+                            </option>
+                        }
+                    }
+                    else
+                    {
+                        <option disabled>Không có khóa học nào</option>
                     }
                 </select>
             </div>
