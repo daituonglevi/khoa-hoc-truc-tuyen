@@ -831,7 +831,25 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             return Json(courses);
         }
 
+        // Debug endpoint to check available courses
         [HttpGet]
+        public async Task<IActionResult> DebugCourses()
+        {
+            var totalCourses = await _context.Courses.CountAsync();
+            var allCourses = await _context.Courses.Select(c => new { id = c.Id, title = c.Title, createBy = c.CreateBy }).ToListAsync();
+            var scopedCourses = await GetScopedCoursesQuery().Select(c => new { id = c.Id, title = c.Title, createBy = c.CreateBy }).ToListAsync();
+            
+            return Json(new
+            {
+                totalCoursesInDb = totalCourses,
+                allCourses = allCourses,
+                scopedCourses = scopedCourses,
+                currentUserId = GetCurrentUserId(),
+                isAdmin = IsAdmin(),
+                userName = User.Identity?.Name
+            });
+        }
+
         public async Task<IActionResult> GetLessonsByCourse(int courseId)
         {
             // Verify instructor owns this course
