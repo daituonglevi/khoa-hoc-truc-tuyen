@@ -128,7 +128,7 @@
                                         <div class="col-md-6">
                                             <h6>Tóm tắt:</h6>
                                             <ul class="list-unstyled">
-                                                <li><strong>Tổng sđ đăng ký:</strong> @ViewBag.TotalEnrollments</li>
+                                                <li><strong>Tổng số đăng ký:</strong> @ViewBag.TotalEnrollments</li>
                                                 <li><strong>Tỷ lệ hoàn thành:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.CompletedEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>
                                                 <li><strong>Tỷ lệ đang học:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ActiveEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>
                                                 <li><strong>Tỷ lệ hết hạn:</strong> @(ViewBag.TotalEnrollments > 0 ? Math.Round((double)ViewBag.ExpiredEnrollments / ViewBag.TotalEnrollments * 100, 1) : 0)%</li>

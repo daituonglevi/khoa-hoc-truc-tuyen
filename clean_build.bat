@@ -1,0 +1,9 @@
+@echo off
+echo Cleaning project...
+dotnet clean
+echo Removing bin and obj folders...
+rmdir /s /q bin
+rmdir /s /q obj
+echo Building project...
+dotnet build
+echo Build complete!
