@@ -426,31 +426,24 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         {
             try
             {
+                // Load available courses - directly query like ChaptersController does
                 var currentUserId = GetCurrentUserId();
-                var isAdmin = IsAdmin();
-                var userRoles = User.Claims.Where(c => c.Type == "http://schemas.microsoft.com/ws/2008/06/identity/claims/role").Select(c => c.Value).ToList();
                 
                 System.Diagnostics.Debug.WriteLine($"===== LoadFilterOptions DEBUG =====");
                 System.Diagnostics.Debug.WriteLine($"CurrentUserId: {currentUserId}");
-                System.Diagnostics.Debug.WriteLine($"IsAdmin: {isAdmin}");
-                System.Diagnostics.Debug.WriteLine($"User Roles: {string.Join(",", userRoles)}");
-                System.Diagnostics.Debug.WriteLine($"User Identity Name: {User.Identity?.Name}");
+                System.Diagnostics.Debug.WriteLine($"IsAdmin: {IsAdmin()}");
 
-                // Load available courses
-                var coursesQuery = GetScopedCoursesQuery();
-                var courseCount = await coursesQuery.CountAsync();
-                System.Diagnostics.Debug.WriteLine($"Total courses from GetScopedCoursesQuery: {courseCount}");
-
-                var courses = await coursesQuery
+                var courses = await _context.Courses
+                    .Where(c => IsAdmin() || (currentUserId.HasValue && c.CreateBy == currentUserId.Value))
+                    .OrderBy(c => c.Title)
                     .Select(c => new LessonProgressCourseOption
                     {
                         Id = c.Id,
                         Title = c.Title ?? $"Khóa học {c.Id}"
                     })
-                    .OrderBy(c => c.Title)
                     .ToListAsync();
                 
-                System.Diagnostics.Debug.WriteLine($"Loaded courses count: {courses.Count}");
+                System.Diagnostics.Debug.WriteLine($"Total courses loaded: {courses.Count}");
                 foreach (var c in courses)
                 {
                     System.Diagnostics.Debug.WriteLine($"  - Course ID: {c.Id}, Title: {c.Title}");
