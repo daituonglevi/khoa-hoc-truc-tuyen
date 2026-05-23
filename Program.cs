@@ -68,6 +68,14 @@ builder.Services.AddScoped<IPrivateBlobStorageService, AzureBlobPrivateStorageSe
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
+// Momo API Payment
+builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+builder.Services.AddHttpClient<IMomoService, MomoService>();
+
+// Zoom API Integration for Live Classes
+builder.Services.Configure<ZoomOptions>(builder.Configuration.GetSection("Zoom"));
+builder.Services.AddHttpClient<IZoomService, ZoomService>();
+
 // Tạm thời comment các services đ�f tránh l�-i
 // builder.Services.AddScoped<ICourseService, CourseService>();
 // builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
