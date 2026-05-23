@@ -28,6 +28,11 @@ namespace ELearningWebsite.Models
         public string RecordingUrl { get; set; } = string.Empty;
 
         /// <summary>
+        /// Download URL for the recording
+        /// </summary>
+        public string? DownloadUrl { get; set; }
+
+        /// <summary>
         /// Duration in seconds
         /// </summary>
         public long? DurationSeconds { get; set; }

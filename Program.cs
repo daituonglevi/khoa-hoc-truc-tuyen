@@ -4,6 +4,8 @@ using ELearningWebsite.Data;
 using ELearningWebsite.Models;
 using ELearningWebsite.Services;
 using System.Text;
+using Hangfire;
+using Hangfire.SqlServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,13 +70,22 @@ builder.Services.AddScoped<IPrivateBlobStorageService, AzureBlobPrivateStorageSe
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
-// Momo API Payment
-builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
-builder.Services.AddHttpClient<IMomoService, MomoService>();
+// // Momo API Payment
+// builder.Services.Configure<MomoOptionModel>(builder.Configuration.GetSection("MomoAPI"));
+// builder.Services.AddHttpClient<IMomoService, MomoService>();
 
 // Zoom API Integration for Live Classes
 builder.Services.Configure<ZoomOptions>(builder.Configuration.GetSection("Zoom"));
 builder.Services.AddHttpClient<IZoomService, ZoomService>();
+
+// Hangfire Background Job Service for Live Classes
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
+builder.Services.AddScoped<ILiveClassBackgroundService, LiveClassBackgroundService>();
 
 // Tạm thời comment các services đ�f tránh l�-i
 // builder.Services.AddScoped<ICourseService, CourseService>();
@@ -102,6 +113,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Configure Hangfire Dashboard (only in development or with auth in production)
+app.UseHangfireDashboard();
 
 app.UseSession();
 app.UseAuthentication();

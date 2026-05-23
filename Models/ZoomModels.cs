@@ -40,6 +40,7 @@ namespace ELearningWebsite.Models
         public string RecordingId { get; set; } = string.Empty;
         public string MeetingId { get; set; } = string.Empty;
         public string RecordingUrl { get; set; } = string.Empty;
+        public string DownloadUrl { get; set; } = string.Empty;
         public DateTime RecordingStart { get; set; }
         public DateTime RecordingEnd { get; set; }
         public long DurationSeconds { get; set; }
@@ -85,8 +86,9 @@ namespace ELearningWebsite.Models
         public string RecordingEnd { get; set; } = string.Empty;
         public string FileType { get; set; } = string.Empty; // MP4, M3U8, etc
         public long FileSize { get; set; }
-        public long PlayUrl { get; set; }
+        public string PlayUrl { get; set; } = string.Empty;
         public string DownloadUrl { get; set; } = string.Empty;
+        public string RecordingType { get; set; } = string.Empty; // shared_screen_with_speaker_video, video, etc
         public string Status { get; set; } = string.Empty; // completed, processing
     }
 }

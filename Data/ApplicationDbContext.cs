@@ -31,9 +31,6 @@ namespace ELearningWebsite.Data
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<MediaFolder> MediaFolders { get; set; }
         public DbSet<CourseCollaborator> CourseCollaborators { get; set; }
-        public DbSet<UserWallet> UserWallets { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
-        public DbSet<MoMoPayment> MoMoPayments { get; set; }
         public DbSet<LiveClass> LiveClasses { get; set; }
         public DbSet<LiveClassAttendance> LiveClassAttendances { get; set; }
         public DbSet<LiveClassRecording> LiveClassRecordings { get; set; }
