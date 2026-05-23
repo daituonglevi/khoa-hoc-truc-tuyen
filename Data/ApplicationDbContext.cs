@@ -56,6 +56,15 @@ namespace ELearningWebsite.Data
                 .HasForeignKey(l => l.ChapterId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.Entity<Lesson>()
+                .HasOne(l => l.LiveClass)
+                .WithMany()
+                .HasForeignKey(l => l.LiveClassId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.Entity<Lesson>()
+                .HasIndex(l => new { l.ChapterId, l.Type });
+
             // Configure relationships for LessonProgress
             builder.Entity<LessonProgress>()
                 .HasOne(lp => lp.User)

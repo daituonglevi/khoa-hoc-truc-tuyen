@@ -26,13 +26,22 @@ namespace ELearningWebsite.Models
         [Required]
         public int OrderIndex { get; set; }
 
+        /// <summary>
+        /// Type of lesson: Video, Text, Quiz, LiveClass, Assignment
+        /// </summary>
         [Required]
         [StringLength(50)]
-        public string Type { get; set; } = string.Empty;
+        public string Type { get; set; } = "Video"; // Video, Text, Quiz, LiveClass, Assignment
 
         [Required]
         [StringLength(50)]
         public string Status { get; set; } = string.Empty;
+
+        /// <summary>
+        /// For LiveClass type lessons - reference to the live class event
+        /// </summary>
+        [ForeignKey("LiveClass")]
+        public int? LiveClassId { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
@@ -48,6 +57,8 @@ namespace ELearningWebsite.Models
         public virtual Chapter? Chapter { get; set; }
 
         public virtual Quiz? Quiz { get; set; }
+
+        public virtual LiveClass? LiveClass { get; set; }
 
         public virtual ICollection<LessonProgress> LessonProgresses { get; set; } = new List<LessonProgress>();
     }
