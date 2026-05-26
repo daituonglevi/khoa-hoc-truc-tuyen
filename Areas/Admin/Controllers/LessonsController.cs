@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ELearningWebsite.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using ELearningWebsite.Services;
+using Hangfire;
 
 namespace ELearningWebsite.Areas.Admin.Controllers
 {
@@ -11,9 +13,17 @@ namespace ELearningWebsite.Areas.Admin.Controllers
     public class LessonsController : Controller
     {
         private readonly ELearningWebsite.Data.ApplicationDbContext _context;
-        public LessonsController(ELearningWebsite.Data.ApplicationDbContext context)
+        private readonly IZoomService _zoomService;
+        private readonly IEmailSender _emailSender;
+
+        public LessonsController(
+            ELearningWebsite.Data.ApplicationDbContext context,
+            IZoomService zoomService,
+            IEmailSender emailSender)
         {
             _context = context;
+            _zoomService = zoomService;
+            _emailSender = emailSender;
         }
 
         // GET: Admin/Lessons
@@ -168,7 +178,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // POST: Admin/Lessons/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Lesson lesson, DateTime? ScheduledDateTime, int? DurationMinutes, int? MaxParticipants, bool IsRecordingEnabled, bool IsRecordingPublic)
+        public async Task<IActionResult> Create(Lesson lesson, DateTime? ScheduledDateTime, int? DurationMinutes, int? MaxParticipants, bool IsRecordingEnabled, bool IsRecordingPublic)
         {
             if (!CanManageChapter(lesson.ChapterId))
             {
@@ -214,6 +224,55 @@ namespace ELearningWebsite.Areas.Admin.Controllers
 
                         _context.LiveClasses.Add(liveClass);
                         _context.SaveChanges();
+
+                        // Try to create Zoom meeting asynchronously
+                        try
+                        {
+                            var meetingRequest = new ZoomMeetingRequest
+                            {
+                                Topic = lesson.Title,
+                                StartTime = ScheduledDateTime.Value,
+                                DurationMinutes = DurationMinutes ?? 60,
+                                TimeZone = "Asia/Ho_Chi_Minh",
+                                RecordingEnabled = IsRecordingEnabled,
+                                Password = Guid.NewGuid().ToString().Substring(0, 8)
+                            };
+
+                            var meetingResponse = await _zoomService.CreateMeetingAsync(meetingRequest);
+
+                            if (meetingResponse != null)
+                            {
+                                liveClass.ZoomMeetingId = meetingResponse.MeetingId;
+                                liveClass.JoinUrl = meetingResponse.JoinUrl;
+                                liveClass.StartUrl = meetingResponse.StartUrl;
+                                _context.SaveChanges();
+
+                                // Get enrolled students and send invitation emails
+                                var enrolledStudents = _context.Enrollments
+                                    .Where(e => e.CourseId == chapter.CourseId)
+                                    .Include(e => e.User)
+                                    .Select(e => e.User)
+                                    .ToList();
+
+                                if (enrolledStudents.Any())
+                                {
+                                    var emailTasks = enrolledStudents.Select(student =>
+                                        _emailSender.SendEmailAsync(
+                                            student.Email,
+                                            $"Mời tham gia lớp học trực tiếp: {lesson.Title}",
+                                            GenerateLiveClassInvitationHtml(lesson.Title, ScheduledDateTime.Value, meetingResponse.JoinUrl, student.FullName)
+                                        )
+                                    );
+
+                                    await Task.WhenAll(emailTasks);
+                                }
+                            }
+                        }
+                        catch (Exception zoomEx)
+                        {
+                            // Log error but don't fail - meeting can be created manually later
+                            System.Diagnostics.Debug.WriteLine($"Zoom meeting creation failed: {zoomEx.Message}");
+                        }
 
                         // Link the lesson to the live class
                         lesson.LiveClassId = liveClass.Id;
@@ -728,6 +787,33 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         cc.CourseId == l.Chapter.CourseId
                         && cc.UserId == currentUserId.Value
                         && cc.Status == "Active")));
+        }
+
+        private string GenerateLiveClassInvitationHtml(string lessonTitle, DateTime scheduledTime, string joinUrl, string studentName)
+        {
+            return $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2>Mời tham gia lớp học trực tiếp</h2>
+                <p>Xin chào <strong>{System.Net.WebUtility.HtmlEncode(studentName)}</strong>,</p>
+                
+                <p>Bạn được mời tham gia lớp học trực tiếp:</p>
+                <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #007bff;'>
+                    <h3 style='color: #007bff; margin-top: 0;'>{System.Net.WebUtility.HtmlEncode(lessonTitle)}</h3>
+                    <p><strong>Thời gian:</strong> {scheduledTime:dd/MM/yyyy HH:mm} (múi giờ VN)</p>
+                </div>
+                
+                <p>Nhấp vào nút dưới để tham gia lớp học:</p>
+                <p>
+                    <a href='{joinUrl}' style='background-color: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;'>
+                        Tham gia Lớp Học Trực Tiếp
+                    </a>
+                </p>
+                
+                <p>Hoặc sao chép link dưới vào trình duyệt:</p>
+                <p style='background-color: #f9f9f9; padding: 10px; word-break: break-all;'>{joinUrl}</p>
+                
+                <p>Hẹn gặp bạn!</p>
+            </div>";
         }
 
     }
