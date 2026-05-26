@@ -31,6 +31,7 @@ namespace ELearningWebsite.Data
         public DbSet<MediaFile> MediaFiles { get; set; }
         public DbSet<MediaFolder> MediaFolders { get; set; }
         public DbSet<CourseCollaborator> CourseCollaborators { get; set; }
+        // LiveClass tables: Database-first via database.sql (no EF Core migration generation)
         public DbSet<LiveClass> LiveClasses { get; set; }
         public DbSet<LiveClassAttendance> LiveClassAttendances { get; set; }
         public DbSet<LiveClassRecording> LiveClassRecordings { get; set; }
@@ -249,54 +250,8 @@ namespace ELearningWebsite.Data
             builder.Entity<CourseCollaborator>()
                 .HasIndex(cc => new { cc.UserId, cc.Status });
 
-            // Configure LiveClass relationships
-            builder.Entity<LiveClass>()
-                .HasOne(lc => lc.Course)
-                .WithMany()
-                .HasForeignKey(lc => lc.CourseId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Entity<LiveClass>()
-                .HasOne(lc => lc.Lesson)
-                .WithMany()
-                .HasForeignKey(lc => lc.LessonId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            builder.Entity<LiveClass>()
-                .HasOne(lc => lc.Instructor)
-                .WithMany()
-                .HasForeignKey(lc => lc.CreateBy)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<LiveClass>()
-                .HasMany(lc => lc.Attendances)
-                .WithOne(a => a.LiveClass)
-                .HasForeignKey(a => a.LiveClassId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Entity<LiveClass>()
-                .HasMany(lc => lc.Recordings)
-                .WithOne(r => r.LiveClass)
-                .HasForeignKey(r => r.LiveClassId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            builder.Entity<LiveClass>()
-                .HasIndex(lc => new { lc.CourseId, lc.ScheduledDateTime });
-
-            // Configure LiveClassAttendance relationships
-            builder.Entity<LiveClassAttendance>()
-                .HasOne(a => a.User)
-                .WithMany()
-                .HasForeignKey(a => a.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            builder.Entity<LiveClassAttendance>()
-                .HasIndex(a => new { a.LiveClassId, a.UserId })
-                .IsUnique();
-
-            builder.Entity<LiveClassAttendance>()
-                .HasIndex(a => new { a.LiveClassId, a.Status });
-
+            // LiveClass relationships configured manually in database.sql to avoid EF Core migration conflicts
+            // See LiveClassFeature.sql for table schema and foreign key definitions
         }
 
     }
