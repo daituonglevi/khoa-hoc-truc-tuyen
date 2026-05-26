@@ -280,9 +280,9 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         }
                         catch (Exception zoomEx)
                         {
-                            // Log error but don't fail - meeting can be created manually later
+                            // Log but don't fail - meeting can be created manually later
                             System.Diagnostics.Debug.WriteLine($"Zoom meeting creation failed: {zoomEx.Message}");
-                            TempData["WarningMessage"] = "⚠️ Lớp học đã được tạo nhưng gặp lỗi khi tạo meeting Zoom. Kiểm tra logs để biết chi tiết.";
+                            TempData["WarningMessage"] = "⚠️ Lớp học đã tạo nhưng gặp lỗi khi tạo meeting Zoom. Kiểm tra logs để biết chi tiết.";
                         }
 
                         // Link the lesson to the live class
