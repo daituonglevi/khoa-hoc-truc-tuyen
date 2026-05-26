@@ -168,7 +168,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // POST: Admin/Lessons/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create(Lesson lesson)
+        public IActionResult Create(Lesson lesson, DateTime? ScheduledDateTime, int? DurationMinutes, int? MaxParticipants, bool IsRecordingEnabled, bool IsRecordingPublic)
         {
             if (!CanManageChapter(lesson.ChapterId))
             {
@@ -183,14 +183,60 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     return Forbid();
                 }
 
-                lesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
+                // Handle Live Class creation
+                if (lesson.Type == "LiveClass" && ScheduledDateTime.HasValue)
+                {
+                    try
+                    {
+                        // Get the course associated with this lesson's chapter
+                        var chapter = _context.Chapters.FirstOrDefault(c => c.Id == lesson.ChapterId);
+                        if (chapter == null)
+                        {
+                            ModelState.AddModelError("", "Chương không tồn tại");
+                            return View(lesson);
+                        }
+
+                        // Create LiveClass record
+                        var liveClass = new LiveClass
+                        {
+                            CourseId = chapter.CourseId,
+                            Title = lesson.Title,
+                            Description = lesson.Description,
+                            ScheduledDateTime = ScheduledDateTime.Value,
+                            DurationMinutes = DurationMinutes ?? 60,
+                            MaxParticipants = MaxParticipants,
+                            InstructorId = currentUserId.Value,
+                            Status = "Scheduled",
+                            IsRecordingEnabled = IsRecordingEnabled,
+                            IsRecordingPublic = IsRecordingPublic,
+                            CreatedAt = DateTime.Now
+                        };
+
+                        _context.LiveClasses.Add(liveClass);
+                        _context.SaveChanges();
+
+                        // Link the lesson to the live class
+                        lesson.LiveClassId = liveClass.Id;
+                        lesson.VideoUrl = null; // Live class doesn't need video URL initially
+                    }
+                    catch (Exception ex)
+                    {
+                        ModelState.AddModelError("", "Lỗi tạo lớp học trực tiếp: " + ex.Message);
+                        return View(lesson);
+                    }
+                }
+                else if (lesson.Type != "LiveClass")
+                {
+                    lesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
+                }
+
                 lesson.CreateBy = currentUserId.Value;
                 _context.Set<Lesson>().Add(lesson);
                 _context.SaveChanges();
-                // Sau khi tạo, chuy�fn về trang chi tiết chương
+                
                 return RedirectToAction("Details", "Chapters", new { id = lesson.ChapterId });
             }
-            // Nếu l�-i, truyền lại danh sách chương
+            // Nếu lỗi, truyền lại danh sách chương
             var chaptersQuery = _context.Set<Chapter>().AsQueryable();
             var currentUserId2 = GetCurrentUserId();
             if (!IsAdmin() && currentUserId2.HasValue)

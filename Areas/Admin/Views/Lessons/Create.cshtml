@@ -70,12 +70,54 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="Type" class="form-label">Loại nội dung</label>
-                    <select asp-for="Type" class="form-select">
+                    <select asp-for="Type" class="form-select" id="lessonType">
                         <option value="Video">Video</option>
                         <option value="Text">Text</option>
                         <option value="Quiz">Quiz</option>
                         <option value="Assignment">Assignment</option>
+                        <option value="LiveClass">Live Class - Lớp học trực tiếp</option>
                     </select>
+                </div>
+
+                <!-- Live Class Options (Hidden by default) -->
+                <div id="liveClassOptions" class="d-none mt-4 p-3 border rounded bg-light">
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-video-plus me-2"></i>Cấu hình Lớp học trực tiếp
+                    </h5>
+                    
+                    <div class="form-group">
+                        <label for="ScheduledDateTime" class="form-label">Thời gian dự kiến</label>
+                        <input type="datetime-local" id="ScheduledDateTime" name="ScheduledDateTime" class="form-control" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="DurationMinutes" class="form-label">Thời lượng (phút)</label>
+                        <input type="number" id="DurationMinutes" name="DurationMinutes" class="form-control" min="30" placeholder="Ví dụ: 90" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="MaxParticipants" class="form-label">Số học viên tối đa</label>
+                        <input type="number" id="MaxParticipants" name="MaxParticipants" class="form-control" min="1" placeholder="Để trống = không giới hạn" />
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" id="IsRecordingEnabled" name="IsRecordingEnabled" class="form-check-input" checked />
+                        <label class="form-check-label" for="IsRecordingEnabled">
+                            <i class="fas fa-record-vinyl me-2"></i>Bật ghi hình lớp học
+                        </label>
+                    </div>
+
+                    <div class="form-group form-check">
+                        <input type="checkbox" id="IsRecordingPublic" name="IsRecordingPublic" class="form-check-input" checked />
+                        <label class="form-check-label" for="IsRecordingPublic">
+                            <i class="fas fa-share-alt me-2"></i>Công khai video ghi hình (học viên xem được)
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Lớp học sẽ được tự động tạo trên Zoom. Học viên sẽ nhận email mời tham gia.
+                    </div>
                 </div>
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Trạng thái</label>
@@ -129,6 +171,27 @@
 </div>
 
 @section Scripts {
+<script>
+    // Toggle Live Class options based on Type selection
+    document.getElementById('lessonType').addEventListener('change', function() {
+        const liveClassOptions = document.getElementById('liveClassOptions');
+        const videoUrlGroup = document.querySelector('[asp-for="VideoUrl"]')?.closest('.form-group');
+        const durationGroup = document.querySelector('[asp-for="Duration"]')?.closest('.form-group');
+        
+        if (this.value === 'LiveClass') {
+            liveClassOptions.classList.remove('d-none');
+            if (videoUrlGroup) videoUrlGroup.classList.add('d-none');
+            if (durationGroup) durationGroup.classList.add('d-none');
+        } else {
+            liveClassOptions.classList.add('d-none');
+            if (videoUrlGroup) videoUrlGroup.classList.remove('d-none');
+            if (durationGroup) durationGroup.classList.remove('d-none');
+        }
+    });
+
+    // Trigger change event on page load to set initial state
+    document.getElementById('lessonType').dispatchEvent(new Event('change'));
+</script>
 <script>
     (function () {
         const videoUrlInput = document.querySelector('[name="VideoUrl"]');

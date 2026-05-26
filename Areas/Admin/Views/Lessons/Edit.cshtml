@@ -71,13 +71,31 @@
                 </div>
                 <div class="form-group">
                     <label asp-for="Type" class="form-label">Loại nội dung</label>
-                    <select asp-for="Type" class="form-select">
+                    <select asp-for="Type" class="form-select" id="lessonType">
                         <option value="Video">Video</option>
                         <option value="Text">Text</option>
                         <option value="Quiz">Quiz</option>
                         <option value="Assignment">Assignment</option>
+                        <option value="LiveClass">Live Class - Lớp học trực tiếp</option>
                     </select>
                 </div>
+
+                <!-- Live Class Info (if editing a live class) -->
+                @if (Model.Type == "LiveClass" && Model.LiveClassId.HasValue)
+                {
+                    <div id="liveClassInfo" class="mt-4 p-3 border rounded bg-light">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-video-plus me-2"></i>Thông tin Lớp học trực tiếp
+                        </h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Lưu ý:</strong> Để chỉnh sửa chi tiết lớp học (thời gian, số học viên tối đa, ghi hình), vui lòng vào quản lý lớp học trực tiếp.
+                        </div>
+                        <a href="#" class="btn btn-sm btn-primary">
+                            <i class="fas fa-cog me-2"></i>Quản lý lớp học trực tiếp
+                        </a>
+                    </div>
+                }
                 <div class="form-group">
                     <label asp-for="Status" class="form-label">Trạng thái</label>
                     <select asp-for="Status" class="form-select">
