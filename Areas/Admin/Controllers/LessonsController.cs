@@ -205,7 +205,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                             ScheduledDateTime = ScheduledDateTime.Value,
                             DurationMinutes = DurationMinutes ?? 60,
                             MaxParticipants = MaxParticipants,
-                            InstructorId = currentUserId.Value,
+                            CreateBy = currentUserId.Value,
                             Status = "Scheduled",
                             IsRecordingEnabled = IsRecordingEnabled,
                             IsRecordingPublic = IsRecordingPublic,
