@@ -131,14 +131,16 @@
                     </div>
 
                     <div class="form-group form-check">
-                        <input type="checkbox" id="IsRecordingEnabled" name="IsRecordingEnabled" class="form-check-input" checked />
+                        <input type="hidden" name="IsRecordingEnabled" value="false" />
+                        <input type="checkbox" id="IsRecordingEnabled" name="IsRecordingEnabled" value="true" class="form-check-input" checked />
                         <label class="form-check-label" for="IsRecordingEnabled">
                             <i class="fas fa-record-vinyl me-2"></i>Bật ghi hình lớp học
                         </label>
                     </div>
 
                     <div class="form-group form-check">
-                        <input type="checkbox" id="IsRecordingPublic" name="IsRecordingPublic" class="form-check-input" checked />
+                        <input type="hidden" name="IsRecordingPublic" value="false" />
+                        <input type="checkbox" id="IsRecordingPublic" name="IsRecordingPublic" value="true" class="form-check-input" checked />
                         <label class="form-check-label" for="IsRecordingPublic">
                             <i class="fas fa-share-alt me-2"></i>Công khai video ghi hình (học viên xem được)
                         </label>
