@@ -304,7 +304,8 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 _context.Set<Lesson>().Add(lesson);
                 _context.SaveChanges();
                 
-                return RedirectToAction("Details", "Chapters", new { id = lesson.ChapterId });
+                // Redirect to lessons index to show success message
+                return RedirectToAction("Index", new { courseId = (lesson.Chapter?.CourseId ?? 0) });
             }
             // Nếu lỗi, truyền lại danh sách chương
             var chaptersQuery = _context.Set<Chapter>().AsQueryable();

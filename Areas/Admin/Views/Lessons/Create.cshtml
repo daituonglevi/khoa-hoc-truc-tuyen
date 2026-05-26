@@ -34,6 +34,20 @@
 
     <div class="admin-card">
         <div class="card-body">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong>❌ Có lỗi xảy ra:</strong>
+                    <ul class="mb-0 mt-2">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <li>@error.ErrorMessage</li>
+                        }
+                    </ul>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
             <form asp-action="Create" method="post">
                 <div class="form-group">
                     <label for="ChapterId">Chương</label>
