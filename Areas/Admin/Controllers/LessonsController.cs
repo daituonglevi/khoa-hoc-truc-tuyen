@@ -194,7 +194,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 }
 
                 // Handle Live Class creation
-                if (lesson.Type == "LiveClass" && ScheduledDateTime.HasValue)
+                if (lesson.Type == "LiveClass")
                 {
                     try
                     {
@@ -206,13 +206,16 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                             return View(lesson);
                         }
 
+                        // Use provided datetime or current time if not provided
+                        var scheduledTime = ScheduledDateTime ?? DateTime.Now.AddMinutes(5);
+
                         // Create LiveClass record
                         var liveClass = new LiveClass
                         {
                             CourseId = chapter.CourseId,
                             Title = lesson.Title,
                             Description = lesson.Description,
-                            ScheduledDateTime = ScheduledDateTime.Value,
+                            ScheduledDateTime = scheduledTime,
                             DurationMinutes = DurationMinutes ?? 60,
                             MaxParticipants = MaxParticipants,
                             CreateBy = currentUserId.Value,
@@ -231,7 +234,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                             var meetingRequest = new ZoomMeetingRequest
                             {
                                 Topic = lesson.Title,
-                                StartTime = ScheduledDateTime.Value,
+                                StartTime = scheduledTime,
                                 DurationMinutes = DurationMinutes ?? 60,
                                 TimeZone = "Asia/Ho_Chi_Minh",
                                 RecordingEnabled = IsRecordingEnabled,
@@ -252,26 +255,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                                     .Where(e => e.CourseId == chapter.CourseId)
                                     .Include(e => e.User)
                                     .Select(e => e.User)
+                                    .Distinct()
                                     .ToList();
 
                                 if (enrolledStudents.Any())
                                 {
                                     var emailTasks = enrolledStudents.Select(student =>
                                         _emailSender.SendEmailAsync(
-                                            student.Email,
+                                            student.Email ?? "",
                                             $"Mời tham gia lớp học trực tiếp: {lesson.Title}",
-                                            GenerateLiveClassInvitationHtml(lesson.Title, ScheduledDateTime.Value, meetingResponse.JoinUrl, student.FullName)
+                                            GenerateLiveClassInvitationHtml(lesson.Title, scheduledTime, meetingResponse.JoinUrl, student.FullName)
                                         )
                                     );
 
                                     await Task.WhenAll(emailTasks);
                                 }
+
+                                TempData["SuccessMessage"] = $"✅ Lớp học trực tiếp đã được tạo! Email mời đã gửi tới {enrolledStudents.Count()} học viên.";
+                            }
+                            else
+                            {
+                                TempData["WarningMessage"] = "⚠️ Lớp học đã được tạo nhưng gặp lỗi khi tạo meeting Zoom. Bạn có thể tạo meeting thủ công sau.";
                             }
                         }
                         catch (Exception zoomEx)
                         {
                             // Log error but don't fail - meeting can be created manually later
                             System.Diagnostics.Debug.WriteLine($"Zoom meeting creation failed: {zoomEx.Message}");
+                            TempData["WarningMessage"] = "⚠️ Lớp học đã được tạo nhưng gặp lỗi khi tạo meeting Zoom. Kiểm tra logs để biết chi tiết.";
                         }
 
                         // Link the lesson to the live class

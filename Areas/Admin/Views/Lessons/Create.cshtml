@@ -16,6 +16,22 @@
         </a>
     </div>
 
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["WarningMessage"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            @TempData["WarningMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     <div class="admin-card">
         <div class="card-body">
             <form asp-action="Create" method="post">
@@ -86,7 +102,7 @@
                     </h5>
                     
                     <div class="form-group">
-                        <label for="ScheduledDateTime" class="form-label">Thời gian dự kiến</label>
+                        <label for="ScheduledDateTime" class="form-label">Thời gian dự kiến <small class="text-muted">(để trống = bắt đầu ngay)</small></label>
                         <input type="datetime-local" id="ScheduledDateTime" name="ScheduledDateTime" class="form-control" />
                     </div>
 
