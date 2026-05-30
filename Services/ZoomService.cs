@@ -362,9 +362,22 @@ namespace ELearningWebsite.Services
                 JoinUrl = result.GetProperty("join_url").GetString() ?? "",
                 StartUrl = result.GetProperty("start_url").GetString() ?? "",
                 StartTime = DateTime.Parse(result.GetProperty("start_time").GetString() ?? DateTime.UtcNow.ToString()),
-                Duration = result.GetProperty("duration").GetInt32(),
+                Duration = GetIntValue(result, "duration"),
                 Status = "notstarted",
                 UUID = result.GetProperty("uuid").GetString() ?? ""
+            };
+        }
+
+        private int GetIntValue(JsonElement element, string propertyName)
+        {
+            if (!element.TryGetProperty(propertyName, out var prop))
+                return 0;
+
+            return prop.ValueKind switch
+            {
+                JsonValueKind.Number => prop.GetInt32(),
+                JsonValueKind.String => int.TryParse(prop.GetString(), out var result) ? result : 0,
+                _ => 0
             };
         }
     }
