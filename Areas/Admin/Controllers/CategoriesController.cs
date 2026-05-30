@@ -240,7 +240,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 var category = await _context.Categories.FindAsync(id);
                 if (category == null)
                 {
-                    return Json(new { success = false, message = "Không tìm thấy danh mục này" });
+                    return Json(new { success = false, message = "Hiện không tìm thấy danh mục này" });
                 }
 
                 category.Status = status;
