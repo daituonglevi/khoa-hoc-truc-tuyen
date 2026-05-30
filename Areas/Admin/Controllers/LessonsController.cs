@@ -178,7 +178,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
         // POST: Admin/Lessons/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Lesson lesson, DateTime? ScheduledDateTime, int? DurationMinutes, int? MaxParticipants, bool IsRecordingEnabled, bool IsRecordingPublic)
+        public async Task<IActionResult> Create(Lesson lesson, DateTime? ScheduledDateTime, int? DurationMinutes, int? MaxParticipants, bool IsRecordingEnabled = true, bool IsRecordingPublic = true)
         {
             if (!CanManageChapter(lesson.ChapterId))
             {
@@ -301,7 +301,14 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                         {
                             // Log but don't fail - meeting can be created manually later
                             System.Diagnostics.Debug.WriteLine($"Zoom meeting creation failed: {zoomEx.Message}");
-                            TempData["WarningMessage"] = "⚠️ Lớp học đã được tạo ra nhưng gặp lỗi khi tạo meeting Zoom. Kiểm tra logs để biết chi tiết.";
+
+                            var raw = zoomEx.InnerException?.Message ?? zoomEx.Message;
+                            if (!string.IsNullOrWhiteSpace(raw) && raw.Length > 300)
+                            {
+                                raw = raw.Substring(0, 300) + "...";
+                            }
+
+                            TempData["WarningMessage"] = $"⚠️ Lớp học đã được tạo nhưng lỗi khi tạo meeting Zoom: {raw}";
                         }
 
                         // Link the lesson to the live class

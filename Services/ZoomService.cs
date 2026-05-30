@@ -28,13 +28,17 @@ namespace ELearningWebsite.Services
             try
             {
                 var token = await GetAccessTokenAsync();
-                _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                // Zoom docs: start_time nên là UTC ISO-8601 có 'Z'
+                var startTimeUtc = request.StartTime.Kind == DateTimeKind.Utc
+                    ? request.StartTime
+                    : request.StartTime.ToUniversalTime();
 
                 var meetingPayload = new
                 {
                     topic = request.Topic,
                     type = 2, // Scheduled Meeting
-                    start_time = request.StartTime.ToString("yyyy-MM-ddTHH:mm:ss"),
+                    start_time = startTimeUtc.ToString("yyyy-MM-ddTHH:mm:ssZ"),
                     duration = request.DurationMinutes,
                     timezone = request.TimeZone,
                     password = request.Password,
@@ -55,24 +59,30 @@ namespace ELearningWebsite.Services
                 // Get Zoom user ID (account owner or your app's designated user)
                 var userId = _options.ZoomUserId ?? "me"; // "me" represents the authenticated user
 
-                var response = await _httpClient.PostAsync($"https://api.zoom.us/v2/users/{userId}/meetings", content);
+                using var httpRequest = new HttpRequestMessage(HttpMethod.Post, $"https://api.zoom.us/v2/users/{userId}/meetings")
+                {
+                    Content = content
+                };
+                httpRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                var response = await _httpClient.SendAsync(httpRequest);
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
                     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
                     var result = JsonSerializer.Deserialize<dynamic>(responseContent, options);
-                    
-                    _logger.LogInformation($"Zoom meeting created successfully");
+
+                    _logger.LogInformation("Zoom meeting created successfully");
                     return ParseZoomResponse(result);
                 }
 
-                _logger.LogError($"Zoom API error: {responseContent}");
-                throw new Exception($"Failed to create Zoom meeting: {responseContent}");
+                _logger.LogError("Zoom API error ({StatusCode}): {Body}", (int)response.StatusCode, responseContent);
+                throw new Exception($"Zoom API error ({(int)response.StatusCode}): {responseContent}");
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error creating Zoom meeting: {ex.Message}");
+                _logger.LogError(ex, "Error creating Zoom meeting");
                 throw;
             }
         }
@@ -262,45 +272,78 @@ namespace ELearningWebsite.Services
             }
         }
 
+        private static readonly SemaphoreSlim _tokenLock = new SemaphoreSlim(1, 1);
+        private static string? _cachedAccessToken;
+        private static DateTimeOffset _cachedAccessTokenExpiresAt;
+
         private async Task<string> GetAccessTokenAsync()
         {
-            // Implement OAuth 2.0 Server-to-Server flow
-            // This is a simplified implementation - in production, cache the token and refresh before expiration
-
-            var payload = new
+            // Zoom Server-to-Server OAuth: cần lấy access_token từ https://zoom.us/oauth/token
+            if (!string.IsNullOrWhiteSpace(_cachedAccessToken)
+                && DateTimeOffset.UtcNow < _cachedAccessTokenExpiresAt.Subtract(TimeSpan.FromMinutes(2)))
             {
-                iss = _options.ClientId,
-                exp = DateTimeOffset.UtcNow.AddSeconds(3600).ToUnixTimeSeconds()
-            };
-
-            var token = GenerateJWT(payload);
-            return token;
-        }
-
-        private string GenerateJWT(object payload)
-        {
-            // For production, use proper JWT library like System.IdentityModel.Tokens.Jwt
-            // This is a simplified version
-            var header = Base64Encode(JsonSerializer.Serialize(new { alg = "HS256", typ = "JWT" }));
-            var payloadStr = Base64Encode(JsonSerializer.Serialize(payload));
-            var signature = ComputeHmacSha256($"{header}.{payloadStr}", _options.ClientSecret);
-
-            return $"{header}.{payloadStr}.{signature}";
-        }
-
-        private string ComputeHmacSha256(string message, string secret)
-        {
-            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))
-            {
-                var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(message));
-                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                return _cachedAccessToken;
             }
-        }
 
-        private string Base64Encode(string plainText)
-        {
-            var plainTextBytes = Encoding.UTF8.GetBytes(plainText);
-            return Convert.ToBase64String(plainTextBytes).Replace("+", "-").Replace("/", "_").TrimEnd('=');
+            await _tokenLock.WaitAsync();
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(_cachedAccessToken)
+                    && DateTimeOffset.UtcNow < _cachedAccessTokenExpiresAt.Subtract(TimeSpan.FromMinutes(2)))
+                {
+                    return _cachedAccessToken;
+                }
+
+                if (string.IsNullOrWhiteSpace(_options.ClientId)
+                    || string.IsNullOrWhiteSpace(_options.ClientSecret)
+                    || string.IsNullOrWhiteSpace(_options.AccountId))
+                {
+                    throw new InvalidOperationException("Thiếu cấu hình Zoom (ClientId/ClientSecret/AccountId). Hãy cấu hình mục Zoom trong appsettings/Environment Variables.");
+                }
+
+                var basic = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{_options.ClientId}:{_options.ClientSecret}"));
+
+                using var tokenRequest = new HttpRequestMessage(HttpMethod.Post, "https://zoom.us/oauth/token")
+                {
+                    Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                    {
+                        ["grant_type"] = "account_credentials",
+                        ["account_id"] = _options.AccountId
+                    })
+                };
+                tokenRequest.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", basic);
+
+                var tokenResponse = await _httpClient.SendAsync(tokenRequest);
+                var tokenBody = await tokenResponse.Content.ReadAsStringAsync();
+
+                if (!tokenResponse.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Zoom token error ({StatusCode}): {Body}", (int)tokenResponse.StatusCode, tokenBody);
+                    throw new Exception($"Zoom token error ({(int)tokenResponse.StatusCode}): {tokenBody}");
+                }
+
+                using var doc = JsonDocument.Parse(tokenBody);
+                var root = doc.RootElement;
+
+                var accessToken = root.GetProperty("access_token").GetString();
+                var expiresIn = root.TryGetProperty("expires_in", out var exp)
+                    ? exp.GetInt32()
+                    : 3600;
+
+                if (string.IsNullOrWhiteSpace(accessToken))
+                {
+                    throw new Exception("Zoom token response thiếu access_token.");
+                }
+
+                _cachedAccessToken = accessToken;
+                _cachedAccessTokenExpiresAt = DateTimeOffset.UtcNow.AddSeconds(expiresIn);
+
+                return accessToken;
+            }
+            finally
+            {
+                _tokenLock.Release();
+            }
         }
 
         private ZoomMeetingResponse ParseZoomResponse(dynamic result)
@@ -326,6 +369,10 @@ namespace ELearningWebsite.Services
     {
         public string ClientId { get; set; } = string.Empty;
         public string ClientSecret { get; set; } = string.Empty;
+
+        // Required for Zoom Server-to-Server OAuth
+        public string AccountId { get; set; } = string.Empty;
+
         public string WebhookSecretToken { get; set; } = string.Empty;
         public string? ZoomUserId { get; set; } // Optional: specific user to host meetings
     }
