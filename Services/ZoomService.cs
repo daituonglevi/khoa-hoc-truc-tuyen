@@ -346,6 +346,13 @@ namespace ELearningWebsite.Services
             }
         }
 
+        private static string ComputeHmacSha256(string message, string secret)
+        {
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret ?? string.Empty));
+            var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(message ?? string.Empty));
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+        }
+
         private ZoomMeetingResponse ParseZoomResponse(dynamic result)
         {
             return new ZoomMeetingResponse
