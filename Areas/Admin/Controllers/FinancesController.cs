@@ -238,7 +238,7 @@ namespace ELearningWebsite.Areas.Admin.Controllers
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Có l�-i xảy ra: " + ex.Message;
+                TempData["ErrorMessage"] = "Có lỗi xảy ra: " + ex.Message;
                 return View(finance);
             }
         }
