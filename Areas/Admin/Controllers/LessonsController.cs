@@ -291,7 +291,12 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                     }
                     catch (Exception ex)
                     {
-                        ModelState.AddModelError("", "Lỗi tạo lớp học trực tiếp: " + ex.Message);
+                        var errorMsg = "Lỗi tạo lớp học trực tiếp: " + ex.Message;
+                        if (ex.InnerException != null)
+                        {
+                            errorMsg += " | " + ex.InnerException.Message;
+                        }
+                        ModelState.AddModelError("", errorMsg);
                         return View(lesson);
                     }
                 }
