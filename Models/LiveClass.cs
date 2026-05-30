@@ -71,7 +71,9 @@ namespace ELearningWebsite.Models
 
         /// <summary>
         /// RTMP or HLS stream URL for embedding in web player
+        /// (DB hiện tại chưa có cột StreamUrl nên tạm NotMapped)
         /// </summary>
+        [NotMapped]
         public string? StreamUrl { get; set; }
 
         /// <summary>
@@ -113,13 +115,17 @@ namespace ELearningWebsite.Models
 
         /// <summary>
         /// Instructor ID who created this class
+        /// DB: cột thật đang là InstructorId
         /// </summary>
         [Required]
+        [Column("InstructorId")]
         public int CreateBy { get; set; }
 
         /// <summary>
-        /// Additional metadata (JSON) - can store custom Zoom settings, etc
+        /// Additional metadata (JSON)
+        /// (DB hiện tại chưa có cột MetaData nên tạm NotMapped)
         /// </summary>
+        [NotMapped]
         public string? MetaData { get; set; }
 
         [Required]
@@ -130,6 +136,8 @@ namespace ELearningWebsite.Models
         // Navigation Properties
         public virtual Course Course { get; set; } = null!;
         public virtual Lesson? Lesson { get; set; }
+
+        [ForeignKey(nameof(CreateBy))]
         public virtual ApplicationUser Instructor { get; set; } = null!;
         public virtual ICollection<LiveClassAttendance> Attendances { get; set; } = new List<LiveClassAttendance>();
         public virtual ICollection<LiveClassRecording> Recordings { get; set; } = new List<LiveClassRecording>();

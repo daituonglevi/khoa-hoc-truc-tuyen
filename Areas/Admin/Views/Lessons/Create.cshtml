@@ -188,25 +188,27 @@
 
 @section Scripts {
 <script>
-    // Toggle Live Class options based on Type selection
-    document.getElementById('lessonType').addEventListener('change', function() {
-        const liveClassOptions = document.getElementById('liveClassOptions');
-        const videoUrlGroup = document.querySelector('[asp-for="VideoUrl"]')?.closest('.form-group');
-        const durationGroup = document.querySelector('[asp-for="Duration"]')?.closest('.form-group');
-        
-        if (this.value === 'LiveClass') {
-            liveClassOptions.classList.remove('d-none');
-            if (videoUrlGroup) videoUrlGroup.classList.add('d-none');
-            if (durationGroup) durationGroup.classList.add('d-none');
-        } else {
-            liveClassOptions.classList.add('d-none');
-            if (videoUrlGroup) videoUrlGroup.classList.remove('d-none');
-            if (durationGroup) durationGroup.classList.remove('d-none');
-        }
-    });
+    (function () {
+        const lessonType = document.getElementById('lessonType');
+        if (!lessonType) return;
 
-    // Trigger change event on page load to set initial state
-    document.getElementById('lessonType').dispatchEvent(new Event('change'));
+        const liveClassOptions = document.getElementById('liveClassOptions');
+        const videoUrlGroup = document.querySelector('[name="VideoUrl"]')?.closest('.form-group');
+        const durationGroup = document.querySelector('[name="Duration"]')?.closest('.form-group');
+
+        const applyVisibility = function () {
+            const type = lessonType.value;
+            const isLiveClass = type === 'LiveClass';
+            const isVideo = type === 'Video';
+
+            if (liveClassOptions) liveClassOptions.classList.toggle('d-none', !isLiveClass);
+            if (videoUrlGroup) videoUrlGroup.classList.toggle('d-none', !isVideo);
+            if (durationGroup) durationGroup.classList.toggle('d-none', isLiveClass);
+        };
+
+        lessonType.addEventListener('change', applyVisibility);
+        applyVisibility();
+    })();
 </script>
 <script>
     (function () {

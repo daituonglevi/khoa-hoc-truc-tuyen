@@ -185,8 +185,27 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return Forbid();
             }
 
-            if (ModelState.IsValid)
+            // Quy tắc: chỉ bài học dạng Video mới cần URL video
+            if (lesson.Type == "Video" && string.IsNullOrWhiteSpace(lesson.VideoUrl))
             {
+                ModelState.AddModelError(nameof(Lesson.VideoUrl), "Vui lòng chọn hoặc nhập URL video cho bài học dạng Video.");
+            }
+
+            if (lesson.Type != "Video")
+            {
+                lesson.VideoUrl = null;
+                ModelState.Remove(nameof(Lesson.VideoUrl));
+            }
+
+            if (lesson.Type == "LiveClass")
+            {
+                lesson.Duration = null;
+                ModelState.Remove(nameof(Lesson.Duration));
+            }
+
+            if (ModelState.IsValid)
+            { 
+                
                 var currentUserId = GetCurrentUserId();
                 if (!currentUserId.HasValue)
                 {
@@ -380,14 +399,34 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 return NotFound();
             }
 
+            // Quy tắc: chỉ bài học dạng Video mới cần URL video
+            if (lesson.Type == "Video" && string.IsNullOrWhiteSpace(lesson.VideoUrl))
+            {
+                ModelState.AddModelError(nameof(Lesson.VideoUrl), "Vui lòng chọn hoặc nhập URL video cho bài học dạng Video.");
+            }
+
+            if (lesson.Type != "Video")
+            {
+                lesson.VideoUrl = null;
+                ModelState.Remove(nameof(Lesson.VideoUrl));
+            }
+
+            if (lesson.Type == "LiveClass")
+            {
+                lesson.Duration = null;
+                ModelState.Remove(nameof(Lesson.Duration));
+            }
+
             if (ModelState.IsValid)
             {
                 existingLesson.ChapterId = lesson.ChapterId;
                 existingLesson.Title = lesson.Title;
                 existingLesson.Description = lesson.Description;
                 existingLesson.Content = lesson.Content;
-                existingLesson.VideoUrl = NormalizeVideoUrlForStorage(lesson.VideoUrl);
-                existingLesson.Duration = lesson.Duration;
+                existingLesson.VideoUrl = lesson.Type == "Video"
+                    ? NormalizeVideoUrlForStorage(lesson.VideoUrl)
+                    : null;
+                existingLesson.Duration = lesson.Type == "LiveClass" ? null : lesson.Duration;
                 existingLesson.OrderIndex = lesson.OrderIndex;
                 existingLesson.Type = lesson.Type;
                 existingLesson.Status = lesson.Status;

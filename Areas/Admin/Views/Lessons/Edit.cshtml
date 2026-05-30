@@ -150,6 +150,27 @@
 @section Scripts {
 <script>
     (function () {
+        const lessonType = document.getElementById('lessonType');
+        if (!lessonType) return;
+
+        const videoUrlGroup = document.querySelector('[name="VideoUrl"]')?.closest('.form-group');
+        const durationGroup = document.querySelector('[name="Duration"]')?.closest('.form-group');
+
+        const applyVisibility = function () {
+            const type = lessonType.value;
+            const isLiveClass = type === 'LiveClass';
+            const isVideo = type === 'Video';
+
+            if (videoUrlGroup) videoUrlGroup.classList.toggle('d-none', !isVideo);
+            if (durationGroup) durationGroup.classList.toggle('d-none', isLiveClass);
+        };
+
+        lessonType.addEventListener('change', applyVisibility);
+        applyVisibility();
+    })();
+</script>
+<script>
+    (function () {
         const videoUrlInput = document.querySelector('[name="VideoUrl"]');
         const btnSelectVideo = document.getElementById('btnSelectVideo');
         const mediaPickerModal = document.getElementById('mediaPickerModal');
