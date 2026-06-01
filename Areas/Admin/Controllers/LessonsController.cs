@@ -290,7 +290,26 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                                     await Task.WhenAll(emailTasks);
                                 }
 
-                                TempData["SuccessMessage"] = $"✅ Lớp học trực tiếp đã được tạo! Email mời đã gửi tới {enrolledStudents.Count()} học viên.";
+                                // Send email to the instructor who created the lesson
+                                try
+                                {
+                                    var instructor = await _context.Users.FirstOrDefaultAsync(u => u.Id == currentUserId.Value);
+                                    if (instructor != null && !string.IsNullOrWhiteSpace(instructor.Email))
+                                    {
+                                        await _emailSender.SendEmailAsync(
+                                            instructor.Email,
+                                            $"Lớp học trực tiếp đã được tạo: {lesson.Title}",
+                                            GenerateLiveClassInstructorHtml(lesson.Title, scheduledTime, meetingResponse.JoinUrl, meetingResponse.StartUrl, enrolledStudents.Count())
+                                        );
+                                    }
+                                }
+                                catch (Exception emailEx)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Failed to send email to instructor: {emailEx.Message}");
+                                    // Don't fail the entire operation if instructor email fails
+                                }
+
+                                TempData["SuccessMessage"] = $"✅ Lớp học trực tiếp đã được tạo! Email mời đã gửi tới {enrolledStudents.Count()} học viên và 1 giảng viên.";
                             }
                             else
                             {
@@ -876,6 +895,38 @@ namespace ELearningWebsite.Areas.Admin.Controllers
                 <p style='background-color: #f9f9f9; padding: 10px; word-break: break-all;'>{joinUrl}</p>
                 
                 <p>Hẹn gặp bạn!</p>
+            </div>";
+        }
+
+        private string GenerateLiveClassInstructorHtml(string lessonTitle, DateTime scheduledTime, string joinUrl, string startUrl, int studentCount)
+        {
+            return $@"
+            <div style='font-family: Arial, sans-serif; line-height: 1.6;'>
+                <h2>Lớp học trực tiếp đã được tạo</h2>
+                <p>Xin chào Giảng viên,</p>
+                
+                <p>Lớp học trực tiếp của bạn đã được tạo thành công:</p>
+                <div style='background-color: #f5f5f5; padding: 15px; border-left: 4px solid #007bff;'>
+                    <h3 style='color: #007bff; margin-top: 0;'>{System.Net.WebUtility.HtmlEncode(lessonTitle)}</h3>
+                    <p><strong>Thời gian:</strong> {scheduledTime:dd/MM/yyyy HH:mm} (múi giờ VN)</p>
+                    <p><strong>Số học viên đăng ký:</strong> {studentCount}</p>
+                </div>
+                
+                <p><strong>Các link quan trọng:</strong></p>
+                <ul>
+                    <li>
+                        <strong>Link tham gia (dành cho học viên):</strong> 
+                        <a href='{joinUrl}' style='color: #28a745;'>{joinUrl}</a>
+                    </li>
+                    <li>
+                        <strong>Link khởi động (dành cho giảng viên):</strong> 
+                        <a href='{startUrl}' style='color: #007bff;'>{startUrl}</a>
+                    </li>
+                </ul>
+                
+                <p>Nhấp vào link khởi động để bắt đầu cuộc họp Zoom. Link tham gia sẽ tự động được gửi cho học viên.</p>
+                
+                <p style='color: #666; font-style: italic;'>Ghi chú: Hãy chắc chắn bạn bắt đầu cuộc họp ít nhất 5-10 phút trước thời gian bắt đầu để học viên có thể tham gia sớm.</p>
             </div>";
         }
 
