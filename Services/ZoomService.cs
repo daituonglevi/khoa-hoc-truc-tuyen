@@ -357,14 +357,28 @@ namespace ELearningWebsite.Services
         {
             return new ZoomMeetingResponse
             {
-                MeetingId = result.GetProperty("id").GetString() ?? "",
-                Topic = result.GetProperty("topic").GetString() ?? "",
-                JoinUrl = result.GetProperty("join_url").GetString() ?? "",
-                StartUrl = result.GetProperty("start_url").GetString() ?? "",
-                StartTime = DateTime.Parse(result.GetProperty("start_time").GetString() ?? DateTime.UtcNow.ToString()),
+                MeetingId = GetStringValue(result, "id"),
+                Topic = GetStringValue(result, "topic"),
+                JoinUrl = GetStringValue(result, "join_url"),
+                StartUrl = GetStringValue(result, "start_url"),
+                StartTime = DateTime.Parse(GetStringValue(result, "start_time") ?? DateTime.UtcNow.ToString()),
                 Duration = GetIntValue(result, "duration"),
                 Status = "notstarted",
-                UUID = result.GetProperty("uuid").GetString() ?? ""
+                UUID = GetStringValue(result, "uuid")
+            };
+        }
+
+        private string GetStringValue(JsonElement element, string propertyName)
+        {
+            if (!element.TryGetProperty(propertyName, out var prop))
+                return "";
+
+            return prop.ValueKind switch
+            {
+                JsonValueKind.String => prop.GetString() ?? "",
+                JsonValueKind.Number => prop.GetRawText(), // Convert number to string
+                JsonValueKind.Null => "",
+                _ => prop.GetRawText() ?? ""
             };
         }
 
